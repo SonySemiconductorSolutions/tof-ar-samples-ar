@@ -43,6 +43,7 @@ Shader "TextureRoom/CylinderProjection"
             float _Radius;
             float _GlowStrength;
             int _CurrentMode;
+            int _Rotation;
 
             sampler2D _OcclusionStencil;
             float4 _DisplaySize;
@@ -95,8 +96,21 @@ Shader "TextureRoom/CylinderProjection"
                 //ref:https://edom18.hateblo.jp/entry/2019/08/11/223803
                 float4 vertexInput = UnityObjectToClipPos(v.vertex);
                 float4 screenPos = ComputeScreenPos(vertexInput); 
-                float2 nextUV = screenPos.xy / screenPos.w;
-
+                float2 nextUV;
+                
+                if (_Rotation == 0) {
+                    nextUV = screenPos.yx / screenPos.w;
+                    nextUV.y = 1 - nextUV.y;
+                } else if (_Rotation == 90) {
+                    nextUV = screenPos.xy / screenPos.w;
+                    nextUV.x = 1 - nextUV.x;
+                    nextUV.y = 1 - nextUV.y;
+                } else if (_Rotation == 180) {
+                    nextUV = screenPos.yx / screenPos.w;
+                    nextUV.x = 1 - nextUV.x;
+                } else {
+                    nextUV = screenPos.xy / screenPos.w;
+                }
                 float screenWidth = _DisplaySize.x;
                 float screenHeight = _DisplaySize.y;
 

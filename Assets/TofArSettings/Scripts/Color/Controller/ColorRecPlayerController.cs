@@ -66,11 +66,8 @@ namespace TofArSettings.Color
 
         protected override string[] GetFileNames(string dirPath)
         {
-            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
+            var options = GetFileNames(dirPath, TofArColorManager.StreamKey);
 
-                var options = (directoryListProp.directoryList)
-                .Where(x => x.Contains(TofArColorManager.StreamKey))
-                .OrderBy(x => x).ToArray();
             return options;
         }
 

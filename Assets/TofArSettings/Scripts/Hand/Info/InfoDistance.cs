@@ -14,6 +14,7 @@ namespace TofArSettings.Hand
     {
         UI.InfoLR uiLRInfo;
         Vector3[] pointsLeft, pointsRight;
+        bool handAvailable = false;
 
         void OnEnable()
         {
@@ -52,6 +53,8 @@ namespace TofArSettings.Hand
             // Get
             pointsLeft = manager.HandData.Data.featurePointsLeft;
             pointsRight = manager.HandData.Data.featurePointsRight;
+
+            handAvailable = manager.HandData.Data.handStatus != HandStatus.NoHand;
         }
 
         /// <summary>
@@ -62,7 +65,7 @@ namespace TofArSettings.Hand
         string MakeDistText(Vector3[] points)
         {
             float dist = 0;
-            if (points != null)
+            if (points != null && handAvailable)
             {
                 dist = points[(int)HandPointIndex.HandCenter].magnitude;
             }

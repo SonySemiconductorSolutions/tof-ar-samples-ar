@@ -14,15 +14,15 @@ namespace TofArSettings
 {
     public class RecordFileManager
     {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN
         private static System.Text.StringBuilder sbOutput;
         private static System.Text.StringBuilder sbError;
 
-        private static string CheckArguments(AdbCommand command, params string[] arguments)
+        private static string CheckArguments(TofArManager.AdbCommand command, params string[] arguments)
         {
             switch (command)
             {
-                case AdbCommand.Push:
+                case TofArManager.AdbCommand.Push:
                     if (arguments.Length != 2)
                     {
                         throw new ArgumentException("adb push needs two arguments (src, dst)");
@@ -37,7 +37,7 @@ namespace TofArSettings
                         throw new ArgumentException($"dst must be absolute path");
                     }
                     return $"push {arguments[0]} {arguments[1]}";
-                case AdbCommand.Pull:
+                case TofArManager.AdbCommand.Pull:
                     if (arguments.Length != 2)
                     {
                         throw new ArgumentException("adb pull needs two arguments (src, dst)");
@@ -52,7 +52,7 @@ namespace TofArSettings
                         throw new ArgumentException($"dst must be absolute path");
                     }
                     return $"pull {arguments[0]} {arguments[1]}";
-                case AdbCommand.Remove:
+                case TofArManager.AdbCommand.Remove:
                     if (arguments.Length != 1)
                     {
                         throw new ArgumentException("adb shell rm needs one argument");
@@ -62,7 +62,7 @@ namespace TofArSettings
                         throw new ArgumentException("path must be absolute");
                     }
                     return $"shell \"rm {arguments[0]}\"";
-                case AdbCommand.Forward:
+                case TofArManager.AdbCommand.Forward:
                     if (arguments.Length != 2)
                     {
                         throw new ArgumentException("adb forward needs two arguments (src protocol:port, dst protocol:port)");
@@ -98,7 +98,14 @@ namespace TofArSettings
             }
 
             string[] arguments = { $"\"{src}\"", dst };
+
+
+#if UNITY_EDITOR
             var adbPath = EditorUtils.GetAdbPath();
+#else
+            var adbPath = TofArManager.Instance.ServerConnectionSettingsForStandalone.fullPathToAdb;
+#endif
+
             if (!string.IsNullOrEmpty(adbPath) && System.IO.Path.IsPathRooted(adbPath))
             {
                 sbOutput = new System.Text.StringBuilder();
@@ -106,7 +113,14 @@ namespace TofArSettings
                 sbError = new System.Text.StringBuilder();
 
                 var psi = new System.Diagnostics.ProcessStartInfo();
+
 #if UNITY_EDITOR_WIN
+                if (!adbPath.EndsWith("adb.exe"))
+#elif UNITY_STANDALONE_WIN
+                if (!System.IO.Path.HasExtension(adbPath))
+                {
+                    adbPath += ".exe";
+                }
                 if (!adbPath.EndsWith("adb.exe"))
 #else
                 var fileInfo = new System.IO.FileInfo(adbPath);
@@ -123,7 +137,7 @@ namespace TofArSettings
                 psi.RedirectStandardError = true;
                 try
                 {
-                    string psiArgs = CheckArguments(AdbCommand.Push, arguments);
+                    string psiArgs = CheckArguments(TofArManager.AdbCommand.Push, arguments);
                     psi.Arguments = psiArgs;
                 }
                 catch (ArgumentException e)

@@ -75,18 +75,25 @@ Shader "BGChange/Mask"
             half4 frag(v2f i) : COLOR
             {
                 half4 baseColor = tex2Dproj(_MainTex, i.pos);
-                float2 maskSKYUV = float2(i.uv2.x, i.uv2.y);
-                
-                if(_invertUVXSky == 1){
-                    maskSKYUV.x = i.uv2.x;
-                }else{
-                    maskSKYUV.x = i.uv2.x;
-                }
 
-                half4 maskSky = tex2D(_MaskTexSky, maskSKYUV);
-                
-                maskSky.x = maskSky.x*_useSky + (1.0f - maskSky.x)*_invertSky;
-                baseColor.a *= maskSky.x * maskSky.x* maskSky.x;
+                if (i.uv2.y <= 0 && i.uv2.y >= -1 && i.uv2.x >= 0 && i.uv2.x <= +1) {
+                    float2 maskSKYUV = float2(i.uv2.x, i.uv2.y);
+
+                    if (_invertUVXSky == 1) {
+                        maskSKYUV.x = i.uv2.x;
+                    }
+                    else {
+                        maskSKYUV.x = i.uv2.x;
+                    }
+
+                    half4 maskSky = tex2D(_MaskTexSky, maskSKYUV);
+
+                    maskSky.x = maskSky.x * _useSky + (1.0f - maskSky.x) * _invertSky;
+                    baseColor.a *= maskSky.x * maskSky.x * maskSky.x;
+                }
+                else {
+                    return half4 (0, 0, 0, 1);
+                }
 
                 baseColor.a *= _Alpha;
 

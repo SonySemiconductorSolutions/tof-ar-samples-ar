@@ -6,6 +6,7 @@
  */
 
 using System.Collections.Generic;
+using TofAr.V0;
 using UnityEngine;
 
 namespace TofArSettings.UI
@@ -76,6 +77,10 @@ namespace TofArSettings.UI
         void Awake()
         {
             var ms = GetComponentsInChildren<SettingsBase>();
+
+            // add GeneralChild Panel if using iOS
+            bool addGeneralChild = (TofArManager.Instance.UsingIos);
+
             for (int i = 0; i < ms.Length; i++)
             {
                 var menu = ms[i];
@@ -84,7 +89,8 @@ namespace TofArSettings.UI
                     continue;
                 }
 
-                if (menu.CompoType == ComponentType.Color && color ||
+                if ((addGeneralChild && menu is General.GeneralSettingsChild) ||
+                    menu.CompoType == ComponentType.Color && color ||
                     menu.CompoType == ComponentType.Tof && tof ||
                     menu.CompoType == ComponentType.Hand && hand ||
                     menu.CompoType == ComponentType.Segmentation && segmentation ||

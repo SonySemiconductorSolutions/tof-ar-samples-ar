@@ -26,6 +26,31 @@ namespace TofArSettings.UI
 
         public event SelectEvent OnSelect;
 
+        /// <summary>
+        /// 選択肢が選ばれた時に呼ばれるイベント
+        /// </summary>
+        /// <param name="index">選択肢のインデックス</param>
+        public delegate void DeleteEvent(int index);
+
+        /// <summary>
+        /// 選択肢が選ばれた時に呼ばれるイベント
+        /// </summary>
+        public event DeleteEvent OnDelete;
+
+        /// <summary>
+        /// 選択肢が選ばれた時に呼ばれるイベント
+        /// </summary>
+        /// <param name="index">選択肢のインデックス</param>
+        public delegate void RenameEvent(int index, string newName);
+
+        /// <summary>
+        /// 選択肢が選ばれた時に呼ばれるイベント
+        /// </summary>
+        public event RenameEvent OnRename;
+
+        private DeleteConfirmPanel deletePanel;
+        private RenamePanel renamePanel;
+
         RectTransform dialogRt, contentRt;
         VerticalLayoutGroup contentLayout;
         List<DropdownOption> options = new List<DropdownOption>();
@@ -66,6 +91,7 @@ namespace TofArSettings.UI
                 return;
             }
             defaultContentSize = dialogRt.sizeDelta;
+            defaultContentSize.x = 0;
             var scrollView = GetComponentInChildren<ScrollRect>();
             if (scrollView == null)
             {
@@ -98,6 +124,10 @@ namespace TofArSettings.UI
 
             prefabMgr = SettingsPrefabManager.Instance;
 
+            deletePanel = this.transform.GetComponentInChildren<DeleteConfirmPanel>();
+            renamePanel = this.transform.GetComponentInChildren<RenamePanel>();
+
+
             finishedSetup = true;
         }
 
@@ -113,10 +143,34 @@ namespace TofArSettings.UI
                 Awake();
             }
 
+            if (options == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < options.Length; i++)
             {
                 bool onOff = (i == index);
                 AddOption(options[i], onOff);
+            }
+        }
+
+        /// <summary>
+        /// Register options
+        /// </summary>
+        /// <param name="options">Options</param>
+        /// <param name="index">Initial value</param>
+        public void AddOptions(KeyValuePair<string,EditFlags>[] options, int index)
+        {
+            if (!finishedSetup)
+            {
+                Awake();
+            }
+
+            for (int i = 0; i < options.Length; i++)
+            {
+                bool onOff = (i == index);
+                AddOptionEditable(options[i].Key, options[i].Value, onOff);
             }
         }
 
@@ -162,7 +216,7 @@ namespace TofArSettings.UI
             option.Init(label, onOff, () =>
             {
                 OnClick(index);
-            });
+            }, null, null);
 
             options.Add(option);
 
@@ -182,6 +236,46 @@ namespace TofArSettings.UI
             dialogRt.sizeDelta = new Vector2(dialogRt.sizeDelta.x, height);
         }
 
+        void AddOptionEditable(string label, EditFlags editFlags, bool onOff)
+        {
+            // 選択肢生成
+            int index = options.Count;
+            var obj = Instantiate(prefabMgr.DropdownOptionPrefab, contentRt);
+            var option = obj.GetComponent<DropdownOption>();
+
+            UnityEngine.Events.UnityAction onDeleteAction = null;
+            UnityEngine.Events.UnityAction onRenameAction = null;
+
+            if (editFlags.HasFlag(EditFlags.Deletable))
+            {
+                onDeleteAction = () => OnClickDelete(index);
+            }
+
+            if (editFlags.HasFlag(EditFlags.Renamable))
+            {
+                onRenameAction = () => OnClickRename(index);
+            }
+
+            option.Init(label, onOff, () => { OnClick(index); }, onDeleteAction, onRenameAction);
+
+            options.Add(option);
+
+            // 選択肢一覧のサイズ調整
+            var optRt = obj.GetComponent<RectTransform>();
+            float optHeight = optRt.sizeDelta.y;
+            if (options.Count > 1)
+            {
+                optHeight += contentLayout.spacing;
+            }
+
+            contentRt.sizeDelta += new Vector2(0, optHeight);
+
+            // ダイアログは指定した高さ以下に調整
+            float height = (contentRt.sizeDelta.y < MaxHeight) ?
+                contentRt.sizeDelta.y : MaxHeight;
+            dialogRt.sizeDelta = new Vector2(dialogRt.sizeDelta.x, height);
+        }
+
         /// <summary>
         /// Event that is called when option is selected
         /// </summary>
@@ -191,5 +285,43 @@ namespace TofArSettings.UI
             ChangeAppearance(index);
             OnSelect?.Invoke(index);
         }
+
+        void OnClickDelete(int index)
+        {
+            deletePanel.OnConfirmDelete = (isDelete) => {
+                if (isDelete)
+                {
+                    if (index >= 0)
+                    {
+                        OnDelete?.Invoke(index);
+                    }
+                }
+                deletePanel.PanelObj.SetActive(false);
+
+                deletePanel.OnConfirmDelete = null;
+            };
+
+            // open confirmation dialog
+            deletePanel.OpenPanel(false);
+        }
+
+        void OnClickRename(int index)
+        {
+            renamePanel.OnConfirmRename = (newName) => {
+                if (newName != null && newName.Length > 0)
+                {
+                    OnRename?.Invoke(index, newName);
+                }
+
+                renamePanel.PanelObj.SetActive(false);
+
+                renamePanel.OnConfirmRename = null;
+            };
+
+            // open confirmation dialog
+            renamePanel.OpenPanel(false);
+
+        }
+
     }
 }

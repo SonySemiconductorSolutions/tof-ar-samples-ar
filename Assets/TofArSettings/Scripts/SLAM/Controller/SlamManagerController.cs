@@ -8,7 +8,8 @@
 using TofAr.V0.Slam;
 using System;
 using System.Linq;
-
+using UnityEngine;
+using System.Collections.Generic;
 
 namespace TofArSettings.Slam
 {
@@ -19,6 +20,16 @@ namespace TofArSettings.Slam
             isStarted = TofArSlamManager.Instance.autoStart;
 
             SetupPoseSourceLists();
+        }
+
+        protected override void Start()
+        {
+            var defaultCameraPoseSource = (TofAr.V0.TofArManager.Instance.UsingIos || TofAr.V0.TofArManager.Instance.RuntimeSettings.runMode == TofAr.V0.RunMode.MultiNode) ? 
+                CameraPoseSource.MainCamera : CameraPoseSource.Gyro;
+
+            CameraPoseSource = defaultCameraPoseSource;
+
+            base.Start();
         }
 
         private void OnEnable()
@@ -111,7 +122,29 @@ namespace TofArSettings.Slam
 
         private void SetupPoseSourceLists()
         {
-            PoseSources = (CameraPoseSource[])Enum.GetValues(typeof(CameraPoseSource));
+            PoseSources = ((CameraPoseSource[])Enum.GetValues(typeof(CameraPoseSource)));
+            if (!TofAr.V0.TofArManager.Instance.UsingIos)
+            {
+                var internalTracker = Resources.Load("Prefabs/KudanPoseTracker");
+                var internalTracker2 = Resources.Load("Prefabs/SdsPoseTracker");
+
+                var poseSources = PoseSources;
+                if (internalTracker == null)
+                {
+                    poseSources = poseSources.Where(x => x != CameraPoseSource.InternalEngine).ToArray(); 
+                }
+
+                if (internalTracker2 == null)
+                {
+                    poseSources = poseSources.Where(x => x != CameraPoseSource.InternalEngine02).ToArray();
+                }
+
+                PoseSources = poseSources.ToArray();
+            }
+            else
+            {
+                PoseSources = PoseSources.Where(x => x != CameraPoseSource.InternalEngine && x != CameraPoseSource.InternalEngine02).ToArray();
+            }
             PoseSourceNames = PoseSources.Select((s) => s.ToString()).ToArray();
         }
 

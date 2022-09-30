@@ -244,5 +244,10 @@ namespace TofArSettings.Hand
             handDataCopy.featurePointsLeft = manager.HandData.Data.featurePointsLeft;
             handDataCopy.featurePointsRight = manager.HandData.Data.featurePointsRight;
         }
+
+        protected override string GetLastRecording()
+        {
+            return null;
+        }
     }
 }

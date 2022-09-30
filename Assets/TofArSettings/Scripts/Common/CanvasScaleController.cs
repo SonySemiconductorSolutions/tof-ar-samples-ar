@@ -16,18 +16,18 @@ namespace TofArSettings.UI
         /// Target Canvas to adjust
         /// </summary>
         [SerializeField]
-        CanvasScaler canvasScaler = null;
+        protected CanvasScaler canvasScaler = null;
 
         /// <summary>
         /// Physical width of toolbar (Unit: mm)
         /// </summary>
         [SerializeField]
-        float realBarWidth = 8;
+        protected float realBarWidth = 8;
 
         /// <summary>
         /// RectTransform of SafeArea
         /// </summary>
-        public RectTransform SafeAreaRt { get; private set; }
+        public RectTransform SafeAreaRt { get; protected set; }
 
         /// <summary>
         /// SafeArea size
@@ -47,15 +47,14 @@ namespace TofArSettings.UI
         /// <param name="safeAreaSize">SafeArea size</param>
         public delegate void ChangeEvent(Vector2 safeAreaSize);
 
-        public event ChangeEvent OnChangeSafeArea;
+        public ChangeEvent OnChangeSafeArea;
 
-        Rect area;
+        protected Rect area;
+        protected Vector2 baseReso;
+        protected Toolbar toolbar;
+        protected Vector2 latestSafeAreaSize;
 
-        Vector2 baseReso;
-        Toolbar toolbar;
-        Vector2 latestSafeAreaSize;
-
-        void Awake()
+        protected virtual void Awake()
         {
             // Get UI
             if (!canvasScaler)
@@ -75,22 +74,26 @@ namespace TofArSettings.UI
             baseReso = canvasScaler.referenceResolution;
         }
 
-        void Start()
+        protected virtual void Start()
         {
             toolbar = FindObjectOfType<Toolbar>();
             AdjustSafeArea(Screen.safeArea);
         }
 
-        void Update()
+        protected virtual void Update()
         {
             AdjustSafeArea(Screen.safeArea);
+        }
+
+        protected virtual void OnDestroy()
+        {
         }
 
         /// <summary>
         /// Adjust UI according to SafeArea
         /// </summary>
         /// <param name="newArea">SafeArea</param>
-        void AdjustSafeArea(Rect newArea)
+        protected virtual void AdjustSafeArea(Rect newArea)
         {
             // Do not do anything if SafeArea has not changed
             if (area == newArea && latestSafeAreaSize == SafeAreaSize)

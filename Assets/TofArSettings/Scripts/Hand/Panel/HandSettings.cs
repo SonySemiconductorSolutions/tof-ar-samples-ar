@@ -293,9 +293,6 @@ namespace TofArSettings.Hand
         {
             if (onOff)
             {
-                float height = (statusHistory.LineHeight * (statusHistory.MaxFrames + 1)) +
-                    panelHistory.Padding.top + panelHistory.Padding.bottom;
-                panelHistory.Size = new Vector2(panelHistory.Size.x, height);
                 panelHistory.OpenPanel(false);
             }
             else

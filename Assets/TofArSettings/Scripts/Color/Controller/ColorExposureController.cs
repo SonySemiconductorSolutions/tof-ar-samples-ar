@@ -93,6 +93,9 @@ namespace TofArSettings.Color
 
         public event ChangeIndexEvent OnChangeFlashMode;
 
+        private const long scaleExposure = 1000;
+        private const long scaleFrameDuration = 1000;
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -164,9 +167,9 @@ namespace TofArSettings.Color
             autoExposure = prop.autoExposure;
 
             // Carry forward the unit of measure as the value of ExposureTime is large 
-            TimeMin = (long)Mathf.Ceil(prop.minExposureTime / 1000f);
-            TimeMax = (long)Mathf.Floor(prop.maxExposureTime / 1000f);
-            exposureTime = prop.exposureTime / 1000;
+            TimeMin = (long)Mathf.Ceil(prop.minExposureTime / (float)scaleExposure);
+            TimeMax = (long)Mathf.Floor(prop.maxExposureTime / (float)scaleExposure);
+            exposureTime = prop.exposureTime / scaleExposure;
             if (exposureTime < TimeMin)
             {
                 exposureTime = TimeMin;
@@ -176,9 +179,11 @@ namespace TofArSettings.Color
                 exposureTime = TimeMax;
             }
 
-            FrameDurationMin = prop.minFrameDurationForCurrentResolution;
-            FrameDurationMax = prop.maxFrameDuration;
-            frameDuration = prop.frameDurarion;
+            
+
+            FrameDurationMin = (long)Mathf.Ceil(prop.minFrameDurationForCurrentResolution / (float)scaleFrameDuration);
+            FrameDurationMax = (long)Mathf.Floor(prop.maxFrameDuration / (float)scaleFrameDuration);
+            frameDuration = prop.frameDurarion / scaleFrameDuration;
             if (frameDuration < FrameDurationMin)
             {
                 frameDuration = FrameDurationMin;
@@ -215,8 +220,8 @@ namespace TofArSettings.Color
             {
                 autoExposure = AutoExposure,
                 // Undo the unit of the measure that has been carried forward
-                exposureTime = ExposureTime * 1000,
-                frameDurarion = FrameDuration,
+                exposureTime = ExposureTime * scaleExposure,
+                frameDurarion = FrameDuration * scaleFrameDuration,
                 sensitibity = Sensitivity,
                 flash = Flash
             };

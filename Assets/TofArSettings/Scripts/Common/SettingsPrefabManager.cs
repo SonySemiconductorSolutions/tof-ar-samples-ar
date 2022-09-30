@@ -48,6 +48,11 @@ namespace TofArSettings.UI
         public GameObject ItemSliderPrefab;
 
         /// <summary>
+        /// TextのPreab
+        /// </summary>
+        public GameObject ItemTextPrefab;
+
+        /// <summary>
         /// Toggle Prefab
         /// </summary>
         public GameObject ItemTogglePrefab;

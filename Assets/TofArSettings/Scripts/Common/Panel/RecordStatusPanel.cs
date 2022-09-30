@@ -130,11 +130,16 @@ namespace TofArSettings.UI
         /// <returns>Save path</returns>
         void OnEndRec(bool result, string filePath)
         {
-            if (end == null)
+            if (end != null)
             {
-                end = End(result);
-                StartCoroutine(end);
+                StopCoroutine(end);
+                end = null;
+
             }
+
+            end = End(result);
+            StartCoroutine(end);
+            
         }
 
         /// <summary>

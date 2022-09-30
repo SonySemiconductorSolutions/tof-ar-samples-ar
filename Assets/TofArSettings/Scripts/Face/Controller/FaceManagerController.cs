@@ -7,6 +7,7 @@
 
 using System.Collections;
 using TofAr.V0.Color;
+using TofAr.V0.Tof;
 using TofAr.V0.Face;
 using UnityEngine;
 
@@ -15,30 +16,57 @@ namespace TofArSettings.Face
     public class FaceManagerController : ControllerBase
     {
         private FaceRuntimeController runtimeController;
+        private FaceEstimator faceEstimator;
 
         protected void Awake()
         {
+            faceEstimator = FindObjectOfType<FaceEstimator>();
+
             runtimeController = FindObjectOfType<FaceRuntimeController>();
             runtimeController.OnChangeDetectorType += (index) =>
             {
                 TofArFaceManager.Instance.StopStream();
-                if (index > 0 && TofArColorManager.Instance.IsStreamActive)
+                if (index > 0)
                 {
-                    TofArFaceManager.Instance.StartStream();
+                    bool streamActive = true;
+                    if (TofArFaceManager.Instance.DetectorType == FaceDetectorType.External)
+                    {
+                        switch (faceEstimator.InputSourceType)
+                        {
+                            case InputSource.Confidence:
+                                streamActive = TofArTofManager.Instance?.IsStreamActive == true;
+                                break;
+                            default:
+                                streamActive = TofArColorManager.Instance?.IsStreamActive == true;
+                                break;
+                        }
+                    }
+
+                    if (streamActive)
+                    {
+                        TofArFaceManager.Instance.StartStream();
+                    }
+
                 }
             };
         }
 
         void OnEnable()
         {
-            TofArColorManager.OnStreamStarted += OnStreamStarted;
-            TofArColorManager.OnStreamStopped += OnStreamStopped;
+            TofArTofManager.OnStreamStarted += OnTofStreamStarted;
+            TofArTofManager.OnStreamStopped += OnTofStreamStopped;
+
+            TofArColorManager.OnStreamStarted += OnColorStreamStarted;
+            TofArColorManager.OnStreamStopped += OnColorStreamStopped;
         }
 
         void OnDisable()
         {
-            TofArColorManager.OnStreamStarted -= OnStreamStarted;
-            TofArColorManager.OnStreamStopped -= OnStreamStopped;
+            TofArColorManager.OnStreamStarted -= OnColorStreamStarted;
+            TofArColorManager.OnStreamStopped -= OnColorStreamStopped;
+
+            TofArTofManager.OnStreamStarted -= OnTofStreamStarted;
+            TofArTofManager.OnStreamStopped -= OnTofStreamStopped;
         }
 
         /// <summary>
@@ -46,21 +74,59 @@ namespace TofArSettings.Face
         /// </summary>
         /// <param name="sender">TofArColorManager</param>
         /// <param name="colorTexture">Color texture</param>
-        private void OnStreamStarted(object sender, Texture2D colorTexture)
+        private void OnColorStreamStarted(object sender, Texture2D colorTexture)
         {
-            if (runtimeController.DetectorTypeIndex > 0)
+            if (TofArFaceManager.Instance.DetectorType == FaceDetectorType.External && faceEstimator.InputSourceType == InputSource.Color)
             {
-                StartCoroutine(WaitAndStartFace());
+                StartStream();
+            }
+        }
+
+        /// <summary>
+        /// Event that is called when Tof sream is started
+        /// </summary>
+        /// <param name="sender">TofArTofManager</param>
+        /// <param name="depthTexture"></param>
+        /// <param name="confidenceTexture"></param>
+        /// <param name="pointCloudData"></param>
+        private void OnTofStreamStarted(object sender, Texture2D depthTexture, Texture2D confidenceTexture, PointCloudData pointCloudData)
+        {
+            if ((TofArFaceManager.Instance.DetectorType == FaceDetectorType.External && faceEstimator.InputSourceType == InputSource.Confidence))
+            {
+                StartStream();
             }
         }
 
         /// <summary>
         /// Event that is called when Color stream is stopped
         /// </summary>
-        /// <param name="sender">TofArTofManager</param>
-        void OnStreamStopped(object sender)
+        /// <param name="sender">TofArColorManager</param>
+        void OnColorStreamStopped(object sender)
         {
-            TofArFaceManager.Instance.StopStream();
+            if (TofArFaceManager.Instance.DetectorType == FaceDetectorType.External && faceEstimator.InputSourceType == InputSource.Color)
+            {
+                TofArFaceManager.Instance.StopStream();
+            }
+        }
+
+        /// <summary>
+        /// Event that is called when Tof stream is stopped
+        /// </summary>
+        /// <param name="sender">TofArTofManager</param>
+        void OnTofStreamStopped(object sender)
+        {
+            if ((TofArFaceManager.Instance.DetectorType == FaceDetectorType.External && faceEstimator.InputSourceType == InputSource.Confidence))
+            {
+                TofArFaceManager.Instance.StopStream();
+            }
+        }
+
+        private void StartStream()
+        {
+            if (runtimeController.DetectorTypeIndex > 0)
+            {
+                StartCoroutine(WaitAndStartFace());
+            }
         }
 
         /// <summary>

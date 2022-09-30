@@ -19,23 +19,6 @@ namespace TofArSettings.Color
         private bool isRecording = false;
         string recordingPath = "";
 
-        private bool isCopyingBackgroundFiles = false;
-
-        public event ChangeToggleEvent OnIsCopyingBackgroundFilesChanged;
-
-        public bool IsCopyingBackgroundFiles
-        {
-            get => isCopyingBackgroundFiles;
-            private set
-            {
-                if(value != isCopyingBackgroundFiles)
-                {
-                    isCopyingBackgroundFiles = value;
-                    OnIsCopyingBackgroundFilesChanged?.Invoke(value);
-                }
-            }
-        }
-
         public override bool IsMultiple => true;
 
         protected override bool IsRecord()
@@ -158,40 +141,23 @@ namespace TofArSettings.Color
         {
             var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>().directoryList
                     .Where(x => x.Contains(TofArColorManager.StreamKey)).OrderBy(x => x);
-
+            if (directoryListProp.Count() == 0)
+            {
+                return string.Empty;
+            }
             return directoryListProp.Last();
         }
 
-        private IEnumerator CopyToDevice()
+        protected override string GetLastRecording()
         {
-#if UNITY_EDITOR
-            var recordings = new System.IO.DirectoryInfo($"{Application.persistentDataPath}/recordings/").EnumerateDirectories();
-
-            string filePath = System.IO.Path.GetFullPath(recordings.Last().FullName);
-
-            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
-            string path = directoryListProp.path;
-
-            if (!System.IO.Path.IsPathRooted(filePath))
+            var recordings = new System.IO.DirectoryInfo($"{Application.persistentDataPath}/recordings/").EnumerateDirectories()
+                .Where(x => x.Name.Contains(TofArColorManager.StreamKey));
+            if (recordings.Count() == 0)
             {
-                TofArManager.Logger.WriteLog(LogLevel.Debug, $"src {filePath} must be absolute path");
-                yield break;
-            }
-            if (!System.IO.Path.IsPathRooted(path))
-            {
-                TofArManager.Logger.WriteLog(LogLevel.Debug, $"src {path} must be absolute path");
-                yield break;
+                return null;
             }
 
-            IsCopyingBackgroundFiles = true;
-
-            yield return RecordFileManager.CopyToDevice(filePath, path);
-
-            IsCopyingBackgroundFiles = false;
-
-#endif
-            yield return null;
-
+            return recordings.Last().FullName;
         }
     }
 }

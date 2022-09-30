@@ -9,11 +9,17 @@ EditorBuildSettings:
     path: Assets/TofArSamplesAr/Startup/Startup.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
-    path: Assets/TofArSamplesAr/SamplesAr/RockPaperScissors/RockPaperScissors.unity
-    guid: 19bdb91dd977e42619fc433ae9478f28
+    path: Assets/TofArSamplesAr/SamplesAr/SimpleARFoundation/SimpleARFoundation.unity
+    guid: 76f5275e7edbc024fb54c4fc35bc6308
+  - enabled: 1
+    path: Assets/TofArSamplesAr/SamplesAr/Puppet/Puppet.unity
+    guid: d1eb856870a8e3944a9250eaa45c870b
   - enabled: 1
     path: Assets/TofArSamplesAr/SamplesAr/HandDecoration/HandDecoration.unity
     guid: baf310c904807432485915c7de765895
+  - enabled: 1
+    path: Assets/TofArSamplesAr/SamplesAr/RockPaperScissors/RockPaperScissors.unity
+    guid: 19bdb91dd977e42619fc433ae9478f28
   - enabled: 1
     path: Assets/TofArSamplesAr/SamplesAr/Juggling/Juggling.unity
     guid: eb8dcff0c391b4e669c5b89d306d50e6
@@ -23,6 +29,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/TofArSamplesAr/SamplesAr/TextureRoom/TextureRoom.unity
     guid: dbc293fafc8fb440585930cd9e48a474
+  - enabled: 1
+    path: Assets/TofArSamplesAr/SamplesAr/IceWater/IceWater.unity
+    guid: 3cf2e1c8b33294fb580afa1805d6620f
+  - enabled: 1
+    path: Assets/TofArSamplesAr/SamplesAr/BallPool/BallPool.unity
+    guid: 92325066feb1a4510bed85428623b244
+  - enabled: 1
+    path: Assets/TofArSamplesAr/SamplesAr/StepOn/StepOn.unity
+    guid: 9d183f7008d9b504f8345dd9f8255855
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 4c519adb9815e984b83ed6c26006f352, type: 2}
     UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: 7658a6ff01f331a46add99820560c39e, type: 2}

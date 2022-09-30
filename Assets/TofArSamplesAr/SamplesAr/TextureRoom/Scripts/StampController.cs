@@ -68,15 +68,11 @@ namespace TofArARSamples.TextureRoom
         {
             if (curret_x != value)
             {
+                curret_x = value;
                 value = Common.map(value, 0, 1f, -20f, 20f);
                 var pos = changingStamp.localPosition;
                 pos.x = value;
                 changingStamp.localPosition = pos;
-                curret_x = value;
-            }
-            else
-            {
-                return;
             }
         }
 
@@ -84,15 +80,11 @@ namespace TofArARSamples.TextureRoom
         {
             if (curret_y != value)
             {
+                curret_y = value;
                 value = Common.map(value, 0, 1f, -4f, 4f);
                 var pos = changingStamp.localPosition;
                 pos.y = value;
                 changingStamp.localPosition = pos;
-                curret_y = value;
-            }
-            else
-            {
-                return;
             }
         }
 
@@ -100,13 +92,10 @@ namespace TofArARSamples.TextureRoom
         {
             if (curret_scale != value)
             {
-                value *= 3f;
-                changingStamp.localScale = new Vector3(value, value, value);
                 curret_scale = value;
-            }
-            else
-            {
-                return;
+
+                value = value * 4f;
+                changingStamp.localScale = new Vector3(value, value, value);
             }
         }
 
@@ -114,16 +103,11 @@ namespace TofArARSamples.TextureRoom
         {
             if (curret_rotation != value)
             {
+                curret_rotation = value;
                 value *= 360f;
-                var rotation = changingStamp.localRotation;
-                var v = value - curret_rotation;
-                rotation = Quaternion.AngleAxis(value, changingStamp.forward);
+                var rotation = Quaternion.AngleAxis(value, changingStamp.forward);
                 changingStamp.localRotation = rotation;
-                curret_scale = value;
-            }
-            else
-            {
-                return;
+                
             }
         }
 
@@ -182,10 +166,10 @@ namespace TofArARSamples.TextureRoom
 
                 position_x_Slider.GetComponent<Slider>().value = Common.map(changingStamp.localPosition.x, -20f, 20f, 0, 1f);
                 position_y_Slider.GetComponent<Slider>().value = Common.map(changingStamp.localPosition.y, -4f, 4f, 0, 1f);
-                scaleSlider.GetComponent<Slider>().value = 0.5f;
+                scaleSlider.GetComponent<Slider>().value = changingStamp.localScale.x / 4;
                 curret_x = changingStamp.localPosition.x;
                 curret_y = changingStamp.localPosition.y;
-                curret_scale = changingStamp.localScale.x;
+                curret_scale = changingStamp.localScale.x / 4;
 
                 position_x_Slider.GetComponent<Slider>().onValueChanged.RemoveAllListeners();
                 position_y_Slider.GetComponent<Slider>().onValueChanged.RemoveAllListeners();

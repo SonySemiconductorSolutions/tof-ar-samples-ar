@@ -78,10 +78,6 @@ namespace TofArSettings.Body
         {
             // Get NNL list
             BodyPoseDetectorType[] types = (BodyPoseDetectorType[])Enum.GetValues(typeof(BodyPoseDetectorType));
-            if (TofArManager.Instance.UsingIos)
-            {
-                types = types.Where(x => x != BodyPoseDetectorType.Internal_SV2).ToArray();
-            }
             DetectorTypeList = new BodyPoseDetectorType[types.Length + 1];
             DetectorTypeNames = new string[DetectorTypeList.Length];
             DetectorTypeNames[0] = "-";

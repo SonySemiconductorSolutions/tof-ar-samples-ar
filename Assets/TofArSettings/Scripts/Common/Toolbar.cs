@@ -15,56 +15,81 @@ namespace TofArSettings.UI
         /// <summary>
         /// Toolbar width
         /// </summary>
-        public float BarWidth { get; private set; }
+        public float BarWidth { get; protected set; }
 
-        RectTransform rtBar, rtLeft, rtRight, rtBottom;
-        float iconWidthLeft, iconWidthRight;
-        RectOffset padLeft, padRight;
-        float spaceLeft, spaceRight;
+        protected RectTransform rtBar;
+        protected RectTransform rtLeft;
+        protected RectTransform rtRight;
+        protected RectTransform rtBottom;
+        protected float iconWidthLeft;
+        protected float iconWidthRight;
+        protected RectOffset padLeft;
+        protected RectOffset padRight;
+        protected float spaceLeft;
+        protected float spaceRight;
 
-        ScreenRotateController scRotCtrl;
+        protected ScreenRotateController scRotCtrl;
+        protected CanvasScaleController canvasScCtrl;
 
         [SerializeField]
-        GameObject notSelect;
+        protected GameObject notSelect;
 
-        bool notSelectState = false;
+        protected bool notSelectState = false;
 
-        void Awake()
+        protected RectTransform rtBand;
+
+        protected virtual void Awake()
         {
             // Get UI
             rtBar = GetComponent<RectTransform>();
             BarWidth = GetWidth(rtBar);
-            foreach (var hori in GetComponentsInChildren<HorizontalLayoutGroup>())
+            foreach (var layout in GetComponentsInChildren<HorizontalOrVerticalLayoutGroup>())
             {
-                if (hori.name.Contains("Left"))
+                if (layout.name.Contains("Left"))
                 {
-                    rtLeft = hori.GetComponent<RectTransform>();
+                    rtLeft = layout.GetComponent<RectTransform>();
                     iconWidthLeft = GetWidth(rtLeft);
-                    padLeft = hori.padding;
-                    spaceLeft = hori.spacing;
+                    padLeft = layout.padding;
+                    spaceLeft = layout.spacing;
                 }
-                else if (hori.name.Contains("Right"))
+                else if (layout.name.Contains("Right"))
                 {
-                    rtRight = hori.GetComponent<RectTransform>();
+                    rtRight = layout.GetComponent<RectTransform>();
                     iconWidthRight = GetWidth(rtRight);
-                    padRight = hori.padding;
-                    spaceRight = hori.spacing;
+                    padRight = layout.padding;
+                    spaceRight = layout.spacing;
                 }
             }
 
-            rtBottom = transform.Find("Bottom").gameObject.GetComponent<RectTransform>();
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var tr = transform.GetChild(i);
+                if (tr.name.Contains("Bottom"))
+                {
+                    rtBottom = tr.GetComponent<RectTransform>();
+                    break;
+                }
+            }
+
+            foreach (var img in GetComponentsInChildren<Image>())
+            {
+                if (img.name.Contains("Band"))
+                {
+                    rtBand = img.GetComponent<RectTransform>();
+                    break;
+                }
+            }
 
             scRotCtrl = FindObjectOfType<ScreenRotateController>();
-
-            SetOutArea();
+            canvasScCtrl = FindObjectOfType<CanvasScaleController>();
         }
 
-        void OnEnable()
+        protected virtual void OnEnable()
         {
             scRotCtrl.OnRotateScreen += Move;
         }
 
-        void OnDisable()
+        protected virtual void OnDisable()
         {
             if (scRotCtrl)
             {
@@ -72,12 +97,20 @@ namespace TofArSettings.UI
             }
         }
 
+        protected virtual void Start()
+        {
+            Move(Screen.orientation);
+        }
+
         /// <summary>
         /// Move toolbar according to screen orientation
         /// </summary>
         /// <param name="ori">Screen orientation</param>
-        void Move(ScreenOrientation ori)
+        protected virtual void Move(ScreenOrientation ori)
         {
+            float max = Mathf.Max(Screen.width, Screen.height);
+            var bandSize = Vector2.zero;
+
             if (scRotCtrl.IsPortrait)
             {
                 AdjustBar(true);
@@ -85,6 +118,8 @@ namespace TofArSettings.UI
                     TextAnchor.MiddleLeft);
                 AdjustIcons(true, rtRight, iconWidthRight, padRight, spaceRight,
                     TextAnchor.MiddleRight);
+
+                bandSize.x = max;
             }
             else
             {
@@ -93,7 +128,12 @@ namespace TofArSettings.UI
                     TextAnchor.UpperCenter);
                 AdjustIcons(false, rtRight, iconWidthRight, padRight, spaceRight,
                     TextAnchor.LowerCenter);
+
+                bandSize.y = max;
             }
+
+            // Extend the toolbar out of the Safe Area
+            rtBand.sizeDelta = bandSize;
 
             SetOutArea();
         }
@@ -103,7 +143,7 @@ namespace TofArSettings.UI
         /// </summary>
         /// <param name="rt">UI</param>
         /// <returns>Fixed width</returns>
-        float GetWidth(RectTransform rt)
+        protected virtual float GetWidth(RectTransform rt)
         {
             // Shorter side has fixed width
             return (rt.rect.width < rt.rect.height) ?
@@ -114,7 +154,7 @@ namespace TofArSettings.UI
         /// Adjust toolbar
         /// </summary>
         /// <param name="isPortrait">Screen is portrait or landscape</param>
-        void AdjustBar(bool isPortrait)
+        protected virtual void AdjustBar(bool isPortrait)
         {
             if (isPortrait)
             {
@@ -143,8 +183,8 @@ namespace TofArSettings.UI
         /// <param name="padding">LayoutGroup padding</param>
         /// <param name="spacing">LayoutGroup spacing</param>
         /// <param name="childAlignment">Icon arrangement</param>
-        void AdjustIcons(bool isPortrait, RectTransform rt, float iconWidth,
-            RectOffset padding, float spacing, TextAnchor childAlignment)
+        protected virtual void AdjustIcons(bool isPortrait, RectTransform rt,
+            float iconWidth, RectOffset padding, float spacing, TextAnchor childAlignment)
         {
             if (!rt)
             {
@@ -212,26 +252,44 @@ namespace TofArSettings.UI
         /// <summary>
         /// Display outside the lower SafeArea
         /// </summary>
-        private void SetOutArea()
+        protected virtual void SetOutArea()
         {
             if (scRotCtrl.IsPortrait)
             {
-                Rect safeArea = Screen.safeArea;
-                rtBottom.sizeDelta = new Vector2(0, safeArea.y);
+                // Move to bottom and make horizontal
+                rtBottom.anchorMin = new Vector2(0.5f, 0);
+                rtBottom.anchorMax = new Vector2(0.5f, 0);
+                rtBottom.pivot = new Vector2(0.5f, 1);
             }
             else
             {
-                Debug.Log("Screen L");
-
-                rtBottom.sizeDelta = Vector2.zero;
+                // Move to right and make vertical
+                rtBottom.anchorMin = new Vector2(1, 0.5f);
+                rtBottom.anchorMax = new Vector2(1, 0.5f);
+                rtBottom.pivot = new Vector2(0, 0.5f);
             }
+
+            float max = Mathf.Max(rtBand.sizeDelta.x, rtBand.sizeDelta.y) * 2;
+            float w = 300;
+            float h = 300;
+            if (scRotCtrl.IsPortrait)
+            {
+                w = max;
+            }
+            else
+            {
+                h = max;
+            }
+
+            rtBottom.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, w);
+            rtBottom.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, h);
         }
 
         /// <summary>
         /// Set not selected
         /// </summary>
         /// <param name="state">Show/Hide</param>
-        public void SetNotSelect(bool state)
+        public virtual void SetNotSelect(bool state)
         {
             if (notSelectState != state)
             {

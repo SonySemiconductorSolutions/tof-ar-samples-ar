@@ -65,11 +65,8 @@ namespace TofArSettings.Face
 
         protected override string[] GetFileNames(string dirPath)
         {
-            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
+            var options = GetFileNames(dirPath, TofArFaceManager.StreamKey);
 
-            var options = (directoryListProp.directoryList)
-               .Where(x => x.Contains(TofArFaceManager.StreamKey))
-               .OrderBy(x => x).ToArray();
             return options;
         }
 

@@ -225,6 +225,29 @@ namespace TofArSettings.UI
         }
 
         /// <summary>
+        /// Add item (Dropdown)
+        /// </summary>
+        /// <param name="options">List of options</param>
+        /// <param name="index">Intial value</param>
+        /// <param name="onChange">Event that is called when Dropdown value is changed</param>
+        /// <param name="relativeFontSize">Title font size (relative)</param>
+        /// <param name="fixedTitleWidth">Title fixed width</param>
+        /// <param name="width">Dropdown width</param>
+        /// <returns>Item class</returns>
+        public ItemDropdown AddItem(string title, KeyValuePair<string,EditFlags> [] options, int index,
+            ItemDropdown.ChangeEvent onChange, ItemDropdown.DeleteEvent onDelete, ItemDropdown.RenameEvent onRename, int relativeFontSize = 0,
+            float fixedTitleWidth = 0, float width = 0)
+        {
+            var item = AddItem(prefabMgr.ItemDropdownPrefab) as ItemDropdown;
+            if (item != null)
+            {
+                item.Init(title, relativeFontSize, fixedTitleWidth, options, index,
+                  onChange, onDelete, onRename, width);
+            }
+            return item;
+        }
+
+        /// <summary>
         /// Add item (InputField, string)
         /// </summary>
         /// <param name="title">Title</param>
@@ -323,6 +346,24 @@ namespace TofArSettings.UI
         }
 
         /// <summary>
+        /// Add item (Text)
+        /// </summary>
+        /// <param name="text">Title</param>
+        /// <param name="relativeFontSize">Title font size (relative)</param>
+        /// <param name="fixedTitleWidth">Title fixed width</param>
+        /// <returns>Item class</returns>
+        public Item AddItem(string text, int relativeFontSize = 0, float fixedTitleWidth = 0)
+        {
+            var item = AddItem(prefabMgr.ItemTextPrefab);
+            if (item != null)
+            {
+                item.Init(text, relativeFontSize, fixedTitleWidth);
+            }
+
+            return item;
+        }
+
+        /// <summary>
         /// Add item (Toggle)
         /// </summary>
         /// <param name="title">Title</param>
@@ -371,8 +412,10 @@ namespace TofArSettings.UI
         {
             float contentHeight = contentArea.sizeDelta.y + headerSize.y + (offset * 4);
             Vector2 safeArea = canvasScCtrl.SafeAreaSize;
-            float height = (contentHeight > safeArea.y - HeightOffset) ?
-                safeArea.y - HeightOffset - headerSize.y : contentArea.sizeDelta.y;
+            float heightOffset = (scRotCtrl.IsPortrait) ?
+                HeightOffsetPortrait : HeightOffsetLandscape;
+            float height = (contentHeight > safeArea.y - heightOffset) ?
+                safeArea.y - heightOffset - headerSize.y : contentArea.sizeDelta.y;
 
             uiArea.sizeDelta = new Vector2(uiArea.sizeDelta.x, height);
             Size = new Vector2(Size.x, height + headerSize.y);
@@ -402,6 +445,8 @@ namespace TofArSettings.UI
                 rt.pivot = new Vector2(1, 0.5f);
                 rt.anchoredPosition = new Vector2(-pos, 0);
             }
+
+            AdjustUIHeight();
         }
 
         /// <summary>
@@ -411,6 +456,12 @@ namespace TofArSettings.UI
         /// <returns>Item</returns>
         Item AddItem(GameObject itemPrefab)
         {
+            if (!itemPrefab)
+            {
+                Debug.LogError("AddItem is failed : Prefab is Empty.");
+                return null;
+            }
+
             // Create margin line for second and after
             float itemHeight = 0;
             if (items.Count > 0)

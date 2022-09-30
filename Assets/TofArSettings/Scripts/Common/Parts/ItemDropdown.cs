@@ -5,8 +5,10 @@
  *
  */
 
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 namespace TofArSettings.UI
 {
@@ -53,18 +55,44 @@ namespace TofArSettings.UI
             }
         }
 
-        string[] options;
+        /// <summary>
+        /// Options
+        /// </summary>
         public string[] Options
         {
-            get { return options; }
+            get {
+
+                string [] options = optionsEditable.Select(x => x.Key).ToArray();
+                return options; 
+            }
             set
             {
-                options = value;
+                optionsEditable = new KeyValuePair<string, EditFlags>[value.Length];
+                for (int i = 0; i < optionsEditable.Length; i++)
+                {
+                    optionsEditable[i] = new KeyValuePair<string, EditFlags>(value[i], EditFlags.None);
+                }
+
                 dialog.ClearOptions();
                 dialog.AddOptions(value, Index);
             }
         }
 
+        KeyValuePair<string, EditFlags> [] optionsEditable;
+        public KeyValuePair<string, EditFlags>[] OptionsEditable
+        {
+            get { return optionsEditable; } 
+            set
+            {
+                optionsEditable = value;
+                dialog.ClearOptions();
+                dialog.AddOptions(optionsEditable, Index);
+            }
+        }
+
+        /// <summary>
+        /// ダイアログが開いている/閉じている
+        /// </summary>
         public bool IsOpen
         {
             get { return dialog.gameObject.activeSelf; }
@@ -83,6 +111,20 @@ namespace TofArSettings.UI
         /// <param name="index">Option index</param>
         public delegate void ChangeEvent(int index);
         public event ChangeEvent OnChange;
+
+        /// <summary>
+        /// Event that is called when dropdown item is deleted
+        /// </summary>
+        /// <param name="index">Option index</param>
+        public delegate void DeleteEvent(int index);
+        public event DeleteEvent OnDelete;
+
+        /// <summary>
+        /// Event that is called when dropdown item is renamed
+        /// </summary>
+        /// <param name="index">Option index</param>
+        public delegate void RenameEvent(int index, string newName);
+        public event RenameEvent OnRename;
 
         Text txtLabel;
         ImageButtonTrigger imgBtnTrigger;
@@ -139,6 +181,17 @@ namespace TofArSettings.UI
                 IsOpen = false;
                 Index = index;
             };
+
+            dialog.OnDelete += (index) =>
+            {
+                OnDelete?.Invoke(index);
+            };
+
+            dialog.OnRename += (index, newName) =>
+            {
+                OnRename?.Invoke(index, newName);
+                ChangeAppearance();
+            };
         }
 
         void Start()
@@ -180,6 +233,34 @@ namespace TofArSettings.UI
             Width = width;
 
             // Close dialog
+            IsOpen = false;
+        }
+
+        /// <summary>
+        /// Initialize
+        /// </summary>
+        /// <param name="title">Title</param>
+        /// <param name="relativeFontSize">Title font size (relative)</param>
+        /// <param name="fixedTitleWidth">Title fixed width</param>
+        /// <param name="options">List of options</param>
+        /// <param name="index">Initial value</param>
+        /// <param name="onChange">Event that is called when dropdown value is changed</param>
+        /// <param name="onDelete">Event that is called when dropdown item is deleted</param>
+        /// <param name="onRename">Event that is called when dropdown item is renamed</param>
+        /// <param name="width">Dropdown width</param>
+        public void Init(string title, int relativeFontSize, float fixedTitleWidth,
+            KeyValuePair<string, EditFlags> [] options, int index, ChangeEvent onChange, DeleteEvent onDelete, RenameEvent onRename, float width = 0)
+        {
+            Init(title, relativeFontSize, fixedTitleWidth);
+
+            OptionsEditable = options;
+            Index = index;
+            OnChange = onChange;
+            OnDelete = onDelete;
+            OnRename = onRename;
+            Width = width;
+
+            // ダイアログを閉じる
             IsOpen = false;
         }
 

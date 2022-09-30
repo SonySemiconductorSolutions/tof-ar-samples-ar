@@ -89,8 +89,8 @@ namespace TofArSettings.Color
             bool isChange = (autoFocus != prop.autoFocus || dist != prop.distance ||
                 DistMin != prop.minDistance || DistMax != prop.maxDistance);
             autoFocus = prop.autoFocus;
-            DistMin = prop.minDistance;
-            DistMax = prop.maxDistance;
+            DistMin = Mathf.Ceil( prop.minDistance / DistStep) * DistStep;
+            DistMax = Mathf.Floor(prop.maxDistance / DistStep) * DistStep;
 
             // Clamp values as values may be set outside of the range
             dist = prop.distance;

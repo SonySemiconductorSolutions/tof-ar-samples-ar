@@ -19,9 +19,9 @@ Please see [the ToF AR Site on Sony Developer World](https://developer.sony.com/
 <a name="overview"></a>
 # Overview of ToF AR Samples AR
 
-**ToF AR Samples AR** is a sample application that uses the functions of ToF AR and provides 5 scenes (see below).
+**ToF AR Samples AR** is a sample application that uses the functions of ToF AR (see below).
 
-When you start the application, the scene list is displayed on the screen. Select a scene from the list and tap it to start it.
+When you start the application, the sample list is displayed on the screen. Select a sample from the list and tap it to start it.
 
 <img src="/Images/topmenu.jpg" width="150">
 
@@ -29,34 +29,61 @@ Tap the screen with four fingers to return to the top screen.
 
 ## List of scenes
 
+### SimpleARFoundation
+
+A sample that uses both TofAR and UnityARFoundation features.
+
+<img src="/Images/06_SimpleARFoundation.jpg" width="500">
+
+This sample can be used to check the operation of the Hand, Mesh, and Modeling features.
+
+### Puppet
+
+This sample displays hand puppets at the position of each hand and forearm.
+
+<img src="/Images/07_Puppet.jpg" width="150">
+
+### Hand Decoration
+Maps a pattern onto the back of your hand.
+
+<img src="/Images/05_Handmark.jpg" width="500">
+
+When you show the back of your hand to the camera a pattern will be mapped onto it.
+
 ### Rock Paper Scissors
 
 A Rock Paper Scissors game using ToF AR gesture recognition.
 
 <img src="/Images/01_RPS.jpg" width="500">
 
-The game starts by recognizing thumbs up, and an in-app guidance voice will be played.
+The game starts by recognizing a thumbs up, and an in-app voice will guide you through the game.
 
 ### Juggling
 A Juggling game using face recognition and hand recognition.
 
 <img src="/Images/02_juggling.jpg" width="500">
 
-Place your hands in the appropriate juggling position, according to the on-screen instructions, to start the Juggling game.
+To start the game, follow the on-screen instructions to place your hands in the appropriate juggling position.
 
-A ball will drop when the game starts. Catch this ball.
+A ball will drop when the game starts.
 
-Throw the ball towards your other hand by moving the hand holding the ball up.
+Catch the ball and throw it up in the air towards your other hand by moving the hand holding the ball up.
 
-Every time you catch a ball 5 times, a new ball will be added.
+When you have caught the balls 5 times, a new ball will be added.
+
+### BGChange
+Recognizes and changes the sky.
+
+<img src="/Images/04_BGC.jpg" width="500">
+
+The background changes when you do a thumbs up.
 
 ### TextureRoom
 Creates a mesh of the environment with 3D Capturing, and maps text or photos onto the mesh.
 
-
 <img src="/Images/03_TextureRoom.jpg" width="500">
 
-Three modes are available. Please touch the lower right hand icon and select the mode from "Mode DropDown".
+Three modes are available. Tap the lower right hand icon and select the mode from "Mode DropDown".
 
 * TextureAnimation mode:
  Maps text onto the mesh.
@@ -67,35 +94,58 @@ Three modes are available. Please touch the lower right hand icon and select the
 * Stamp mode:
  Touch the "Add Stamp Button" and select photos from the camera roll. The photos will be mapped onto the mesh.
 
-### BGChange
-Recognizes and changes the sky.
+### IceWater
 
-<img src="/Images/04_BGC.jpg" width="500">
+A sample for AR flood simulation.
 
-The background changes when you do thumbs up.
+<img src="/Images/08_IceWater.jpg" width="500">
 
-### Hand Decoration
-Maps a pattern onto the back of your hand.
+The sample starts with plane recognition and then displays effects on recognized areas.
 
-<img src="/Images/05_Handmark.jpg" width="500">
+Pressing the Create button sets the height of flooding based on the position of the effect.
 
+Tapping the screen plays an animation and changes the screen to a flooded scene.
 
-Please point the back of your hand at the camera. A pattern will be mapped onto the back of your hand.
+### BallPool
 
+Generate AR balls in a recognized space.
+
+<img src="/Images/09_BallPool.jpg" width="500">
+
+The sample starts with space recognition to create a 3D mesh.
+
+When the Ball Toggle set to On, balls will appear from above.
+
+When objects like hands, feet, or a person, enters the scene it will move the balls.
+
+### StepOn
+
+Grass and flowers appear from the point of contact.
+
+<img src="/Images/10_StepOn.jpg" width="500">
+
+The sample starts with plane recognition of the space.
+
+When hands or feet touch a wall or floor, animations of grass and flowers appearing is shown at the point of contact.
 
 <a name="component"></a>
 # Component
 
-The table below shows the relationships between the 5 scenes in the sample application and the ToF AR components used by each scene. The scene names are arranged vertically and the component names are arranged horizontally. A check mark indicates that the component is used.
+The table below shows the relationships between the scenes in the sample application and the ToF AR components used by each scene. The scene names are arranged vertically and the component names are arranged horizontally. A check mark indicates that the component is used.
 
 
 ||ToF|Color|Mesh|Coordinate|Hand|MarkRecog|Body|Segmentation|Face|Plane|Modeling|
 |:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|SimpleARFoundation  |✓|✓|✓|✓|✓|  |  |  |  |  |  |
+|Puppet     　　　　　|✓|✓|  |  |✓|  |  |  |  |  |  |
+|Hand Decoration     |✓|✓|  |  |✓|  |  |  |  |  |  |
 |Rock Paper Scissors |✓|✓|  |  |✓|  |  |  |  |  |  |
 |Juggling            |✓|✓|  |　|✓|  |  |  |✓|  |  |
-|TextureRoom         |✓|✓|  |  |  |  |  |✓|  |  |✓|
 |BGChange            |✓|✓|  |  |✓|  |  |✓|  |  |  |
-|Hand Decoration     |✓|✓|  |  |✓|  |  |  |  |  |  |
+|TextureRoom         |✓|✓|  |  |  |  |  |✓|  |  |✓|
+|IceWater            |✓|✓|  |  |  |  |  |✓|  |  |✓|
+|BallPool            |✓|✓|  |✓|  |  |  |✓|  |  |✓|
+|StepOn              |✓|✓|  |✓|  |  |  |✓|  |  |  |
 
 
 <a name="assets"></a>
@@ -104,10 +154,10 @@ The table below shows the relationships between the 5 scenes in the sample appli
 **ToF AR Samples AR** provides the following assets.
 
 ### TofArSamplesBasic
-5 sample scene scripts and resources are stored for each component.
+Sample scene scripts and resources are stored for each component.
 
 ### TofArSettings
-Prefabs and scripts are stored as the configuration change UI used by each component.
+Prefabs and scripts are stored as the Configuration change UI used by each component.
 
 
 |File|Description|
@@ -120,9 +170,11 @@ Prefabs and scripts are stored as the configuration change UI used by each compo
 # Development environment
 
 ## Build library
-ToF AR is required for build.
-Please download the Toolkit from [the ToF AR Site on Sony Developer World](https://developer.sony.com/develop/tof-ar), and then import and use it.
-Please see [Setting up AR Foundation](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_en.html#_setting_up_ar_foundation) in the [ToF AR user manual](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_en.html) for more information on how to set up AR Foundation.
+ToF AR is required in order to build.
+Please download the Toolkit from [the ToF AR Site on Sony Developer World](https://developer.sony.com/develop/tof-ar) and import it.
+Please see [Setting up AR Foundation](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_en.html#_setting_up_ar_foundation) in the [ToF AR user manual](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_en.html) for more information on how to set up AR Foundation.  
+If the project is opened before importing, a confirmation message for entering safe mode will appear depending on the settings.  
+If safe mode is entered, please import after exiting safe mode from the safe mode menu etc.
 
 ## Documents
 
@@ -136,13 +188,13 @@ ToF AR Development documents are also available on Developer World.
 
 Operation was verified in the following environment:
 
-* Unity Version  : 2020.3.28f1
-* ToF AR Version : 1.0.0
-* AR Foundation  : 4.2.2
+* Unity Version  : 2020.3.36f1
+* ToF AR Version : 1.1.0
+* AR Foundation  : 4.2.3
 
 
 <a name="contributing"></a>
 # Contributing
-**We cannot accept any Pull Request (PR) at this time.** However, you are always welcome to report bugs and request new features by creating issues.
+**We cannot accept any Pull Requests (PR) at this time.** However, you are always welcome to report bugs and request new features by creating issues.
 
 We have released this program as a sample app with a goal of making ToF AR widely available. So please feel free to create issues for reporting bugs and requesting features, and we may update this program or add new features after getting feedback.

@@ -61,7 +61,7 @@ namespace TofArSettings.Mesh
 
         void MakeUIStartStream()
         {
-            itemStartStream = settings.AddItem("Start Stream", TofArMeshManager.Instance.autoStart, ChangeStartStream);
+            itemStartStream = settings.AddItem("Start Stream", true, ChangeStartStream);
             managerController.OnStreamStartStatusChanged += (val) =>
             {
                 itemStartStream.OnOff = val;

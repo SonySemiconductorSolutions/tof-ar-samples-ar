@@ -50,7 +50,9 @@ MonoBehaviour:
   ItemDropdownPrefab: {fileID: 7008322449065123806, guid: dbff3bd6fa9df4b55aec3b710656c00f, type: 3}
   ItemInputFieldPrefab: {fileID: 8005761069374678593, guid: cdb41bd8a3ae04c149213221884b246d, type: 3}
   ItemSliderPrefab: {fileID: 4971717897118868746, guid: 3d6f28789d5294684a62921e5f600400, type: 3}
+  ItemTextPrefab: {fileID: 3852986062642544575, guid: 9d8ee3d4a4c414cf9be11d4c73b0ad12, type: 3}
   ItemTogglePrefab: {fileID: 3852986062642544575, guid: 20316fabbffea4bda90ab7a02c352afc, type: 3}
   ItemToggleMultiPrefab: {fileID: 7273709615349737619, guid: 59281fdcd820b47e3ab07c756568fa33, type: 3}
   DropdownDialogPrefab: {fileID: 7520370751148591841, guid: 222519263364a42b4a59b4672fd65092, type: 3}
-  DropdownOptionPrefab: {fileID: 6376450392716337756, guid: 5dd855c45a66c40fb9e2c4404c48f910, type: 3}
+  DropdownOptionPrefab: {fileID: 7474050807182596644, guid: 6a2574de6b9fa244fa8d0ffb77e6e131, type: 3}
+  DropdownOptionEditablePrefab: {fileID: 7474050807182596644, guid: 6a2574de6b9fa244fa8d0ffb77e6e131, type: 3}

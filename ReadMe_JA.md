@@ -21,7 +21,7 @@ Dveloper Wolrd の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)�
 <a name="overview"></a>
 # ToF AR Samples ARの概要
 
-**ToF AR Samples AR** は ToF AR の機能を使ったサンプルアプリケーションであり、5つのシーンを提供しています。
+**ToF AR Samples AR** は ToF AR の機能を使ったサンプルアプリケーションを提供しています。
 
 <img src="/Images/topmenu.jpg" width="150">
 
@@ -32,14 +32,19 @@ Dveloper Wolrd の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)�
 
 ## サンプルシーン一覧
 
-### Rock Paper Scissors
+### SimpleARFoundation
 
-ハンド認識を利用したじゃんけんゲーム。
+TofARとUnityARFoundationの機能を併用したシンプルなシーン。
 
-<img src="/Images/01_RPS.jpg" width="500">
+<img src="/Images/06_SimpleARFoundation.jpg" width="500">
 
-サムズアップジェスチャーを認識すると、ガイダンス音声を再生し、ゲームを開始します。
+Hand、Mesh、Modelingそれぞれの動作を確認することができます。
 
+### Puppet
+
+腕の位置に合わせてパペットを表示します。
+
+<img src="/Images/07_Puppet.jpg" width="150">
 
 ### Hand Decoration
 ハンド認識を利用して、手の甲に模様を表示します。
@@ -48,6 +53,13 @@ Dveloper Wolrd の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)�
 
 手の甲をカメラに向けることで、手の甲に模様を表示します。
 
+### Rock Paper Scissors
+
+ハンド認識を利用したじゃんけんゲーム。
+
+<img src="/Images/01_RPS.jpg" width="500">
+
+サムズアップジェスチャーを認識すると、ガイダンス音声を再生し、ゲームを開始します。
 
 ### Juggling
 フェイス、ハンド認識を利用したジャグリング。
@@ -87,19 +99,57 @@ Dveloper Wolrd の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)�
 * Stampモード：
   "Add Stamp Button"を押すことでカメラロールから写真を選択でき(複数選択可)、マッピングすることができます。
 
+### IceWater
+
+AR浸水シミュレーション。
+
+<img src="/Images/08_IceWater.jpg" width="500">
+
+シーン起動後、空間の平面認識を行い、認識された部分にエフェクトが表示されます。
+
+Createボタンを押すとエフェクトの位置が浸水する高さに決定されます。
+
+画面をタップするとアニメーションが開始され、画面が浸水した表示に変わります。
+
+### BallPool
+
+認識した空間にARボールを出現させます。
+
+<img src="/Images/09_BallPool.jpg" width="500">
+
+シーン起動後、空間の認識を行い3DMeshを作成します。
+
+BallのToggleをOnにすると画面上部からボールが出現します。
+
+手や足を画面上に映すと、ボールに触れることが出来ます。
+
+### StepOn
+
+接触した場所から草花が出現します。
+
+<img src="/Images/10_StepOn.jpg" width="500">
+
+シーン起動後、空間の平面認識を行います。
+
+手や足が壁、床に触れるとその場所に草花が出現するアニメーションが表示されます。
+
 <a name="component"></a>
 # コンポーネント
 
-サンプルアプリケーションの5シーンと、各シーンが利用するToF AR コンポーネントの関係を示すテーブルです。縦にシーン名、横にコンポート名を並べています。チェックマークは、コンポーネント利用を示します。
+サンプルアプリケーションのシーンと、各シーンが利用するToF AR コンポーネントの関係を示すテーブルです。縦にシーン名、横にコンポート名を並べています。チェックマークは、コンポーネント利用を示します。
 
 ||ToF|Color|Mesh|Coordinate|Hand|MarkRecog|Body|Segmentation|Face|Plane|Modeling|
 |:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+|SimpleARFoundation  |✓|✓|✓|✓|✓|  |  |  |  |  |  |
+|Puppet     　　　　　|✓|✓|  |  |✓|  |  |  |  |  |  |
+|Hand Decoration     |✓|✓|  |  |✓|  |  |  |  |  |  |
 |Rock Paper Scissors |✓|✓|  |  |✓|  |  |  |  |  |  |
 |Juggling            |✓|✓|  |　|✓|  |  |  |✓|  |  |
-|TextureRoom         |✓|✓|  |  |  |  |  |✓|  |  |✓|
 |BGChange            |✓|✓|  |  |✓|  |  |✓|  |  |  |
-|Hand Decoration     |✓|✓|  |  |✓|  |  |  |  |  |  |
-
+|TextureRoom         |✓|✓|  |  |  |  |  |✓|  |  |✓|
+|IceWater            |✓|✓|  |  |  |  |  |✓|  |  |✓|
+|BallPool            |✓|✓|  |✓|  |  |  |✓|  |  |✓|
+|StepOn              |✓|✓|  |✓|  |  |  |✓|  |  |  |
 
 <a name="assets"></a>
 # アセット
@@ -107,7 +157,7 @@ Dveloper Wolrd の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)�
 **ToF AR Samples AR** は、以下のアセットを提供します。
 
 ### TofArSamplesAr
-5つのサンプルシーンのスクリプトやリソースが、コンポーネントごとに格納されています。
+サンプルシーンのスクリプトやリソースが、コンポーネントごとに格納されています。
 
 ### TofArSettings
 各コンポーネントが使用する設定変更UIとして、プレハブやスクリプトが格納されています。
@@ -122,9 +172,10 @@ Dveloper Wolrd の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)�
 
 ## ビルド用ライブラリ
 ビルドには、ToF AR と AR Foundation が必要です。
-ToF AR はDeveloper Worldの[ToF AR サイト](https://developer.sony.com/develop/tof-ar)からダウンロードし、インポートして使用して下さい。
-AR Foundationは[ToF AR user manual](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_ja.html)の[Setting up AR Foundation](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_ja.html#_setting_up_ar_foundation)を参照して、セットアップを行ってください。
-
+ToF AR はDeveloper Worldの[ToF AR サイト](https://developer.sony.com/develop/tof-ar)からダウンロードし、インポートして使用してください。
+AR Foundationは[ToF AR user manual](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_ja.html)の[Setting up AR Foundation](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_ja.html#_setting_up_ar_foundation)を参照して、セットアップを行ってください。  
+インポート前にプロジェクトを開くと、設定によってはセーフモードへの移行確認メッセージが表示されます。  
+セーフモードに移行した場合、セーフモードメニューなどからセーフモードを終了してインポートを行ってください。
 
 ## ドキュメント
 
@@ -137,9 +188,9 @@ ToF ARの開発ドキュメントも、Developer Worldで公開しています�
 
 動作検証は、下記の環境で行っています。
 
-* Unity Version  : 2020.3.28f1
-* ToF AR Version : 1.0.0 
-* AR Foundation  : 4.2.2
+* Unity Version  : 2020.3.36f1
+* ToF AR Version : 1.1.0 
+* AR Foundation  : 4.2.3
 
 <a name="contributing"></a>
 # コントリビューション

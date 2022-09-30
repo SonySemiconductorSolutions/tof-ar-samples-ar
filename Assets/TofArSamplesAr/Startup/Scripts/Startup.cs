@@ -20,6 +20,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.XR.ARFoundation;
 
 namespace TofArSamples.Startup
 {
@@ -38,9 +39,16 @@ namespace TofArSamples.Startup
             startSceneName = SceneManager.GetActiveScene().name;
 
             SceneManager.sceneLoaded += SceneLoaded;
+            SceneManager.sceneUnloaded += SceneUnloaded;
 
             sceneSelector = FindObjectOfType<SceneSelector>();
             sceneSelector.OnActivated += DestroyTofAr;
+        }
+
+        private void SceneUnloaded(Scene arg0)
+        {
+            LoaderUtility.Deinitialize();
+            LoaderUtility.Initialize();
         }
 
         /// <summary>

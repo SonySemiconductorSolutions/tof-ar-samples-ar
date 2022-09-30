@@ -34,9 +34,14 @@ namespace TofArSettings.UI
         public bool WaitSetup = false;
 
         /// <summary>
-        /// Height offset
+        /// Height offset (Portrait)
         /// </summary>
-        public float HeightOffset = 300;
+        public float HeightOffsetPortrait = 200;
+
+        /// <summary>
+        /// Height offset (Landscape)
+        /// </summary>
+        public float HeightOffsetLandscape = 40;
 
         /// <summary>
         /// Panel open/close status
@@ -88,6 +93,11 @@ namespace TofArSettings.UI
         CanvasGroup canvasGroup;
         HorizontalOrVerticalLayoutGroup layout;
 
+        protected Coroutine coOpen;
+        protected Coroutine coClose;
+        protected bool isRunngingOpen = false;
+        protected bool isRunngingClose = false;
+
         protected virtual void Awake()
         {
             rt = PanelObj.GetComponent<RectTransform>();
@@ -118,12 +128,14 @@ namespace TofArSettings.UI
         /// <param name="closeOther">Close other open panels/Do nothing</param>
         public virtual void OpenPanel(bool closeOther = true)
         {
-            if (IsOpen)
+            if (isRunngingClose && coClose != null)
             {
-                return;
+                StopCoroutine(coClose);
+                isRunngingClose = false;
+                coClose = null;
             }
 
-            StartCoroutine(Show(closeOther));
+            coOpen = StartCoroutine(Show(closeOther));
         }
 
         /// <summary>
@@ -131,12 +143,14 @@ namespace TofArSettings.UI
         /// </summary>
         public void ClosePanel()
         {
-            if (!IsOpen)
+            if (isRunngingOpen && coOpen != null)
             {
-                return;
+                StopCoroutine(coOpen);
+                isRunngingOpen = false;
+                coOpen = null;
             }
 
-            StartCoroutine(Hide());
+            coClose = StartCoroutine(Hide());
         }
 
         /// <summary>
@@ -239,16 +253,17 @@ namespace TofArSettings.UI
         /// <param name="closeOther">Close other open panels/Do nothing</param>
         protected IEnumerator Show(bool closeOther = true)
         {
-            if (!PanelObj || !canvasGroup ||
-                PanelObj.activeSelf)
-            {
-                yield break;
-            }
-
             if (Btn)
             {
                 Btn.OnOff = true;
             }
+
+            if (!PanelObj || !canvasGroup)
+            {
+                yield break;
+            }
+
+            isRunngingOpen = true;
 
             if (closeOther)
             {
@@ -272,6 +287,8 @@ namespace TofArSettings.UI
                 yield return null;
             }
 
+            isRunngingOpen = false;
+
             OnOpen();
         }
 
@@ -280,16 +297,17 @@ namespace TofArSettings.UI
         /// </summary>
         IEnumerator Hide()
         {
-            if (!PanelObj || !canvasGroup ||
-                !PanelObj.activeSelf)
-            {
-                yield break;
-            }
-
             if (Btn)
             {
                 Btn.OnOff = false;
             }
+
+            if (!PanelObj || !canvasGroup)
+            {
+                yield break;
+            }
+
+            isRunngingClose = true;
 
             float alpha = 1.0f;
             while (alpha > 0.0f)
@@ -303,6 +321,8 @@ namespace TofArSettings.UI
                 canvasGroup.alpha = alpha;
                 yield return null;
             }
+
+            isRunngingClose = false;
 
             OnClose();
 

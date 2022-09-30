@@ -6,12 +6,30 @@
  */
 
 using System.Collections;
+using TofAr.V0;
 using UnityEngine;
 
 namespace TofArSettings
 {
     public abstract class RecordController : ControllerBase
     {
+        protected bool isCopyingBackgroundFiles = false;
+
+        public event ChangeToggleEvent OnIsCopyingBackgroundFilesChanged;
+
+        public bool IsCopyingBackgroundFiles
+        {
+            get => isCopyingBackgroundFiles;
+            protected set
+            {
+                if (value != isCopyingBackgroundFiles)
+                {
+                    isCopyingBackgroundFiles = value;
+                    OnIsCopyingBackgroundFilesChanged?.Invoke(value);
+                }
+            }
+        }
+
         /// <summary>
         /// Save directory path
         /// </summary>
@@ -229,6 +247,65 @@ namespace TofArSettings
         /// <returns>Save path</returns>
         protected abstract string Output();
 
+        protected abstract string GetLastRecording();
+
+        private static bool copyInProcess = false;
+
+        protected IEnumerator CopyToDevice()
+        {
+#if UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN
+
+            var lastRecording = GetLastRecording();
+
+            if (lastRecording == null)
+            {
+                TofArManager.Logger.WriteLog(LogLevel.Debug, $"Invalid path");
+                yield break;
+            }
+
+            string filePath = System.IO.Path.GetFullPath(lastRecording);
+
+            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
+            string path = directoryListProp.path;
+
+            if (!System.IO.Path.IsPathRooted(filePath))
+            {
+                TofArManager.Logger.WriteLog(LogLevel.Debug, $"src {filePath} must be absolute path");
+                yield break;
+            }
+            if (!System.IO.Path.IsPathRooted(path))
+            {
+                TofArManager.Logger.WriteLog(LogLevel.Debug, $"src {path} must be absolute path");
+                yield break;
+            }
+
+            const string rawIndexFile = "raw_index.dat";
+            string rawIndexPath = System.IO.Path.Combine(filePath, rawIndexFile);
+            if (!System.IO.File.Exists(rawIndexPath))
+            {
+                TofArManager.Logger.WriteLog(LogLevel.Debug, $"couldn't find raw_index.dat file");
+                yield break;
+            }
+
+            IsCopyingBackgroundFiles = true;
+
+            while (copyInProcess)
+            {
+                yield return null;
+            }
+
+            copyInProcess = true;
+
+            yield return RecordFileManager.CopyToDevice(filePath, path);
+
+            copyInProcess = false;
+
+            IsCopyingBackgroundFiles = false;
+
+#endif
+            yield return null;
+        }
+
         /// <summary>
         /// Start recording after specified time
         /// </summary>
@@ -293,6 +370,13 @@ namespace TofArSettings
             string filePath = string.Empty;
             if (result)
             {
+                // wait until copy is finished
+#if UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN
+                while (IsCopyingBackgroundFiles)
+                {
+                    yield return null;
+                }
+#endif
                 filePath = Output();
             }
 

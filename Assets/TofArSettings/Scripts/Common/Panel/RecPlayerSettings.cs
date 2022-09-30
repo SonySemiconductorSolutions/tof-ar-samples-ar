@@ -82,13 +82,17 @@ namespace TofArSettings.UI
             public RecPlayerController Controller;
             public ItemDropdown Item;
             public ItemDropdown.ChangeEvent ChangeFunc;
+            public ItemDropdown.DeleteEvent DeleteFunc;
+            public ItemDropdown.RenameEvent RenameFunc;
 
             public PlayerSet(RecPlayerController ctrl, ItemDropdown item,
-                ItemDropdown.ChangeEvent func)
+                ItemDropdown.ChangeEvent changeFunc, ItemDropdown.DeleteEvent deleteFunc, ItemDropdown.RenameEvent renameFunc)
             {
                 Controller = ctrl;
                 Item = item;
-                ChangeFunc = func;
+                ChangeFunc = changeFunc;
+                DeleteFunc = deleteFunc;
+                RenameFunc = renameFunc;
             }
         }
 
@@ -110,7 +114,7 @@ namespace TofArSettings.UI
                 var colorCtrl = FindObjectOfType<ColorRecPlayerController>();
                 controllers.Add(colorCtrl);
                 playerSets.Add(ComponentType.Color, new PlayerSet(
-                    colorCtrl, null, ChangeColorIndex));
+                    colorCtrl, null, ChangeColorIndex, (idx) => DeleteEntry(idx, ComponentType.Color), (idx, newName) => RenameEntry(idx, newName, ComponentType.Color)));
             }
 
             if (tof)
@@ -118,7 +122,7 @@ namespace TofArSettings.UI
                 var colorCtrl = FindObjectOfType<TofRecPlayerController>();
                 controllers.Add(colorCtrl);
                 playerSets.Add(ComponentType.Tof, new PlayerSet(
-                    colorCtrl, null, ChangeTofIndex));
+                    colorCtrl, null, ChangeTofIndex, (idx) => DeleteEntry(idx, ComponentType.Tof), (idx, newName) => RenameEntry(idx, newName, ComponentType.Tof)));
             }
 
             if (body)
@@ -126,7 +130,7 @@ namespace TofArSettings.UI
                 var bodyCtrl = FindObjectOfType<BodyRecPlayerController>();
                 controllers.Add(bodyCtrl);
                 playerSets.Add(ComponentType.Body, new PlayerSet(
-                    bodyCtrl, null, ChangeBodyIndex));
+                    bodyCtrl, null, ChangeBodyIndex, (idx) => DeleteEntry(idx, ComponentType.Body), (idx, newName) => RenameEntry(idx, newName, ComponentType.Body)));
             }
 
             if (face)
@@ -134,7 +138,7 @@ namespace TofArSettings.UI
                 var faceCtrl = FindObjectOfType<FaceRecPlayerController>();
                 controllers.Add(faceCtrl);
                 playerSets.Add(ComponentType.Face, new PlayerSet(
-                    faceCtrl, null, ChangeFaceIndex));
+                    faceCtrl, null, ChangeFaceIndex, (idx) => DeleteEntry(idx, ComponentType.Face), (idx, newName) => RenameEntry(idx, newName, ComponentType.Face)));
             }
 
             foreach (var ctrl in FindObjectsOfType<RecPlayerController>())
@@ -142,7 +146,7 @@ namespace TofArSettings.UI
                 if (!playerSets.ContainsKey(ctrl.ComponentType))
                 {
                     controllers.Add(ctrl);
-                    playerSets.Add(ctrl.ComponentType, new PlayerSet(ctrl, null, null));
+                    playerSets.Add(ctrl.ComponentType, new PlayerSet(ctrl, null, null, null, null));
                 }
             }
 
@@ -165,14 +169,23 @@ namespace TofArSettings.UI
         void MakeUIFile()
         {
             var keys = Enumerable.ToArray(playerSets.Keys);
+            var runtimeMode = TofAr.V0.TofArManager.Instance.RuntimeSettings.runMode == TofAr.V0.RunMode.MultiNode;
             foreach (var key in keys)
             {
                 var set = playerSets[key];
                 var ctrl = set.Controller;
                 if (ctrl.HasDropdown)
                 {
-                    var item = settings.AddItem(key.ToString(), ctrl.FileNames,
-                        ctrl.Index, set.ChangeFunc, -2, 100, 400);
+                    string[] fileNames = ctrl.FileNames;
+
+                    var fileNamesEditable = new KeyValuePair<string, EditFlags>[fileNames.Length];
+                    for (int i = 0; i < fileNames.Length; i++)
+                    {
+                        fileNamesEditable[i] = new KeyValuePair<string, EditFlags>(fileNames[i], (i == 0) || runtimeMode ? EditFlags.None : (EditFlags.Deletable | EditFlags.Renamable));
+                    }
+
+                    var item = settings.AddItem(key.ToString(), fileNamesEditable,
+                        ctrl.Index, set.ChangeFunc, set.DeleteFunc, set.RenameFunc, -2, 100, 400);
                     set.Item = item;
                     playerSets[key] = set;
 
@@ -183,10 +196,38 @@ namespace TofArSettings.UI
 
                     ctrl.OnUpdateFileNames += (list, index) =>
                     {
-                        item.Options = list;
+                        var optionsEditable = new KeyValuePair<string, EditFlags>[list.Length];
+                        for (int i = 0; i < optionsEditable.Length; i++)
+                        {
+                            optionsEditable[i] = new KeyValuePair<string, EditFlags>(list[i], (i == 0) || runtimeMode ? EditFlags.None : (EditFlags.Deletable | EditFlags.Renamable));
+                        }
+
+                        item.OptionsEditable = optionsEditable;
                         item.Index = index;
                     };
                 }
+            }
+        }
+
+        void DeleteEntry(int index, ComponentType componentType)
+        {
+            var fnames = playerSets[componentType].Item.Options;
+            if (index < fnames.Length)
+            {
+                string fileName = fnames[index];
+
+                playerSets[componentType].Controller.DeleteFile(fileName, index);
+            }
+        }
+
+        void RenameEntry(int index, string newName, ComponentType componentType)
+        {
+            var fnames = playerSets[componentType].Item.Options;
+            if (index < fnames.Length)
+            {
+                string fileName = fnames[index];
+
+                playerSets[componentType].Controller.RenameFile(fileName, newName, index);
             }
         }
 

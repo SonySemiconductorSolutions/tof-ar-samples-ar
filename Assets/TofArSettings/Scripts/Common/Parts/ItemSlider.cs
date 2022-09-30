@@ -26,6 +26,8 @@ namespace TofArSettings.UI
             }
         }
 
+        public bool IsNotifyImmediately = false;
+
         float val;
         public float Value
         {
@@ -39,9 +41,13 @@ namespace TofArSettings.UI
                     adjuster.Value = val;
                     slider.value = adjuster.PlainValue;
 
-                    // If Slider if being used, notify when done
-                    if (!operating)
+                    if (IsNotifyImmediately)
                     {
+                        OnChange?.Invoke(Value);
+                    }
+                    else if (!operating)
+                    {
+                        // If Slider if being used, notify when done
                         OnChange?.Invoke(Value);
                     }
                 }

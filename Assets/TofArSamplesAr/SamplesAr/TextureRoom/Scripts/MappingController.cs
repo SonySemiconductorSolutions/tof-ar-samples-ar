@@ -61,6 +61,22 @@ namespace TofArARSamples.TextureRoom
         private List<ARRaycastHit> hits = new List<ARRaycastHit>();
         private Mode currentMode = Mode.TextureAnimation;
 
+        private void OnEnable()
+        {
+            TofAr.V0.TofArManager.OnScreenOrientationUpdated += OnScreenOrientationUpdated;
+        }
+
+        private void OnDisable()
+        {
+            TofAr.V0.TofArManager.OnScreenOrientationUpdated -= OnScreenOrientationUpdated;
+        }
+
+        private void OnScreenOrientationUpdated(ScreenOrientation previousScreenOrientation, ScreenOrientation newScreenOrientation)
+        {
+            int screenOrientation = TofAr.V0.TofArManager.Instance.GetScreenOrientation();
+            material.SetInt("_Rotation", screenOrientation);
+        }
+
         void Start()
         {
             screenSize = new Vector4(Screen.width, Screen.height, 0.0f, 0.0f);

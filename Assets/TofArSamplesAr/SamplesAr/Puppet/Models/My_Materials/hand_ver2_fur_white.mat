@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: hand_ver2_fur_white
+  m_Shader: {fileID: 4800000, guid: 88b7b882f7b0f58488b92c42cf7af5e0, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _FurMap:
+        m_Texture: {fileID: 2800000, guid: 9edcae0f80727874cb71ed1fbae37e39, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 6e569bd313ae6f74f8b5dbe749ceadd4, type: 3}
+        m_Scale: {x: 0, y: 0}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _AsUnlit: 0
+    - _BlendOp: 0
+    - _BlendOpAlpha: 0
+    - _BlendOpAlphaFA: 4
+    - _BlendOpFA: 4
+    - _ColorMask: 15
+    - _Cull: 0
+    - _Cutoff: 0.5
+    - _DstBlend: 0
+    - _DstBlendAlpha: 10
+    - _DstBlendAlphaFA: 1
+    - _DstBlendFA: 1
+    - _FurAO: 0.8
+    - _FurDensity: 3
+    - _FurGravity: 1
+    - _FurLength: 0.018
+    - _FurSoftness: 0.146
+    - _LightMinLimit: 0
+    - _OffsetFactor: 0
+    - _OffsetUnits: 0
+    - _ShadowBlur: 0.1
+    - _ShadowBorder: 0.5
+    - _ShadowBorderRange: 0
+    - _ShadowReceive: 0
+    - _SrcBlend: 1
+    - _SrcBlendAlpha: 1
+    - _SrcBlendAlphaFA: 0
+    - _SrcBlendFA: 1
+    - _StencilComp: 8
+    - _StencilFail: 0
+    - _StencilPass: 0
+    - _StencilReadMask: 255
+    - _StencilRef: 0
+    - _StencilWriteMask: 255
+    - _StencilZFail: 0
+    - _UseClippingCanceller: 0
+    - _VertexLightStrength: 1
+    - _ZTest: 4
+    - _ZWrite: 1
+    m_Colors:
+    - _DistanceFade: {r: 0.1, g: 0.01, b: 0, a: 0}
+    - _DistanceFadeColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FurAOColor: {r: 0, g: 0, b: 0, a: 1}
+    - _ShadowBorderColor: {r: 1, g: 0, b: 0, a: 1}
+    - _ShadowColor: {r: 0.7, g: 0.75, b: 0.85, a: 1}
+  m_BuildTextureStacks: []

@@ -68,6 +68,7 @@ namespace TofArSettings.Tof
 
         protected override void Start()
         {
+            isProcessTexture = TofArTofManager.Instance.ProcessTexture;
             defaultConf = TofArTofManager.Instance.GetProperty<Camera2DefaultConfigurationProperty>();
 
             // Get CameraConfig list
@@ -120,7 +121,7 @@ namespace TofArSettings.Tof
             else
             {
                 TofArTofManager.Instance.StartStream(Configs[Index],
-                    TofArTofManager.Instance.ProcessTexture);
+                    isProcessTexture);
             }
         }
 

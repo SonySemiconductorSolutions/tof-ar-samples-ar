@@ -15,11 +15,10 @@ namespace TofArSettings.Mesh
     public class MeshManagerController : ControllerBase
     {
         private SynchronizationContext context;
+        private bool isStarted = true;
 
         private void Awake()
         {
-            isStarted = TofArMeshManager.Instance.autoStart;
-
             context = SynchronizationContext.Current;
         }
 
@@ -39,8 +38,6 @@ namespace TofArSettings.Mesh
         {
             return isStarted && TofArTofManager.Instance.IsStreamActive;
         }
-
-        private bool isStarted = false;
 
         /// <summary>
         /// Start stream

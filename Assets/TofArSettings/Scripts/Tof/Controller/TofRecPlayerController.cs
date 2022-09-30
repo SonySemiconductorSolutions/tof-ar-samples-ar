@@ -60,12 +60,9 @@ namespace TofArSettings.Tof
 
         protected override string[] GetFileNames(string dirPath)
         {
-                var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
+            var options = GetFileNames(dirPath, TofArTofManager.StreamKey);
 
-                 var options = (directoryListProp.directoryList)
-                    .Where(x => x.Contains(TofArTofManager.StreamKey))
-                    .OrderBy(x => x).ToArray();
-                return options;
+            return options;
         }
 
         protected override void Stop_internal()

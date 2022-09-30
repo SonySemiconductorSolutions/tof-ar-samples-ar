@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 8249647334227323262}
   - component: {fileID: 8249647334227323263}
   - component: {fileID: 8249647334227323264}
+  - component: {fileID: 1628026003}
   m_Layer: 0
   m_Name: FaceController
   m_TagString: Untagged
@@ -94,5 +95,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dba19c4d7c2f9344a886e2ff8934fc02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1628026003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8249647334227323268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32d72d2901308a84a831aee8a2d1d22f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

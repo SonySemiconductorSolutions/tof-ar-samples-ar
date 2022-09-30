@@ -86,8 +86,11 @@ namespace TofArARSamples.BGChange
 
         IEnumerator DisableHumanSegmentationSettings()
         {
-            // Wait for settings to be created
-            yield return new WaitForEndOfFrame();
+            while (!skySegmentationController.FinishedSetup)
+            {
+                // Wait for settings to be created
+                yield return new WaitForEndOfFrame();
+            }
 
             // Disable interactability for human settings
             SegmentationSettings segmentationSettings = FindObjectOfType<SegmentationSettings>();
@@ -95,9 +98,17 @@ namespace TofArARSamples.BGChange
             if (segmentationSettings != null)
             {
                 TofArSettings.UI.ItemToggle[] detectorToggles = segmentationSettings.transform.GetComponentsInChildren<TofArSettings.UI.ItemToggle>(true);
-
+            
                 if (detectorToggles != null)
                 {
+                    while (detectorToggles.Length == 0)
+                    {
+                        // Wait for settings to be created
+                        yield return new WaitForEndOfFrame();
+
+                        detectorToggles = segmentationSettings.transform.GetComponentsInChildren<TofArSettings.UI.ItemToggle>(true);
+                    }
+
                     foreach (var toggle in detectorToggles)
                     {
                         if (toggle.gameObject.name.Contains("Human"))

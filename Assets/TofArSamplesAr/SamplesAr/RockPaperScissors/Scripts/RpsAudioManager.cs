@@ -50,6 +50,15 @@ namespace TofArARSamples.RockPaperScissors
         }
 
         /// <summary>
+        /// Check if audio is currently playing
+        /// </summary>
+        /// <returns></returns>
+        public bool IsPlaying()
+        {
+            return audioSource.isPlaying;
+        }
+
+        /// <summary>
         /// Sound type
         /// </summary>
         public enum SoundEffect

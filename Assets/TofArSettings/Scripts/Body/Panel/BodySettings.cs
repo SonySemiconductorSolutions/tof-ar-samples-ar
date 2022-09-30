@@ -15,7 +15,7 @@ namespace TofArSettings.Body
         SV1Controller sv1Controller;
         SV2Controller sv2Controller;
 
-        UI.ItemDropdown itemMode, itemRuntimeModeSV1, itemRuntimeModeSV2, itemBodyShotSV1;
+        UI.ItemDropdown itemMode, itemRuntimeModeSV1, itemRuntimeModeSV2, itemBodyShotSV1, itemRecogModeSV2, itemNoiseReduction;
         UI.ItemSlider itemSV1Thread, itemSV2Thread;
 
         protected override void Start()
@@ -77,10 +77,14 @@ namespace TofArSettings.Body
                 ChangeSV1Threads);
             itemRuntimeModeSV2 = settings.AddItem("SV2 Runtime", sv2Controller.RuntimeModeNames,
                 sv2Controller.RuntimeModeIndex, ChangeRuntimeModeSV2);
+            itemRecogModeSV2 = settings.AddItem("SV2 RecogMode", sv2Controller.RecogModeNames,
+                sv2Controller.RecogModeIndex, ChangeRecogModeSV2);
             itemSV2Thread = settings.AddItem("SV2 Threads",
                 SV2Controller.ThreadMin, SV2Controller.ThreadMax,
                 SV2Controller.ThreadStep, sv2Controller.ModeThreads,
                 ChangeSV2Threads);
+            itemNoiseReduction = settings.AddItem("SV2 Noise Reduction Level", sv2Controller.NoiseReductionLevelNames,
+                sv2Controller.NoiseReductionIndex, ChangeNoiseReductionSV2);
 
             sv1Controller.OnChangeBodyShot += (index) =>
             {
@@ -109,6 +113,28 @@ namespace TofArSettings.Body
             {
                 itemRuntimeModeSV2.Options = list;
                 itemRuntimeModeSV2.Index = runtimeModeIndex;
+            };
+
+            sv2Controller.OnChangeRecogMode += (index) =>
+            {
+                itemRecogModeSV2.Index = index;
+            };
+
+            sv2Controller.OnUpdateRecogModeList += (list, recogModeIndex) =>
+            {
+                itemRecogModeSV2.Options = list;
+                itemRecogModeSV2.Index = recogModeIndex;
+            };
+
+            sv2Controller.OnChangeNoiseReductionLevel += (index) =>
+            {
+                itemNoiseReduction.Index = index;
+            };
+
+            sv2Controller.OnUpdateNoiseReductionList += (list, index) =>
+            {
+                itemNoiseReduction.Options = list;
+                itemNoiseReduction.Index = index;
             };
 
             sv1Controller.OnChangeModeThreads += (val) =>
@@ -145,7 +171,9 @@ namespace TofArSettings.Body
             var interactible = runtimeController.DetectorTypeIndex > 0 &&
                 runtimeController.DetectorType == TofAr.V0.Body.BodyPoseDetectorType.Internal_SV2;
             itemRuntimeModeSV2.Interactable = interactible;
+            itemRecogModeSV2.Interactable = interactible;
             itemSV2Thread.Interactable = interactible && sv2Controller.IsInteractableModeThreads;
+            itemNoiseReduction.Interactable = interactible;
         }
 
         /// <summary>
@@ -182,6 +210,24 @@ namespace TofArSettings.Body
         void ChangeRuntimeModeSV2(int index)
         {
             sv2Controller.RuntimeModeIndex = index;
+        }
+
+        /// <summary>
+        /// Change RecogMode
+        /// </summary>
+        /// <param name="index">RuntimeMode index</param>
+        void ChangeRecogModeSV2(int index)
+        {
+            sv2Controller.RecogModeIndex = index;
+        }
+
+        /// <summary>
+        /// Change NoiseReductionLevel
+        /// </summary>
+        /// <param name="index">RuntimeMode index</param>
+        void ChangeNoiseReductionSV2(int index)
+        {
+            sv2Controller.NoiseReductionIndex = index;
         }
 
         /// <summary>

@@ -9,6 +9,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using TofAr.V0;
 using UnityEngine;
 
 namespace TofArSettings
@@ -281,7 +283,7 @@ namespace TofArSettings
         protected virtual void OnEndRecord(bool result, string filePath)
         {
             // Do not do anything if not saved
-            if (!result || filePath.Length <= 0)
+            if (!result || string.IsNullOrEmpty(filePath))
             {
                 return;
             }
@@ -298,5 +300,104 @@ namespace TofArSettings
         /// <returns>List of file names</returns>
         protected abstract string[] GetFileNames(string dirPath);
 
+        protected string[] GetFileNames(string dirPath, string streamKey)
+        {
+            var runtimeMode = TofArManager.Instance.RuntimeSettings.runMode;
+
+            if (runtimeMode == RunMode.MultiNode)
+            {
+                var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>().directoryList
+                    .Where(x => x.Contains(streamKey)).OrderBy(x => x);
+
+                return directoryListProp.ToArray();
+            } else
+            {
+                var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
+
+                string root = directoryListProp.path;
+
+                List<string> fileNames = new List<string>();
+
+                foreach (var dir in directoryListProp.directoryList)
+                {
+                    string currentPath = Path.Combine(root, dir);
+                    string infoPath = Path.Combine(currentPath, "info.xml");
+                    if (File.Exists(infoPath) && Path.IsPathRooted(infoPath))
+                    {
+                        string ext = new FileInfo(infoPath).Extension;
+                        if (ext.Equals(".xml"))
+                        {
+                            System.Xml.XmlDocument xmlDoc = new System.Xml.XmlDocument();
+                            xmlDoc.Load(infoPath);
+
+                            var streamNode = xmlDoc.SelectSingleNode("//record/stream");
+
+                            string key = streamNode.Attributes["key"].Value;
+
+                            if (streamKey.Equals(key))
+                            {
+                                fileNames.Add(dir);
+                            }
+                        }
+                    }
+                }
+                return fileNames.OrderBy(x => x).ToArray();
+            }
+        }
+
+        public void DeleteFile(string fileName, int idx)
+        {
+            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
+            string fileRoot = directoryListProp.path;
+
+            if (fileRoot == null)
+            {
+                return;
+            }
+            var directory = $"{fileRoot}{Path.DirectorySeparatorChar}{fileName}";
+
+            // can delete only on Device
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+
+                if (index == idx)
+                {
+                    // Currently selected index is deleted
+                    index = idx > 0 ? idx - 1 : 0;
+                }
+                else if (idx < Index)
+                {
+                    // Lower index has been selected -> adjust currently selected index
+                    index--;
+                }
+
+                var updatedFileNames = fileNames.ToList();
+                updatedFileNames.Remove(fileName);
+                FileNames = updatedFileNames.ToArray();
+            }
+        }
+
+        public void RenameFile(string fileName, string fileNameNew, int index)
+        {
+            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
+            string fileRoot = directoryListProp.path;
+
+            if (fileRoot == null)
+            {
+                return;
+            }
+            var directory = $"{fileRoot}{Path.DirectorySeparatorChar}{fileName}";
+            var directoryNew = $"{fileRoot}{Path.DirectorySeparatorChar}{fileNameNew}";
+
+            // can rename only on Device
+            if (Directory.Exists(directory) && !Directory.Exists(directoryNew))
+            {
+                Directory.Move(directory, directoryNew);
+
+                fileNames[index] = fileNameNew;
+                OnUpdateFileNames?.Invoke(FileNames, Index);
+            }
+        }
     }
 }

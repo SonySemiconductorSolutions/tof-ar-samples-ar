@@ -50,7 +50,11 @@ namespace TofArSettings.Segmentation
             isStarted = true;
             if (TofArColorManager.Instance.IsStreamActive)
             {
-                TofArSegmentationManager.Instance.StartStream();
+                var colorFormat = TofArColorManager.Instance.GetProperty<FormatConvertProperty>();
+                if (colorFormat.format != ColorFormat.BGR)
+                {
+                    TofArSegmentationManager.Instance.StartStream();
+                }    
             }
         }
 
@@ -81,12 +85,16 @@ namespace TofArSettings.Segmentation
         /// <param name="sender">TofArSegmentationManager</param>
         void OnColorStreamStarted(object sender, UnityEngine.Texture2D tex)
         {
-            if (isStarted)
+            var colorFormat = TofArColorManager.Instance.GetProperty<FormatConvertProperty>();
+            if (colorFormat.format != ColorFormat.BGR)
             {
-                context.Post((s) =>
+                if (isStarted)
                 {
-                    StartCoroutine(StartStreamCoroutine());
-                }, null);
+                    context.Post((s) =>
+                    {
+                        StartCoroutine(StartStreamCoroutine());
+                    }, null);
+                }
             }
         }
 

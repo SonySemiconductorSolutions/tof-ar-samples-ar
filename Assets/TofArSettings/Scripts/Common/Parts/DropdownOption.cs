@@ -11,6 +11,13 @@ using UnityEngine.UI;
 
 namespace TofArSettings.UI
 {
+    public enum EditFlags
+    {
+        None = 0,
+        Deletable = 1,
+        Renamable = 2
+    }
+
     public class DropdownOption : MonoBehaviour
     {
         bool onOff = false;
@@ -27,14 +34,32 @@ namespace TofArSettings.UI
             }
         }
 
+        protected ImageButtonTrigger imgBtnTrigger;
+        protected RawImage imgOn, imgOff;
+        protected Text txtLabel;
+        protected bool finishedSetup = false;
+
+        /// <summary>
+        /// Event for button click
+        /// </summary>
         public UnityAction OnClick;
 
-        ImageButtonTrigger imgBtnTrigger;
-        RawImage imgOn, imgOff;
-        Text txtLabel;
-        bool finishedSetup = false;
+        /// <summary>
+        /// Event for delete
+        /// </summary>
+        public UnityAction OnDelete;
+
+        /// <summary>
+        /// Event for rename
+        /// </summary>
+        public UnityAction OnRename;
 
         void Awake()
+        {
+            InitOnAwake();
+        }
+
+        protected void InitOnAwake()
         {
             if (finishedSetup)
             {
@@ -81,16 +106,53 @@ namespace TofArSettings.UI
         /// <param name="title">Title</param>
         /// <param name="onOff">RadioButton status</param>
         /// <param name="onClick">Event that is called when RadioButton is selected</param>
-        public void Init(string label, bool onOff, UnityAction onClick)
+        /// <param name="onDelete">Event that is called when Delete Button is selected</param>
+        /// <param name="onRename">Event that is called when Rename Button is selected</param>
+        public void Init(string label, bool onOff, UnityAction onClick, UnityAction onDelete, UnityAction onRename)
         {
             if (!finishedSetup)
             {
-                Awake();
+                InitOnAwake();
             }
 
             txtLabel.text = label;
             OnOff = onOff;
             OnClick = onClick;
+            OnDelete = onDelete;
+            OnRename = onRename;
+
+            float buttonsWidth = 0;
+            int offset = 10;
+
+            // show/hide delete/rename button
+            // UI取得
+            foreach (var btn in GetComponentsInChildren<Button>())
+            {
+                if (btn.name.Contains("RenameButton"))
+                {
+                    bool active = OnRename != null;
+                    btn.gameObject.SetActive(active);
+                    if (active)
+                    {
+                        buttonsWidth += btn.GetComponent<RectTransform>().rect.width;
+                        buttonsWidth += offset;
+                    }
+                }
+                else if (btn.name.Contains("DeleteButton"))
+                {
+                    bool active = OnDelete != null;
+                    btn.gameObject.SetActive(active);
+                    if (active)
+                    {
+                        buttonsWidth += btn.GetComponent<RectTransform>().rect.width;
+                        buttonsWidth += offset;
+                    }
+                }
+            }
+
+            var sizeDelta = txtLabel.rectTransform.sizeDelta;
+            sizeDelta.x -= buttonsWidth;
+            txtLabel.rectTransform.sizeDelta = sizeDelta;
         }
 
         /// <summary>
@@ -109,6 +171,22 @@ namespace TofArSettings.UI
         {
             OnOff = true;
             OnClick?.Invoke();
+        }
+
+        /// <summary>
+        /// Delete event
+        /// </summary>
+        public void ButtonOnDeleteEvent()
+        {
+            OnDelete?.Invoke();
+        }
+
+        /// <summary>
+        /// Rename event
+        /// </summary>
+        public void ButtonOnRenameEvent()
+        {
+            OnRename?.Invoke();
         }
     }
 }

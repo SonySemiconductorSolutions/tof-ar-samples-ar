@@ -82,6 +82,7 @@ namespace TofArSettings.ColorDepth
         void ChangeColor(int index)
         {
             colorMgrCtrl.Index = index;
+            ClosePanel();
         }
 
         /// <summary>
@@ -110,6 +111,7 @@ namespace TofArSettings.ColorDepth
         void ChangeDepth(int index)
         {
             tofMgrCtrl.Index = index;
+            ClosePanel();
         }
     }
 }

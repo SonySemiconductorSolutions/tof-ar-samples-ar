@@ -61,19 +61,17 @@ namespace TofArARSamples.Juggling
 
             list.Add(() =>
             {
-                handToggle = settings.AddItem("Display Hand Model", true, ChangeHandToggle);
+                handToggle = settings.AddItem("Show Hand Bones", true, ChangeHandToggle);
             });
-
-#if UNITY_IOS
-            list.Add(() =>
-            {
-                faceToggle = settings.AddItem("Display Face Model", true, ChangeFaceToggle);
-            });
-#endif
 
             list.Add(() =>
             {
-                showTextToggle = settings.AddItem("Display Information Text", informationText.IsTextShowing(), ChangeTextToggle);
+                faceToggle = settings.AddItem("Show Face Model", true, ChangeFaceToggle);
+            });
+
+            list.Add(() =>
+            {
+                showTextToggle = settings.AddItem("Show Information Text", informationText.IsTextShowing(), ChangeTextToggle);
             });
 
             uiOrder = list.ToArray();

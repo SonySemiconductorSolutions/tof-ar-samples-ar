@@ -159,6 +159,11 @@ namespace TofArARSamples.RockPaperScissors
             {
                 if (remainingTime == 2.0f)
                 {
+                    bool isPlaying = rpsAudioManager.IsPlaying();
+                    if (isPlaying)
+                    {
+                        return;
+                    }
                     if (thumbsUpHand == ThumbsUpHand.right)
                     {
                         playerHand.transform.localEulerAngles = new Vector3(0, 180, 0);

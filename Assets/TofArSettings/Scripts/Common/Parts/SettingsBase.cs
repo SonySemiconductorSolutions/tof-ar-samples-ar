@@ -128,7 +128,10 @@ namespace TofArSettings.UI
         /// </summary>
         public void ClosePanel()
         {
-            settings.ClosePanel();
+            if (settings)
+            {
+                settings.ClosePanel();
+            }
         }
 
         /// <summary>
@@ -162,12 +165,9 @@ namespace TofArSettings.UI
         /// </summary>
         IEnumerator WaitAndMakeUI()
         {
-            if (controllers.Count <= 0)
-            {
-                // Wait 1 frame to execute after other Start functions have completed
-                yield return null;
-            }
-            else
+            yield return null;
+
+            if (controllers.Count > 0)
             {
                 while (true)
                 {
