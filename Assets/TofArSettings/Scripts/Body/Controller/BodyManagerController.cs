@@ -14,57 +14,46 @@ namespace TofArSettings.Body
 {
     public class BodyManagerController : ControllerBase
     {
-        private BodyRuntimeController runtimeController;
+        private bool isStarted = false;
 
         protected void Awake()
         {
-            runtimeController = FindObjectOfType<BodyRuntimeController>();
-            runtimeController.OnChangeDetectorType += (index) =>
-            {
-                TofArBodyManager.Instance.StopStream();
-                if (index > 0 && TofArTofManager.Instance.IsStreamActive)
-                {
-                    TofArBodyManager.Instance.StartStream();
-                }
-            };
-        }
-
-        void OnEnable()
-        {
-            TofArTofManager.OnStreamStarted += OnStreamStarted;
-            TofArTofManager.OnStreamStopped += OnStreamStopped;
-        }
-
-        void OnDisable()
-        {
-            TofArTofManager.OnStreamStarted -= OnStreamStarted;
-            TofArTofManager.OnStreamStopped -= OnStreamStopped;
+            isStarted = TofArBodyManager.Instance.autoStart;
         }
 
         /// <summary>
-        /// Event that is called when Tof stream is started
+        /// Start stream
         /// </summary>
-        /// <param name="sender">TofArTofManager</param>
-        /// <param name="depthTexture"></param>
-        /// <param name="confidenceTexture"></param>
-        /// <param name="pointCloudData"></param>
-        void OnStreamStarted(object sender, Texture2D depthTexture,
-            Texture2D confidenceTexture, PointCloudData pointCloudData)
+        public void StartStream()
         {
-            // If the Body's dictionary is already selected, it will be started in conjunction with it
-            if (runtimeController.DetectorTypeIndex > 0)
+            if (!isStarted)
             {
-                StartCoroutine(WaitAndStartBody());
+                isStarted = true;
+                TofArBodyManager.Instance.StartStream();
+                OnStreamStartStatusChanged(isStarted);
             }
         }
 
         /// <summary>
-        /// Event that is called when Tof stream is stopped
+        /// Stop stream
         /// </summary>
-        /// <param name="sender">TofArTofManager</param>
-        void OnStreamStopped(object sender)
+        public void StopStream()
         {
-            TofArBodyManager.Instance.StopStream();
+            if (isStarted)
+            {
+                isStarted = false;
+                TofArBodyManager.Instance.StopStream();
+                OnStreamStartStatusChanged(isStarted);
+            }
+        }
+
+        /// <summary>
+        /// Stop Body Stream and start it again
+        /// </summary>
+        public void RestartStream()
+        {
+            StopStream();
+            StartCoroutine(WaitAndStartBody());
         }
 
         /// <summary>
@@ -74,19 +63,34 @@ namespace TofArSettings.Body
         {
             // If calling directly using OnStreamStarted, wait one frame as it does not execute for only the first time
             yield return null;
-            TofArBodyManager.Instance.StartStream();
+            StartStream();
         }
 
         /// <summary>
-        /// Stop Body Stream and start it again
+        /// Event that is called when Tof stream is started and status is changed
         /// </summary>
-        public void RestartStream()
+        public event ChangeToggleEvent OnStreamStartStatusChanged;
+
+        /// <summary>
+        /// Event that is called when Tof stream is started
+        /// </summary>
+        /// <param name="sender">TofArTofManager</param>
+        /// <param name="depthTexture"></param>
+        /// <param name="confidenceTexture"></param>
+        /// <param name="pointCloudData"></param>
+        public void OnStreamStarted(object sender, Texture2D depthTexture,
+            Texture2D confidenceTexture, PointCloudData pointCloudData)
         {
-            if (runtimeController.DetectorTypeIndex > 0)
-            {
-                TofArBodyManager.Instance.StopStream();
-                StartCoroutine(WaitAndStartBody());
-            }
+            StartCoroutine(WaitAndStartBody());
+        }
+
+        /// <summary>
+        /// Event that is called when Tof stream is stopped
+        /// </summary>
+        /// <param name="sender">TofArTofManager</param>
+        public void OnStreamStopped(object sender)
+        {
+            StopStream();
         }
     }
 }

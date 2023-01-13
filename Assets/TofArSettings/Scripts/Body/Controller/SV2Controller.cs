@@ -76,7 +76,6 @@ namespace TofArSettings.Body
             }
         }
 
-
         public RecogMode RecogMode
         {
             get
@@ -89,13 +88,49 @@ namespace TofArSettings.Body
             {
                 if (value != RecogMode)
                 {
-                    recogModeIndex = Utils.Find(value, RecogModeList);
-                    var currentProperty = TofArBodyManager.Instance.GetProperty<RecognizeConfigProperty>();
-                    currentProperty.recogMode = value;
-                    TofArBodyManager.Instance.SetProperty(currentProperty);
-                    OnChangeRecogMode?.Invoke(RecogModeIndex);
+                    StartCoroutine(ApplyMode(value));
                 }
             }
+        }
+
+        bool isRunning = false;
+
+        IEnumerator ApplyMode(RecogMode mode)
+        {
+            if (isRunning)
+            {
+                yield break;
+            }
+
+            isRunning = true;
+
+            var mgr = TofArBodyManager.Instance;
+
+            recogModeIndex = Utils.Find(mode, RecogModeList);
+            var currentProperty = mgr.GetProperty<RecognizeConfigProperty>();
+            currentProperty.recogMode = mode;
+            TofArBodyManager.Instance.SetProperty(currentProperty);
+
+            yield return null;
+
+            RecognizeConfigProperty conf;
+
+            while (true)
+            {
+                conf = mgr.GetProperty<RecognizeConfigProperty>();
+                if (mode == conf.recogMode)
+                {
+                    break;
+                }
+
+                yield return null;
+            }
+
+            yield return null;
+
+            isRunning = false;
+
+            OnChangeRecogMode?.Invoke(RecogModeIndex, conf);
         }
 
         public RecogMode[] RecogModeList { get; private set; }
@@ -109,6 +144,23 @@ namespace TofArSettings.Body
         protected override void Start()
         {
             base.Start();
+
+            OnChangeRecogMode += (index, conf) =>
+            {
+                if (conf == null)
+                {
+                    return;
+                }
+
+                Debug.Log("nThread : " + conf.nThreads);
+
+                int runtimeModeIndex = Utils.Find(conf.runtimeMode, RuntimeModeList);
+                OnChangeRuntimeMode?.Invoke(runtimeModeIndex);
+                OnChangeModeThreads?.Invoke(conf.nThreads);
+                int noiseReductionLevelIndex = Utils.Find(conf.noiseReductionLevel, NoiseReductionLevelList);
+                OnChangeNoiseReductionLevel?.Invoke(noiseReductionLevelIndex);
+            };
+
             UpdateRuntimeModeList();
             UpdateRecogModeList();
             UpdateNoiseReductionList();
@@ -157,7 +209,7 @@ namespace TofArSettings.Body
         /// <summary>
         /// Event that is called when NNL, RuntimeModel or RuntimeMode2 is changed
         /// </summary>
-        public event ChangeIndexEvent OnChangeRuntimeMode, OnChangeRecogMode, OnChangeNoiseReductionLevel;
+        public event ChangeIndexEvent OnChangeRuntimeMode, OnChangeNoiseReductionLevel;
 
         /// <summary>
         /// Event that is called when RuntimeMode list is updated
@@ -170,6 +222,15 @@ namespace TofArSettings.Body
         public event ChangeIndexEvent OnChangeModeThreads;
 
         /// <summary>
+        /// Event that is called when body dictionary is changed
+        /// </summary>
+        /// <param name="index">body dictionary index</param>
+        /// <param name="conf">body recognition settings</param>
+        public delegate void ChangeRecogEvent(int index, RecognizeConfigProperty conf);
+
+        public event ChangeRecogEvent OnChangeRecogMode;
+
+        /// <summary>
         /// Update RuntimeMode list
         /// </summary>
         void UpdateRuntimeModeList()
@@ -177,7 +238,7 @@ namespace TofArSettings.Body
             var mgr = TofArBodyManager.Instance;
 
             // Get RuntimeMode list
-            RuntimeModeList = (RuntimeMode[])Enum.GetValues(typeof(RuntimeMode));
+            RuntimeModeList = mgr.SupportedRuntimeModes;
             if (RuntimeModeList.Length != modeNames.Length)
             {
                 Array.Resize(ref modeNames, RuntimeModeList.Length);

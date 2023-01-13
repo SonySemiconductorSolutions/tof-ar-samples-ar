@@ -67,6 +67,11 @@ namespace TofArSettings.Tof
         protected override void GetProperty()
         {
             var frameRateRange = TofArTofManager.Instance.GetProperty<FrameRateRangeProperty>();
+            if (frameRateRange == null)
+            {
+                return;
+            }
+
             bool isChange = (Min != frameRateRange.minimumFrameRate ||
                 Max != frameRateRange.maximumFrameRate);
             Min = frameRateRange.minimumFrameRate;

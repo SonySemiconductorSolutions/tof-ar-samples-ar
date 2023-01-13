@@ -6,6 +6,8 @@
  */
 
 using TofAr.V0.Segmentation;
+using TofAr.V0.Segmentation.Human;
+using TofAr.V0.Segmentation.Sky;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -16,16 +18,21 @@ namespace TofArSettings.Segmentation
     {
         UI.ItemToggle itemSkySegmentation, itemHumanSegmentation;
         UI.ItemToggle itemNotSkySegmentation, itemNotHumanSegmentation;
+        UI.ItemToggle itemStartStream;
 
         private SkySegmentationController skySegCtrl;
         private HumanSegmentationController humanSegCtrl;
         private SegmentationManagerController managerController;
+
+        private SkySegmentationDetector skyDetector;
+        private HumanSegmentationDetector humanDetector;
 
         protected override void Start()
         {
             // Set UI order
             uiOrder = new UnityAction[]
             {
+                MakeUIStartStream,
                 MakeUIHuman,
                 MakeUISky
             };
@@ -37,6 +44,9 @@ namespace TofArSettings.Segmentation
             managerController = FindObjectOfType<SegmentationManagerController>();
             controllers.Add(managerController);
 
+            humanDetector = FindObjectOfType<HumanSegmentationDetector>();
+            skyDetector = FindObjectOfType<SkySegmentationDetector>();
+
             base.Start();
         }
 
@@ -46,7 +56,7 @@ namespace TofArSettings.Segmentation
         /// </summary>
         void MakeUISky()
         {
-            itemSkySegmentation = settings.AddItem("Sky Segmentation", skySegCtrl.SkySegmentationEnabled, ChangeSkySegmentation
+            itemSkySegmentation = settings.AddItem("Sky Segmentation", skyDetector.IsActive, ChangeSkySegmentation
                 );
 
             skySegCtrl.OnSkyChange += (onOff) =>
@@ -70,7 +80,6 @@ namespace TofArSettings.Segmentation
         void ChangeSkySegmentation(bool onOff)
         {
             skySegCtrl.SkySegmentationEnabled = onOff;
-            StartOrStopSegmentation();
         }
 
         /// <summary>
@@ -80,7 +89,6 @@ namespace TofArSettings.Segmentation
         void ChangeNotSkySegmentation(bool onOff)
         {
             skySegCtrl.NotSkySegmentationEnabled = onOff;
-            StartOrStopSegmentation();
         }
 
         /// <summary>
@@ -88,7 +96,7 @@ namespace TofArSettings.Segmentation
         /// </summary>
         void MakeUIHuman()
         {
-            itemHumanSegmentation = settings.AddItem("Human Segmentation", humanSegCtrl.HumanSegmentationEnabled, ChangeHumanSegmentation
+            itemHumanSegmentation = settings.AddItem("Human Segmentation", humanDetector.IsActive, ChangeHumanSegmentation
                 );
 
             humanSegCtrl.OnHumanChange += (onOff) =>
@@ -112,7 +120,6 @@ namespace TofArSettings.Segmentation
         void ChangeHumanSegmentation(bool onOff)
         {
             humanSegCtrl.HumanSegmentationEnabled = onOff;
-            StartOrStopSegmentation();
         }
 
         /// <summary>
@@ -122,12 +129,27 @@ namespace TofArSettings.Segmentation
         void ChangeNotHumanSegmentation(bool onOff)
         {
             humanSegCtrl.NotHumanSegmentationEnabled = onOff;
-            StartOrStopSegmentation();
         }
 
-        private void StartOrStopSegmentation()
+        /// <summary>
+        /// Make StartStream UI
+        /// </summary>
+        void MakeUIStartStream()
         {
-            if (skySegCtrl.IsSkySegRunning || humanSegCtrl.IsHumanSegRunning)
+            itemStartStream = settings.AddItem("Start Stream", TofArSegmentationManager.Instance.autoStart, ChangeStartStream);
+            managerController.OnStreamStartStatusChanged += (val) =>
+            {
+                itemStartStream.OnOff = val;
+            };
+        }
+
+        /// <summary>
+        /// If stream oocurs or not
+        /// </summary>
+        /// <param name="val">Stream started or not</param>
+        void ChangeStartStream(bool val)
+        {
+            if (val)
             {
                 managerController.StartStream();
             }

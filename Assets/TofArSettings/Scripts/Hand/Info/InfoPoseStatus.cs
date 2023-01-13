@@ -12,9 +12,10 @@ namespace TofArSettings.Hand
     public class InfoPoseStatus : HandInfo
     {
         UI.InfoLR uiLRInfo;
+
         PoseIndex poseLeft = PoseIndex.None;
         PoseIndex poseRight = PoseIndex.None;
-
+        
         void OnEnable()
         {
             TofArHandManager.OnFrameArrived += HandFrameArrived;
@@ -27,7 +28,7 @@ namespace TofArSettings.Hand
 
         void Start()
         {
-            uiLRInfo = GetComponent<UI.InfoLR>();
+            uiLRInfo = GetComponentInChildren<UI.InfoLR>();
         }
 
         void Update()
@@ -49,7 +50,7 @@ namespace TofArSettings.Hand
             }
 
             // Get
-            manager.HandData.GetPoseIndex(out poseLeft, out poseRight);
+            manager.HandData.GetPoseIndex(out poseLeft, out poseRight); 
         }
     }
 }

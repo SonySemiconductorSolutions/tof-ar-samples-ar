@@ -30,14 +30,7 @@ namespace TofArSettings.Face
                 if (value != detectorTypeIndex && 0 <= value && value < DetectorTypeList.Length)
                 {
                     detectorTypeIndex = value;
-                    if (value > 0)
-                    {
-                        DetectorType = DetectorTypeList[value];
-                    }
-                    else
-                    {
-                        OnChangeDetectorType.Invoke(detectorTypeIndex);
-                    }
+                    DetectorType = DetectorTypeList[value];
                 }
             }
         }
@@ -51,8 +44,13 @@ namespace TofArSettings.Face
 
             private set
             {
-                detectorTypeIndex = Utils.Find(value, DetectorTypeList, 1);
-                faceEstimator.enabled = value == FaceDetectorType.External;
+                detectorTypeIndex = Utils.Find(value, DetectorTypeList, 0);
+
+                if (faceEstimator != null)
+                {
+                    faceEstimator.enabled = value == FaceDetectorType.External;
+                }
+
                 TofArFaceManager.Instance.DetectorType = value;
 
                 if (TofArFaceManager.Instance.DetectorType == value)
@@ -80,18 +78,29 @@ namespace TofArSettings.Face
         {
             // Get NNL list
             var types = ((FaceDetectorType[])Enum.GetValues(typeof(FaceDetectorType))).ToList();
-
-
+            if (!TofAr.V0.TofArManager.Instance.UsingIos)
+            {
+                types.Remove(FaceDetectorType.Internal_ARKit);
+            } 
+            if (faceEstimator == null || !faceEstimator.IsAvailable)
+            {
+                types.Remove(FaceDetectorType.External);
+            }
             var defaultFaceDetector = TofAr.V0.TofArManager.Instance.UsingIos ? FaceDetectorType.Internal_ARKit : FaceDetectorType.External;
+
+            if (faceEstimator != null && faceEstimator.enabled && faceEstimator.IsAvailable)
+            {
+                defaultFaceDetector = FaceDetectorType.External;
+            }
 
             var propTexts = new List<string>();
             int defaultIndex = 0;
             for (int i = 0; i < types.Count; i++)
             {
                 var prop = types[i];
-                string text = types[i] == FaceDetectorType.External ? "TFLite Model" :
-                    types[i] == FaceDetectorType.Internal_ARKit ? "ARKit" :
-                    types[i].ToString();
+                string text = prop == FaceDetectorType.External ? "TFLite Model" :
+                    prop == FaceDetectorType.Internal_ARKit ? "ARKit" :
+                    prop.ToString();
 
                 // Use recommended values for initial values
                 if (prop == defaultFaceDetector)
@@ -103,25 +112,28 @@ namespace TofArSettings.Face
 
             }
 
-            // Highlight recommended values and move to the top of the list
-            string defaultText = $"<color=red>{propTexts[defaultIndex]}</color>";
-            types.RemoveAt(defaultIndex);
-            propTexts.RemoveAt(defaultIndex);
-            types.Insert(0, defaultFaceDetector);
-            propTexts.Insert(0, defaultText);
-
-            // Add empty option at the top
-            types.Insert(0, (FaceDetectorType)((int)FaceDetectorType.External + 1));
-            propTexts.Insert(0, "-");
-
+            if (propTexts.Count > 0)
+            {
+                // Highlight recommended values and move to the top of the list
+                string defaultText = $"<color=red>{propTexts[defaultIndex]}</color>";
+                types.RemoveAt(defaultIndex);
+                propTexts.RemoveAt(defaultIndex);
+                types.Insert(0, defaultFaceDetector);
+                propTexts.Insert(0, defaultText);
+            }
+            
             DetectorTypeList = types.ToArray();
             DetectorTypeNames = propTexts.ToArray();
 
-            if (DetectorTypeIndex <= 0)
+            if (propTexts.Count > 0)
             {
-                DetectorTypeIndex = 1;
+                DetectorTypeIndex = 0;
             }
-
+            else
+            {
+                detectorTypeIndex = -1;
+            }
+            
             base.Start();
         }
 
@@ -131,7 +143,7 @@ namespace TofArSettings.Face
         /// <param name="sender">TofArBodyManager</param>
         void OnStreamStarted(object sender)
         {
-            DetectorTypeIndex = Utils.Find(DetectorType, DetectorTypeList, 1);
+            DetectorTypeIndex = Utils.Find(DetectorType, DetectorTypeList, 0);
         }
 
         /// <summary>

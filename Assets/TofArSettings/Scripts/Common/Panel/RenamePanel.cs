@@ -45,7 +45,6 @@ namespace TofArSettings.UI
         private bool IsNameValid(string fileName)
         {
             var invalidChars = System.IO.Path.GetInvalidPathChars();
-
             foreach (var c in invalidChars)
             {
                 if (fileName.Contains(c.ToString()))
@@ -55,7 +54,15 @@ namespace TofArSettings.UI
             }
 
             invalidChars = System.IO.Path.GetInvalidFileNameChars();
+            foreach (var c in invalidChars)
+            {
+                if (fileName.Contains(c.ToString()))
+                {
+                    return false;
+                }
+            }
 
+            invalidChars = new char[] { '#', '%', '&', '{', '}', '\\', '/', '<', '>', '*', '?', '!', ' ', '$', '"', '\'', ':', ';', '@', '+', '`', '|', '=', '.', ',' };
             foreach (var c in invalidChars)
             {
                 if (fileName.Contains(c.ToString()))

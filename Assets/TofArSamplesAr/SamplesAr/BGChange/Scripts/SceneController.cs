@@ -12,6 +12,7 @@ using TofAr.V0.Segmentation.Sky;
 using TofArSettings.Segmentation;
 using System.Threading;
 using TofAr.V0.Color;
+using TofAr.V0.Segmentation;
 
 namespace TofArARSamples.BGChange
 {
@@ -125,6 +126,8 @@ namespace TofArARSamples.BGChange
             //Notification registration of new frame arrival of hand
             TofArHandManager.OnFrameArrived += OnHandNewFrameArrived;
             TofArColorManager.OnStreamStarted += OnColorStreamStarted;
+            TofArSegmentationManager.OnStreamStarted += OnSegmentationStreamStarted;
+            TofArSegmentationManager.OnStreamStopped += OnSegmentationStreamStopped;
 
             if (TofArColorManager.Instance.IsStreamActive)
             {
@@ -136,13 +139,12 @@ namespace TofArARSamples.BGChange
         {
             TofArHandManager.OnFrameArrived -= OnHandNewFrameArrived;
             TofArColorManager.OnStreamStarted -= OnColorStreamStarted;
+            TofArSegmentationManager.OnStreamStarted -= OnSegmentationStreamStarted;
+            TofArSegmentationManager.OnStreamStopped -= OnSegmentationStreamStopped;
         }
 
         void Update()
         {
-            //Pass the latest empty mask image to mask processing
-            this.maskMaterial.SetTexture("_MaskTexSky", this.skyDetector.MaskTexture);
-
 #if UNITY_IOS
             this.maskMaterial.SetInt("_invertUVXSky", 1);
 #endif
@@ -400,6 +402,16 @@ namespace TofArARSamples.BGChange
             currentPoseContinuCount = 0;
 
             yield return null;
+        }
+
+        private void OnSegmentationStreamStarted(object sender)
+        {
+            this.maskMaterial.SetTexture("_MaskTexSky", this.skyDetector.MaskTexture);
+        }
+
+        private void OnSegmentationStreamStopped(object sender)
+        {
+            this.maskMaterial.SetTexture("_MaskTexSky", null);
         }
     }
     #endregion

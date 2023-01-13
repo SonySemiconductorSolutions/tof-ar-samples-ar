@@ -38,6 +38,25 @@ namespace TofArSettings
             maxDepthDistance = settings.AddItem("Maximum Depth Distance", maxDepthDistanceController.MaxDepthDistanceList,
                 maxDepthDistanceController.MaxDepthDistanceIndex, ChangeMode);
 
+            settings.Btn.OnClick += (onOff) =>
+            {
+                if (onOff)
+                {
+                    foreach (var panel in FindObjectsOfType<UI.Panel>())
+                    {
+                        if (panel == settings)
+                        {
+                            continue;
+                        }
+
+                        if (panel.IsOpen)
+                        {
+                            panel.ClosePanel();
+                        }
+                    }
+                }
+            };
+
             maxDepthDistanceController.OnChangeDistance += (index) =>
             {
                 maxDepthDistance.Index = index;

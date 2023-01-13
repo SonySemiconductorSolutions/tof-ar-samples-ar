@@ -42,6 +42,11 @@ namespace TofArSettings.Tof
             base.GetProperty();
 
             var prop = TofArTofManager.Instance.GetProperty<ExposureProperty>();
+            if (prop == null)
+            {
+                return;
+            }
+
             bool isChange = (autoExposure != prop.autoExposure ||
                 exposureTime != prop.exposureTime ||
                 TimeMin != prop.minExposureTime || TimeMax != prop.maxExposureTime);

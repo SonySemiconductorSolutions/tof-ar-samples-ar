@@ -174,7 +174,8 @@ namespace TofArSettings.Tof
         /// <param name="properties">CameraConfig list</param>
         void MakeConfigOptions(CameraConfigurationsProperty properties)
         {
-            var props = properties.configurations.ToList();
+            var props = (properties == null) ? new List<CameraConfigurationProperty>() :
+                properties.configurations.ToList();
 
             // Make options
             var propTexts = new List<string>();
@@ -193,12 +194,15 @@ namespace TofArSettings.Tof
                 propTexts.Add(text);
             }
 
-            // Highlight recommended values in color and move to the top of the list
-            string defaultText = $"<color=red>{propTexts[defaultIndex]}</color>";
-            props.RemoveAt(defaultIndex);
-            propTexts.RemoveAt(defaultIndex);
-            props.Insert(0, defaultConf);
-            propTexts.Insert(0, defaultText);
+            if (propTexts.Count > 0)
+            {
+                // Highlight recommended values in color and move to the top of the list
+                string defaultText = $"<color=red>{propTexts[defaultIndex]}</color>";
+                props.RemoveAt(defaultIndex);
+                propTexts.RemoveAt(defaultIndex);
+                props.Insert(0, defaultConf);
+                propTexts.Insert(0, defaultText);
+            }
 
             // Add empty option at the top (for StopStream)
             var blank = new CameraConfigurationProperty
@@ -213,7 +217,7 @@ namespace TofArSettings.Tof
             Options = propTexts.ToArray();
 
             // Set recommended value when automatically starting
-            if (TofArTofManager.Instance.autoStart)
+            if (TofArTofManager.Instance.autoStart && props.Count > 1)
             {
                 index = 1;
             }

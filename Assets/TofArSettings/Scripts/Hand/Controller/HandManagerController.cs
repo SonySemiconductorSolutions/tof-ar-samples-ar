@@ -6,6 +6,7 @@
  */
 
 using System.Collections;
+using System.Threading;
 using TofAr.V0.Hand;
 using TofAr.V0.Tof;
 using UnityEngine;
@@ -14,44 +15,91 @@ namespace TofArSettings.Hand
 {
     public class HandManagerController : ControllerBase
     {
-        RecogModeController recogModeController;
+        private SynchronizationContext context;
+        private bool isStarted = false;
+        private bool isPlaying = false;
+        private bool restartStream = false;
 
         void Awake()
         {
-            recogModeController = FindObjectOfType<RecogModeController>();
+            context = SynchronizationContext.Current;
+            isStarted = TofArHandManager.Instance.autoStart;
+        }
 
-            // Stop if Hand dictionary is not selected, otherwise start
-            recogModeController.OnChangeRecog += (index, conf) =>
+        protected void OnEnable()
+        {
+            TofArTofManager.OnStreamStarted += OnTofPlaybackStreamStarted;
+            TofArTofManager.OnStreamStopped += OnTofPlaybackStreamStopped;
+        }
+
+        protected void OnDisable()
+        {
+            TofArTofManager.OnStreamStarted -= OnTofPlaybackStreamStarted;
+            TofArTofManager.OnStreamStopped -= OnTofPlaybackStreamStopped;
+        }
+
+        /// <summary>
+        /// Is the stream currently running if tof is on
+        /// </summary>
+        public bool IsStreamActive => isStarted && TofArTofManager.Instance.IsStreamActive;
+
+        /// <summary>
+        /// Start stream
+        /// </summary>
+        public void StartStream()
+        {
+            if (!isStarted)
             {
-                if (index <= 0)
+                isStarted = true;
+                if (TofArTofManager.Instance.IsPlaying)
                 {
-                    TofArHandManager.Instance.StopStream();
+                    TofArHandManager.Instance.StartPlayback();
                 }
                 else
                 {
-                    if (TofArTofManager.Instance.IsPlaying)
-                    {
-                        TofArHandManager.Instance.StartPlayback();
-                    }
-                    if (TofArTofManager.Instance.IsStreamActive)
-                    {
-                        TofArHandManager.Instance.StartStream();
-                    }
+                    TofArHandManager.Instance.StartStream();
                 }
-            };
+                OnStreamStartStatusChanged(isStarted);
+            }
         }
 
-        void OnEnable()
+        /// <summary>
+        /// Stop stream
+        /// </summary>
+        public void StopStream()
         {
-            TofArTofManager.OnStreamStarted += OnStreamStarted;
-            TofArTofManager.OnStreamStopped += OnStreamStopped;
+            if (isStarted)
+            {
+                isStarted = false;
+                TofArHandManager.Instance.StopStream();
+                OnStreamStartStatusChanged(isStarted);
+            }
         }
 
-        void OnDisable()
+        /// <summary>
+        /// Starts Hand stream after a short delay
+        /// </summary>
+        IEnumerator StartStreamCoroutine()
         {
-            TofArTofManager.OnStreamStarted -= OnStreamStarted;
-            TofArTofManager.OnStreamStopped -= OnStreamStopped;
+            // Wait 1 frame when executing OnStreamStarted directly because it does not execute for only the first time
+            yield return new WaitForEndOfFrame();
+
+            StartStream();
         }
+
+        private IEnumerator StartPlaybackStreamCoroutine()
+        {
+            yield return new WaitForEndOfFrame();
+
+            TofArHandManager.Instance.StartPlayback();
+            OnStreamStartStatusChanged?.Invoke(true);
+            isPlaying = true;
+        }
+
+        /// <summary>
+        /// Event that is called when Tof stream is started and status is changed
+        /// </summary>
+        public event ChangeToggleEvent OnStreamStartStatusChanged;
 
         /// <summary>
         /// Event that is called when Tof stream is started
@@ -60,45 +108,62 @@ namespace TofArSettings.Hand
         /// <param name="depthTexture">Depth texture</param>
         /// <param name="confidenceTexture">Confidence texture</param>
         /// <param name="pointCloudData">PointCloud data</param>
-        void OnStreamStarted(object sender, Texture2D depthTexture,
+        public void OnStreamStarted(object sender, Texture2D depthTexture,
             Texture2D confidenceTexture, PointCloudData pointCloudData)
         {
-            // If Hand dictionary is selected, start in conjunction
-            if (recogModeController.Index > 0)
+            context.Post((s) =>
             {
-                StartCoroutine(WaitAndStartHand());
-            }
+                StartCoroutine(StartStreamCoroutine());
+            }, null);
         }
 
         /// <summary>
         /// Event that is called when Tof stream is ended
         /// </summary>
         /// <param name="sender">TofArTofManager</param>
-        void OnStreamStopped(object sender)
+        public void OnStreamStopped(object sender)
         {
-            TofArHandManager.Instance.StopStream();
+            StopStream();
         }
 
         /// <summary>
-        /// Call StartStream of Hand
+        /// Event that is called when Tof playback stream is started
         /// </summary>
-        IEnumerator WaitAndStartHand()
+        /// <param name="sender">TofArTofManager</param>
+        private void OnTofPlaybackStreamStarted(object sender, Texture2D depth, Texture2D conf, PointCloudData pc)
         {
-            // Wait 1 frame when executing OnStreamStarted directly because it does not execute for only the first time
-            yield return null;
             if (TofArTofManager.Instance.IsPlaying)
             {
-                TofArHandManager.Instance.StartPlayback();
-            }
-            else
-            {
-                TofArHandManager.Instance.StartStream();
+                if (isStarted)
+                {
+                    restartStream = true;
+                }
+
+                context.Post((s) =>
+                {
+                    StartCoroutine(StartPlaybackStreamCoroutine());
+                }, null);
             }
         }
 
         /// <summary>
-        /// Is the stream currently running if tof is on
+        /// Event that is called when Tof stream is stopped
         /// </summary>
-        public bool IsStreamActive => recogModeController.Index > 0 && TofArTofManager.Instance.IsStreamActive;
+        /// <param name="sender">TofArTofManager</param>
+        private void OnTofPlaybackStreamStopped(object sender)
+        {
+            if (isPlaying)
+            {
+                isPlaying = false;
+                OnStreamStopped(sender);
+            }
+
+            // may have to restart mesh stream
+            if (restartStream)
+            {
+                restartStream = false;
+                OnStreamStarted(sender, null, null, null);
+            }
+        }
     }
 }

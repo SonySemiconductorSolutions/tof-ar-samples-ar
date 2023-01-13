@@ -4,6 +4,7 @@
 * [Component](#component)
 * [Assets](#assets)
 * [Development environment](#environment)
+* [Notes](#notes)
 * [Contributing](#contributing)
 
 <a name="about"></a>
@@ -188,9 +189,16 @@ ToF AR Development documents are also available on Developer World.
 
 Operation was verified in the following environment:
 
-* Unity Version  : 2020.3.36f1
-* ToF AR Version : 1.1.0
-* AR Foundation  : 4.2.3
+* Unity Version  : 2020.3.40f1
+* ToF AR Version : 1.2.0
+* AR Foundation  : 4.2.6
+
+
+<a name="notes"></a>
+# Notes
+
+Be aware that recognizable hand gestures may have different meaning in countries/areas.  
+Prior cultural checks are advisable.
 
 
 <a name="contributing"></a>

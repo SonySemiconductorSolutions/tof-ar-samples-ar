@@ -47,14 +47,11 @@ namespace TofArSettings.Slam
 
         void MakeUIPoseSource()
         {
-            if (TofAr.V0.TofArManager.Instance.RuntimeSettings.runMode == TofAr.V0.RunMode.Default)
+            itemPoseSource = settings.AddItem("Camera Pose Source", managerController.PoseSourceNames, managerController.Index, ChangePoseSource);
+            managerController.OnChangeIndex += (index) =>
             {
-                itemPoseSource = settings.AddItem("Camera Pose Source", managerController.PoseSourceNames, managerController.Index, ChangePoseSource);
-                managerController.OnChangeIndex += (index) =>
-                {
-                    itemPoseSource.Index = index;
-                };
-            }
+                itemPoseSource.Index = index;
+            };
         }
 
 
@@ -76,16 +73,20 @@ namespace TofArSettings.Slam
 
         void ChangePoseSource(int index)
         {
-            if (managerController.IsStreamActive())
+            if (managerController.Index != index)
             {
-                managerController.StopStream();
-                managerController.Index = index;
-                managerController.StartStream();
+                if (managerController.IsStreamActive())
+                {
+                    managerController.StopStream();
+                    managerController.Index = index;
+                    managerController.StartStream();
+                }
+                else
+                {
+                    managerController.Index = index;
+                }
             }
-            else
-            {
-                managerController.Index = index;
-            }
+
         }
 
     }

@@ -5,6 +5,7 @@
  *
  */
 
+using TofAr.V0.Hand;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -17,11 +18,13 @@ namespace TofArSettings.Hand
         ProcessLevelController processLevelCtrl;
         TrackingModeController trackingModeCtrl;
         NoiseReductionLevelController noiseReductionCtrl;
+        HandManagerController managerController;
 
         UI.ItemDropdown itemMode, itemRuntimeMode1, itemRuntimeMode2,
             itemProcessLevel, itemNoiseReduction;
         UI.ItemToggle itemTrack;
         UI.ItemSlider itemMode1Thread, itemMode2Thread;
+        UI.ItemToggle itemStartStream;
 
         StatusHistory statusHistory;
         UI.Panel panelHistory;
@@ -52,6 +55,7 @@ namespace TofArSettings.Hand
             // Set UI order
             uiOrder = new UnityAction[]
             {
+                MakeUIStartStream,
                 MakeUIMode,
                 MakeUIRuntime,
                 MakeUIProcessLevel,
@@ -69,6 +73,8 @@ namespace TofArSettings.Hand
             trackingModeCtrl = recogModeCtrl.GetComponent<TrackingModeController>();
             controllers.Add(trackingModeCtrl);
             noiseReductionCtrl = recogModeCtrl.GetComponent<NoiseReductionLevelController>();
+            managerController = FindObjectOfType<HandManagerController>();
+            controllers.Add(managerController);
 
             base.Start();
         }
@@ -298,6 +304,34 @@ namespace TofArSettings.Hand
             else
             {
                 panelHistory.ClosePanel();
+            }
+        }
+
+        /// <summary>
+        /// Make StartStream UI
+        /// </summary>
+        void MakeUIStartStream()
+        {
+            itemStartStream = settings.AddItem("Start Stream", TofArHandManager.Instance.autoStart, ChangeStartStream);
+            managerController.OnStreamStartStatusChanged += (val) =>
+            {
+                itemStartStream.OnOff = val;
+            };
+        }
+
+        /// <summary>
+        /// If stream oocurs or not
+        /// </summary>
+        /// <param name="val">Stream started or not</param>
+        void ChangeStartStream(bool val)
+        {
+            if (val)
+            {
+                managerController.StartStream();
+            }
+            else
+            {
+                managerController.StopStream();
             }
         }
     }

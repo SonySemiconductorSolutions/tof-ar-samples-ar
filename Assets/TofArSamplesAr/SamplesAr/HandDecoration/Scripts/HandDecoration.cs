@@ -71,6 +71,7 @@ namespace TofArARSamples.HandDecoration
         void OnEnable()
         {
             TofArHandManager.OnStreamStarted += OnStreamStarted;
+            TofArHandManager.OnStreamStopped += OnStreamStopped;
             TofArHandManager.OnFrameArrived += HandFrameArrived;
             TofArManager.OnScreenOrientationUpdated += OnScreenOrientationUpdated;
 
@@ -84,6 +85,7 @@ namespace TofArARSamples.HandDecoration
         void OnDisable()
         {
             TofArHandManager.OnStreamStarted -= OnStreamStarted;
+            TofArHandManager.OnStreamStopped -= OnStreamStopped;
             TofArHandManager.OnFrameArrived -= HandFrameArrived;
             TofArManager.OnScreenOrientationUpdated -= OnScreenOrientationUpdated;
         }
@@ -101,6 +103,15 @@ namespace TofArARSamples.HandDecoration
         void OnStreamStarted(object sender)
         {
             gestureController.OnOff = true;
+        }
+
+        /// <summary>
+        /// Event called at the end of the stream
+        /// </summary>
+        /// <param name="sender"></param>
+        private void OnStreamStopped(object sender)
+        {
+            recognizeResultProperty = null;
         }
 
         /// <summary>

@@ -59,9 +59,12 @@ namespace TofArSettings.Mesh
             reductionLevelController.ReductionLevel = (int)val;
         }
 
+        /// <summary>
+        /// Make StartStream UI
+        /// </summary>
         void MakeUIStartStream()
         {
-            itemStartStream = settings.AddItem("Start Stream", true, ChangeStartStream);
+            itemStartStream = settings.AddItem("Start Stream", TofArMeshManager.Instance.autoStart, ChangeStartStream);
             managerController.OnStreamStartStatusChanged += (val) =>
             {
                 itemStartStream.OnOff = val;

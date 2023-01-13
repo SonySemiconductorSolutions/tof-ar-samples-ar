@@ -16,6 +16,8 @@ namespace TofArSettings
         protected ImageFpsRequestController fpsReqCtrl;
         protected ImageExposureController exposureCtrl;
 
+        private DependendStreamUIHandler componentCtrl;
+
         UI.ItemDropdown itemMode;
         UI.ItemSlider itemDelay, itemFpsRequest, itemExpoTime;
         protected UI.ItemToggle itemAutoExpo;
@@ -30,6 +32,8 @@ namespace TofArSettings
             controllers.Add(fpsReqCtrl);
             exposureCtrl = mgrCtrl.GetComponent<ImageExposureController>();
             controllers.Add(exposureCtrl);
+
+            componentCtrl = FindObjectOfType<DependendStreamUIHandler>();
 
             base.Start();
         }
@@ -54,6 +58,18 @@ namespace TofArSettings
             {
                 itemMode.Index = index;
             };
+        }
+
+        /// <summary>
+        /// Add dropdown to ComponentController to enable/disable
+        /// </summary>
+        /// <param name="type">Component type</param>
+        protected void AddDropdownToController(ComponentType type)
+        {
+            if (componentCtrl != null)
+            {
+                componentCtrl.AddDropdown(itemMode, type);
+            }
         }
 
         /// <summary>

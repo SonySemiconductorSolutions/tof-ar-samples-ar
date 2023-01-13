@@ -75,6 +75,8 @@ namespace TofArSettings.UI
 
                 dialog.ClearOptions();
                 dialog.AddOptions(value, Index);
+
+                ChangeAppearance();
             }
         }
 
@@ -87,6 +89,8 @@ namespace TofArSettings.UI
                 optionsEditable = value;
                 dialog.ClearOptions();
                 dialog.AddOptions(optionsEditable, Index);
+
+                ChangeAppearance();
             }
         }
 
@@ -269,7 +273,10 @@ namespace TofArSettings.UI
         /// </summary>
         void ChangeAppearance()
         {
-            txtLabel.text = Options[Index];
+            if (Options.Length > Index)
+            {
+                txtLabel.text = Options[Index];
+            }
             dialog.ChangeAppearance(index);
         }
     }

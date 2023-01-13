@@ -24,11 +24,6 @@ namespace TofArSettings.Slam
 
         protected override void Start()
         {
-            var defaultCameraPoseSource = (TofAr.V0.TofArManager.Instance.UsingIos || TofAr.V0.TofArManager.Instance.RuntimeSettings.runMode == TofAr.V0.RunMode.MultiNode) ? 
-                CameraPoseSource.MainCamera : CameraPoseSource.Gyro;
-
-            CameraPoseSource = defaultCameraPoseSource;
-
             base.Start();
         }
 
@@ -42,12 +37,27 @@ namespace TofArSettings.Slam
         {
             TofArSlamManager.OnStreamStopped -= OnSlamStreamStopped;
             TofArSlamManager.OnStreamStarted -= OnSlamStreamStarted;
+
+            // change back to gyro when debugging
+            if ((TofAr.V0.TofArManager.Instance.UsingIos && !TofAr.V0.TofArManager.Instance.RuntimeSettings.isRemoteServer) ||
+                TofAr.V0.TofArManager.Instance.RuntimeSettings.runMode == TofAr.V0.RunMode.MultiNode)
+            {
+                StopStream();
+                CameraPoseSource = CameraPoseSource.Gyro;
+                StartStream();
+            }
+
         }
 
         private void OnSlamStreamStarted(object sender)
         {
             isStarted = true;
             OnStreamStartStatusChanged?.Invoke(isStarted);
+            var idx = Utils.Find(TofArSlamManager.Instance.CameraPoseSource, PoseSources);
+            if (idx != index)
+            {
+                Index = idx;
+            }
         }
 
         private void OnSlamStreamStopped(object sender)
@@ -125,10 +135,10 @@ namespace TofArSettings.Slam
             PoseSources = ((CameraPoseSource[])Enum.GetValues(typeof(CameraPoseSource)));
             if (!TofAr.V0.TofArManager.Instance.UsingIos)
             {
-                var internalTracker = Resources.Load("Prefabs/KudanPoseTracker");
+                var internalTracker = Resources.Load("Prefabs/KPoseTracker");
                 var internalTracker2 = Resources.Load("Prefabs/SdsPoseTracker");
 
-                var poseSources = PoseSources;
+                var poseSources = PoseSources.Distinct();
                 if (internalTracker == null)
                 {
                     poseSources = poseSources.Where(x => x != CameraPoseSource.InternalEngine).ToArray(); 
@@ -143,7 +153,7 @@ namespace TofArSettings.Slam
             }
             else
             {
-                PoseSources = PoseSources.Where(x => x != CameraPoseSource.InternalEngine && x != CameraPoseSource.InternalEngine02).ToArray();
+                PoseSources = PoseSources.Distinct().Where(x => x != CameraPoseSource.InternalEngine && x != CameraPoseSource.InternalEngine02).ToArray();
             }
             PoseSourceNames = PoseSources.Select((s) => s.ToString()).ToArray();
         }

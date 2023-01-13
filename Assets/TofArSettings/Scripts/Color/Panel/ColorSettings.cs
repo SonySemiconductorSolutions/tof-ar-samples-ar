@@ -81,6 +81,8 @@ namespace TofArSettings.Color
         {
             base.MakeUI();
 
+            AddDropdownToController(UI.SettingsBase.ComponentType.Color);
+
             // Setup UI
             UpdateFocusUI();
             UpdateWhiteBalanceUI();
@@ -101,6 +103,16 @@ namespace TofArSettings.Color
                 itemFormat.Index = index;
                 ShowMessage();
             };
+
+            mgrCtrl.OnChangeAfter += (index) =>
+            {
+                itemFormat.Interactable = index == 0;
+            };
+
+            if (mgrCtrl.IsStreamActive())
+            {
+                itemFormat.Interactable = false;
+            }
         }
 
         /// <summary>
@@ -218,6 +230,10 @@ namespace TofArSettings.Color
 
                 SwitchFocusUIInteractable();
             }
+            if (focusCtrl.DistMax <= focusCtrl.DistMin)
+            {
+                itemAutoFocus.Interactable = itemFocusDist.Interactable = false;
+            }
         }
 
         /// <summary>
@@ -225,7 +241,14 @@ namespace TofArSettings.Color
         /// </summary>
         void SwitchFocusUIInteractable()
         {
-            itemFocusDist.Interactable = (!itemAutoFocus.OnOff);
+            if (focusCtrl.DistMax <= focusCtrl.DistMin)
+            {
+                itemFocusDist.Interactable = false;
+            } 
+            else
+            {
+                itemFocusDist.Interactable = !itemAutoFocus.OnOff;
+            }    
         }
 
         protected override void MakeUIExposure()

@@ -4,6 +4,7 @@
 * [コンポーネント](#component)
 * [アセット](#assets)
 * [開発環境](#environment)
+* [注意事項](#notes)
 * [コントリビューション](#contributing)
 
 <a name="about"></a>
@@ -15,7 +16,7 @@ ToF AR は、Time-of-Flight(ToF)/Light detection and ranging(Lidar)などの距�
 
 ToF AR のパッケージや開発ドキュメント、ToF ARを使ったアプリケーションソフト、対応スマートフォンのリストにつきましては、
 
-Dveloper Wolrd の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)をご覧ください。
+Developer World の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)をご覧ください。
 
 
 <a name="overview"></a>
@@ -188,9 +189,17 @@ ToF ARの開発ドキュメントも、Developer Worldで公開しています�
 
 動作検証は、下記の環境で行っています。
 
-* Unity Version  : 2020.3.36f1
-* ToF AR Version : 1.1.0 
-* AR Foundation  : 4.2.3
+* Unity Version  : 2020.3.40f1
+* ToF AR Version : 1.2.0
+* AR Foundation  : 4.2.6
+
+
+<a name="notes"></a>
+# 注意事項
+
+認識可能なハンドジェスチャーは国・地域によって異なる意味を有する場合があります。  
+事前に確認されることをお勧めします。
+
 
 <a name="contributing"></a>
 # コントリビューション

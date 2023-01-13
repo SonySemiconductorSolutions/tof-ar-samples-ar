@@ -19,6 +19,13 @@ namespace TofArSettings.Segmentation
 
         public override bool HasDropdown => false;
 
+        private SegmentationManagerController managerController;
+
+        private void Awake()
+        {
+            managerController = FindObjectOfType<SegmentationManagerController>();
+        }
+
         protected override void PlayPrep_internal()
         {
             TofArSegmentationManager.Instance.StopStream();
@@ -27,7 +34,10 @@ namespace TofArSettings.Segmentation
 
         protected override bool Play_internal(string fileName)
         {
-            TofArSegmentationManager.Instance.StartPlayback();
+            if (managerController.IsStreamActive())
+            {
+                TofArSegmentationManager.Instance.StartPlayback();
+            }
             return true;
         }
 
@@ -50,7 +60,10 @@ namespace TofArSettings.Segmentation
 
         protected override void StopCleanup_internal()
         {
-            TofArSegmentationManager.Instance.StartStream();
+            if (managerController.IsStreamActive())
+            {
+                TofArSegmentationManager.Instance.StartStream();
+            }
         }
 
         protected override string[] GetFileNames(string dirPath)

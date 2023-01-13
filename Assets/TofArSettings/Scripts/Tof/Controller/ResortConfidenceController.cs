@@ -39,8 +39,12 @@ namespace TofArSettings.Tof
             try
             {
                 var prop = TofArTofManager.Instance.GetProperty<DepthConfidenceProperty>();
-                resort = prop.depth16ConfidenceConvert;
-            } catch (SensCord.ApiException e)
+                if (prop != null)
+                {
+                    resort = prop.depth16ConfidenceConvert;
+                }
+            }
+            catch (SensCord.ApiException e)
             {
                 TofAr.V0.TofArManager.Logger.WriteLog(TofAr.V0.LogLevel.Debug, $"Failed to get DepthConfidenceProperty. Message: {e.Message}");
             }

@@ -27,6 +27,16 @@ namespace TofArSettings.UI
             }
         }
 
+        public bool Interactable
+        {
+            set
+            {
+                imgBtnTrigger.Interactable = value;
+                imgIcon.color = value ? initColor : disabledColor;
+                shadow.effectDistance = value ? shadowDist : Vector2.zero;
+            }
+        }
+
         /// <summary>
         /// Event that is called when button is pressed
         /// </summary>
@@ -37,9 +47,13 @@ namespace TofArSettings.UI
 
         ImageButtonTrigger imgBtnTrigger;
         RawImage imgPushed;
+        RawImage imgIcon;
         Shadow shadow;
 
         Vector2 shadowDist;
+
+        UnityEngine.Color initColor;
+        UnityEngine.Color disabledColor = UnityEngine.Color.gray;
 
         void Start()
         {
@@ -47,10 +61,15 @@ namespace TofArSettings.UI
             imgBtnTrigger = GetComponentInChildren<ImageButtonTrigger>();
             foreach (var img in GetComponentsInChildren<RawImage>())
             {
-                if (img.name.Contains("Push"))
+                if (imgPushed == null && img.name.Contains("Push"))
                 {
                     imgPushed = img;
-                    break;
+                }
+                if (imgIcon == null && img.name.Contains("Icon"))
+                {
+                    imgIcon = img;
+                    disabledColor = initColor = imgIcon.color;
+                    disabledColor.a = 0.4f;
                 }
             }
 

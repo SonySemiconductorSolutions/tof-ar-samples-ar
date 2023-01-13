@@ -171,7 +171,8 @@ namespace TofArSettings.Color
         /// <param name="properties">CameraResolution list</param>
         void MakeResoOptions(AvailableResolutionsProperty properties)
         {
-            var props = properties.resolutions.ToList();
+            var props = (properties == null) ? new List<ResolutionProperty>() :
+                properties.resolutions.ToList();
 
             // Make option
             var propTexts = new List<string>();
@@ -193,12 +194,15 @@ namespace TofArSettings.Color
                 propTexts.Add(text);
             }
 
-            // Highlight recommended values in color and move to the top of the list
-            string defaultText = $"<color=red>{propTexts[defaultIndex]}</color>";
-            props.RemoveAt(defaultIndex);
-            propTexts.RemoveAt(defaultIndex);
-            props.Insert(0, defaultReso);
-            propTexts.Insert(0, defaultText);
+            if (propTexts.Count > 0)
+            {
+                // Highlight recommended values in color and move to the top of the list
+                string defaultText = $"<color=red>{propTexts[defaultIndex]}</color>";
+                props.RemoveAt(defaultIndex);
+                propTexts.RemoveAt(defaultIndex);
+                props.Insert(0, defaultReso);
+                propTexts.Insert(0, defaultText);
+            }
 
             // Add an empty option at the top (for StopStream)
             var blank = new ResolutionProperty();
@@ -209,7 +213,7 @@ namespace TofArSettings.Color
             Options = propTexts.ToArray();
 
             // If auto start is on, set recommended value
-            if (TofArColorManager.Instance.autoStart)
+            if (TofArColorManager.Instance.autoStart && props.Count > 1)
             {
                 index = 1;
             }

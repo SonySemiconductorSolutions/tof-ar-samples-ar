@@ -34,6 +34,13 @@ namespace TofArSettings.Tof
             base.Start();
         }
 
+        protected override void MakeUI()
+        {
+            base.MakeUI();
+
+            AddDropdownToController(ComponentType.Tof);
+        }
+
         /// <summary>
         /// Make Resort Confidence UI
         /// </summary>

@@ -15,23 +15,26 @@ namespace TofArSettings.Mesh
     public class MeshManagerController : ControllerBase
     {
         private SynchronizationContext context;
-        private bool isStarted = true;
+        private bool isStarted = false;
+        private bool isPlaying = false;
+        private bool restartStream = false;
 
         private void Awake()
         {
             context = SynchronizationContext.Current;
+            isStarted = TofArMeshManager.Instance.autoStart;
         }
 
         protected void OnEnable()
         {
-            TofArTofManager.OnStreamStarted += OnTofStreamStarted;
-            TofArTofManager.OnStreamStopped += OnTofStreamStopped;
+            TofArTofManager.OnStreamStarted += OnTofPlaybackStreamStarted;
+            TofArTofManager.OnStreamStopped += OnTofPlaybackStreamStopped;
         }
 
         protected void OnDisable()
         {
-            TofArTofManager.OnStreamStarted -= OnTofStreamStarted;
-            TofArTofManager.OnStreamStopped -= OnTofStreamStopped;
+            TofArTofManager.OnStreamStarted -= OnTofPlaybackStreamStarted;
+            TofArTofManager.OnStreamStopped -= OnTofPlaybackStreamStopped;
         }
 
         public bool IsStreamActive()
@@ -44,31 +47,18 @@ namespace TofArSettings.Mesh
         /// </summary>
         public void StartStream()
         {
-            isStarted = true;
-            if (TofArTofManager.Instance.IsStreamActive)
+            if (!isStarted)
             {
-                TofArMeshManager.Instance.StartStream();
-            }
-            if (TofArTofManager.Instance.IsPlaying)
-            {
-                TofArMeshManager.Instance.StartPlayback();
-            }
-            OnStreamStartStatusChanged?.Invoke(isStarted);
-        }
-
-        /// <summary>
-        /// Starts Mesh stream after a short delay
-        /// </summary>
-        private IEnumerator StartStreamCoroutine()
-        {
-            yield return new UnityEngine.WaitForEndOfFrame();
-            if (TofArTofManager.Instance.IsPlaying)
-            {
-                TofArMeshManager.Instance.StartPlayback();
-            }
-            else
-            {
-                TofArMeshManager.Instance.StartStream();
+                isStarted = true;
+                if (TofArTofManager.Instance.IsPlaying)
+                {
+                    TofArMeshManager.Instance.StartPlayback();
+                }
+                else
+                {
+                    TofArMeshManager.Instance.StartStream();
+                }
+                OnStreamStartStatusChanged?.Invoke(isStarted);
             }
         }
 
@@ -77,12 +67,32 @@ namespace TofArSettings.Mesh
         /// </summary>
         public void StopStream()
         {
-            isStarted = false;
-            if (TofArMeshManager.Instance.IsStreamActive)
+            if (isStarted)
             {
+                isStarted = false;
                 TofArMeshManager.Instance.StopStream();
+                OnStreamStartStatusChanged?.Invoke(isStarted);
             }
-            OnStreamStartStatusChanged?.Invoke(isStarted);
+        }
+
+        /// <summary>
+        /// Starts Mesh stream after a short delay
+        /// </summary>
+        private IEnumerator StartStreamCoroutine()
+        {
+            // Wait 1 frame when executing OnStreamStarted directly because it does not execute for only the first time
+            yield return new UnityEngine.WaitForEndOfFrame();
+
+            StartStream();
+        }
+
+        private IEnumerator StartPlaybackStreamCoroutine()
+        {
+            yield return new UnityEngine.WaitForEndOfFrame();
+
+            TofArMeshManager.Instance.StartPlayback();
+            OnStreamStartStatusChanged?.Invoke(true);
+            isPlaying = true;
         }
 
         /// <summary>
@@ -93,14 +103,40 @@ namespace TofArSettings.Mesh
         /// <summary>
         /// Event that is called when Tof stream is started
         /// </summary>
-        /// <param name="sender">TofArMeshManager</param>
-        private void OnTofStreamStarted(object sender, UnityEngine.Texture2D depth, UnityEngine.Texture2D conf, PointCloudData pc)
+        /// <param name="sender">TofArTofManager</param>
+        public void OnTofStreamStarted(object sender, UnityEngine.Texture2D depth, UnityEngine.Texture2D conf, PointCloudData pc)
         {
-            if (isStarted)
+            context.Post((s) =>
             {
+                StartCoroutine(StartStreamCoroutine());
+            }, null);
+        }
+
+        /// <summary>
+        /// Event that is called when Tof stream is stopped
+        /// </summary>
+        /// <param name="sender">TofArTofManager</param>
+        public void OnTofStreamStopped(object sender)
+        {
+            StopStream();
+        }
+
+        /// <summary>
+        /// Event that is called when Tof playback stream is started
+        /// </summary>
+        /// <param name="sender">TofArTofManager</param>
+        private void OnTofPlaybackStreamStarted(object sender, UnityEngine.Texture2D depth, UnityEngine.Texture2D conf, PointCloudData pc)
+        {
+            if (TofArTofManager.Instance.IsPlaying)
+            {
+                if (isStarted)
+                {
+                    restartStream = true;
+                }
+
                 context.Post((s) =>
                 {
-                    StartCoroutine(StartStreamCoroutine());
+                    StartCoroutine(StartPlaybackStreamCoroutine());
                 }, null);
             }
         }
@@ -109,11 +145,19 @@ namespace TofArSettings.Mesh
         /// Event that is called when Tof stream is stopped
         /// </summary>
         /// <param name="sender">TofArTofManager</param>
-        private void OnTofStreamStopped(object sender)
+        private void OnTofPlaybackStreamStopped(object sender)
         {
-            if (isStarted)
+            if (isPlaying)
             {
-                TofArMeshManager.Instance.StopStream();
+                isPlaying = false;
+                OnTofStreamStopped(sender);
+            }
+
+            // may have to restart mesh stream
+            if (restartStream)
+            {
+                restartStream = false;
+                OnTofStreamStarted(sender, null, null, null);
             }
         }
     }

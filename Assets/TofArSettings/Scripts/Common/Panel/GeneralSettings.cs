@@ -89,17 +89,8 @@ namespace TofArSettings.UI
                     continue;
                 }
 
-                if ((addGeneralChild && menu is General.GeneralSettingsChild) ||
-                    menu.CompoType == ComponentType.Color && color ||
-                    menu.CompoType == ComponentType.Tof && tof ||
-                    menu.CompoType == ComponentType.Hand && hand ||
-                    menu.CompoType == ComponentType.Segmentation && segmentation ||
-                    menu.CompoType == ComponentType.Body && body ||
-                    menu.CompoType == ComponentType.Mesh && mesh ||
-                    menu.CompoType == ComponentType.FingerTouch && fingerTouch ||
-                    menu.CompoType == ComponentType.Slam && slam ||
-                    menu.CompoType == ComponentType.Face && face
-                    )
+                if ((addGeneralChild && menu is General.GeneralSettingsChild) || 
+                    IsCompoTypeAvailable(menu))
                 {
                     menus.Add(menu);
                 }
@@ -108,6 +99,19 @@ namespace TofArSettings.UI
                     menu.gameObject.SetActive(false);
                 }
             }
+        }
+
+        private bool IsCompoTypeAvailable(SettingsBase menu)
+        {
+            return menu.CompoType == ComponentType.Color && color ||
+                    menu.CompoType == ComponentType.Tof && tof ||
+                    menu.CompoType == ComponentType.Hand && hand ||
+                    menu.CompoType == ComponentType.Segmentation && segmentation ||
+                    menu.CompoType == ComponentType.Body && body ||
+                    menu.CompoType == ComponentType.Mesh && mesh ||
+                    menu.CompoType == ComponentType.FingerTouch && fingerTouch ||
+                    menu.CompoType == ComponentType.Slam && slam ||
+                    menu.CompoType == ComponentType.Face && face;
         }
 
         /// <summary>

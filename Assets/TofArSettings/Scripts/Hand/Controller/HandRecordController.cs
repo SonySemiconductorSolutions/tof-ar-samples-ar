@@ -83,7 +83,6 @@ namespace TofArSettings.Hand
                 var depthData = TofArTofManager.Instance.DepthData;
                 var rawDepthData = depthData.Data;
 
-
                 using (var depthFile = System.IO.File.Open(rawPath, System.IO.FileMode.Create))
                 {
                     {
@@ -107,79 +106,10 @@ namespace TofArSettings.Hand
                 }
                 imgSaved = true;
 
-
                 // get joint data
-                {
-                    
-                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                SaveCsv(dataPath, timeStamp);
 
-                    if (!System.IO.File.Exists(dataPath + "/joints.csv"))
-                    {
-                        sb.Append("Timestamp,");
-
-                        // Left
-                        foreach (var j in Enum.GetNames(typeof(HandPointIndex)))
-                        {
-                            sb.Append("L_" + j.ToString() + "_X,");
-                            sb.Append("L_" + j.ToString() + "_Y,");
-                            sb.Append("L_" + j.ToString() + "_Z,");
-                        }
-
-                        // Right
-                        foreach (var j in Enum.GetNames(typeof(HandPointIndex)))
-                        {
-                            sb.Append("R_" + j.ToString() + "_X,");
-                            sb.Append("R_" + j.ToString() + "_Y,");
-                            sb.Append("R_" + j.ToString() + "_Z,");
-                        }
-
-                        sb.AppendLine();
-                    }
-
-                    sb.Append(timeStamp + ",");
-
-                    
-                    var pointsLeft = handDataCopy?.featurePointsLeft;
-                    var pointsRight = handDataCopy?.featurePointsRight;
-
-                    if (pointsLeft != null && pointsLeft.Length > 0)
-                    {
-                        foreach (var p in pointsLeft)
-                        {
-                            if (p.z <= 0)
-                            {
-                                sb.Append("0,0,0,");
-                            }
-                            else
-                            {
-                                sb.Append(p.x + "," + p.y + "," + p.z + ",");
-                            }
-                        }
-                    }
-
-
-                    if (pointsRight != null && pointsRight.Length > 0)
-                    {
-                        foreach (var p in pointsRight)
-                        {
-                            if (p.z <= 0)
-                            {
-                                sb.Append("0,0,0,");
-                            }
-                            else
-                            {
-                                sb.Append(p.x + "," + p.y + "," + p.z + ",");
-                            }
-                        }
-                    }
-
-                    sb.AppendLine();
-
-                    System.IO.File.AppendAllText(csvPath, sb.ToString());
-
-                    csvSaved = true;
-                    
-                }
+                csvSaved = true;
 
             }
             catch (System.IO.IOException e)
@@ -224,6 +154,75 @@ namespace TofArSettings.Hand
                 TofArManager.Logger.WriteLog(LogLevel.Debug, sb.ToString());
             }
             return rawSaved && imgSaved && csvSaved;
+        }
+
+        private void SaveCsv(string dataPath, string timeStamp)
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            if (!System.IO.File.Exists(dataPath + "/joints.csv"))
+            {
+                sb.Append("Timestamp,");
+
+                // Left
+                foreach (var j in Enum.GetNames(typeof(HandPointIndex)))
+                {
+                    sb.Append("L_" + j.ToString() + "_X,");
+                    sb.Append("L_" + j.ToString() + "_Y,");
+                    sb.Append("L_" + j.ToString() + "_Z,");
+                }
+
+                // Right
+                foreach (var j in Enum.GetNames(typeof(HandPointIndex)))
+                {
+                    sb.Append("R_" + j.ToString() + "_X,");
+                    sb.Append("R_" + j.ToString() + "_Y,");
+                    sb.Append("R_" + j.ToString() + "_Z,");
+                }
+
+                sb.AppendLine();
+            }
+
+            sb.Append(timeStamp + ",");
+
+
+            var pointsLeft = handDataCopy?.featurePointsLeft;
+            var pointsRight = handDataCopy?.featurePointsRight;
+
+            if (pointsLeft != null && pointsLeft.Length > 0)
+            {
+                foreach (var p in pointsLeft)
+                {
+                    if (p.z <= 0)
+                    {
+                        sb.Append("0,0,0,");
+                    }
+                    else
+                    {
+                        sb.Append(p.x + "," + p.y + "," + p.z + ",");
+                    }
+                }
+            }
+
+
+            if (pointsRight != null && pointsRight.Length > 0)
+            {
+                foreach (var p in pointsRight)
+                {
+                    if (p.z <= 0)
+                    {
+                        sb.Append("0,0,0,");
+                    }
+                    else
+                    {
+                        sb.Append(p.x + "," + p.y + "," + p.z + ",");
+                    }
+                }
+            }
+
+            sb.AppendLine();
+
+            System.IO.File.AppendAllText(csvPath, sb.ToString());
         }
 
         private void HandFrameArrived(object sender)

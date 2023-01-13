@@ -4,6 +4,7 @@
  * Copyright 2022 Sony Semiconductor Solutions Corporation.
  *
  */
+using TofAr.V0.Body;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,28 +13,31 @@ namespace TofArSettings.Body
     public class BodySettings : UI.SettingsBase
     {
         BodyRuntimeController runtimeController;
-        SV1Controller sv1Controller;
+        BodyManagerController managerController;
         SV2Controller sv2Controller;
 
-        UI.ItemDropdown itemMode, itemRuntimeModeSV1, itemRuntimeModeSV2, itemBodyShotSV1, itemRecogModeSV2, itemNoiseReduction;
-        UI.ItemSlider itemSV1Thread, itemSV2Thread;
+        UI.ItemDropdown itemMode, itemRuntimeModeSV2, itemRecogModeSV2, itemNoiseReduction;
+        UI.ItemSlider itemSV2Thread;
+        UI.ItemToggle itemStartStream;
+        
 
         protected override void Start()
         {
             // Set UI order
             uiOrder = new UnityAction[]
             {
+                MakeUIStartStream,
                 MakeUIDetectorType,
                 MakeUIRuntime
             };
 
             runtimeController = FindObjectOfType<BodyRuntimeController>();
             controllers.Add(runtimeController);
-            sv1Controller = FindObjectOfType<SV1Controller>();
-            controllers.Add(sv1Controller);
             sv2Controller = FindObjectOfType<SV2Controller>();
             controllers.Add(sv2Controller);
-
+            managerController = FindObjectOfType<BodyManagerController>();
+            controllers.Add(managerController);
+            
             base.Start();
         }
 
@@ -48,7 +52,6 @@ namespace TofArSettings.Body
             runtimeController.OnChangeDetectorType += (index) =>
             {
                 itemMode.Index = index;
-                SetSV1Interactability();
                 SetSV2Interactability();
             };
         }
@@ -67,14 +70,6 @@ namespace TofArSettings.Body
         /// </summary>
         void MakeUIRuntime()
         {
-            itemRuntimeModeSV1 = settings.AddItem("SV1 Runtime", sv1Controller.ExecModeNames,
-                sv1Controller.ExecModeIndex, ChangeRuntimeModeSV1);
-            itemBodyShotSV1 = settings.AddItem("SV1 Body Shot", sv1Controller.BodyShotNames,
-                sv1Controller.BodyShotIndex, ChangeBodyShotSV1);
-            itemSV1Thread = settings.AddItem("SV1 Threads",
-                SV1Controller.ThreadMin, SV1Controller.ThreadMax,
-                SV1Controller.ThreadStep, sv1Controller.ModeThreads,
-                ChangeSV1Threads);
             itemRuntimeModeSV2 = settings.AddItem("SV2 Runtime", sv2Controller.RuntimeModeNames,
                 sv2Controller.RuntimeModeIndex, ChangeRuntimeModeSV2);
             itemRecogModeSV2 = settings.AddItem("SV2 RecogMode", sv2Controller.RecogModeNames,
@@ -86,27 +81,10 @@ namespace TofArSettings.Body
             itemNoiseReduction = settings.AddItem("SV2 Noise Reduction Level", sv2Controller.NoiseReductionLevelNames,
                 sv2Controller.NoiseReductionIndex, ChangeNoiseReductionSV2);
 
-            sv1Controller.OnChangeBodyShot += (index) =>
-            {
-                itemBodyShotSV1.Index = index;
-            };
-
-            sv1Controller.OnChangeRuntimeMode += (index) =>
-            {
-                itemRuntimeModeSV1.Index = index;
-                itemSV1Thread.Interactable = sv1Controller.IsInteractableModeThreads;
-            };
-
             sv2Controller.OnChangeRuntimeMode += (index) =>
             {
                 itemRuntimeModeSV2.Index = index;
                 itemSV2Thread.Interactable = sv2Controller.IsInteractableModeThreads;
-            };
-
-            sv1Controller.OnUpdateRuntimeModeList += (list, runtimeModeIndex) =>
-            {
-                itemRuntimeModeSV1.Options = list;
-                itemRuntimeModeSV1.Index = runtimeModeIndex;
             };
 
             sv2Controller.OnUpdateRuntimeModeList += (list, runtimeModeIndex) =>
@@ -115,7 +93,7 @@ namespace TofArSettings.Body
                 itemRuntimeModeSV2.Index = runtimeModeIndex;
             };
 
-            sv2Controller.OnChangeRecogMode += (index) =>
+            sv2Controller.OnChangeRecogMode += (index,conf) =>
             {
                 itemRecogModeSV2.Index = index;
             };
@@ -137,30 +115,12 @@ namespace TofArSettings.Body
                 itemNoiseReduction.Index = index;
             };
 
-            sv1Controller.OnChangeModeThreads += (val) =>
-            {
-                itemSV1Thread.Value = val;
-            };
-
             sv2Controller.OnChangeModeThreads += (val) =>
             {
                 itemSV2Thread.Value = val;
             };
 
-            SetSV1Interactability();
             SetSV2Interactability();
-        }
-
-        /// <summary>
-        /// Enabled or disable the interactibility of sv1 UI based on the runtime controller
-        /// </summary>
-        void SetSV1Interactability()
-        {
-            var interactible = runtimeController.DetectorTypeIndex > 0 &&
-                runtimeController.DetectorType == TofAr.V0.Body.BodyPoseDetectorType.External;
-            itemRuntimeModeSV1.Interactable = interactible;
-            itemSV1Thread.Interactable = interactible && sv1Controller.IsInteractableModeThreads;
-            itemBodyShotSV1.Interactable = interactible;
         }
 
         /// <summary>
@@ -168,39 +128,11 @@ namespace TofArSettings.Body
         /// </summary>
         void SetSV2Interactability()
         {
-            var interactible = runtimeController.DetectorTypeIndex > 0 &&
-                runtimeController.DetectorType == TofAr.V0.Body.BodyPoseDetectorType.Internal_SV2;
+            var interactible = runtimeController.DetectorType == TofAr.V0.Body.BodyPoseDetectorType.Internal_SV2;
             itemRuntimeModeSV2.Interactable = interactible;
             itemRecogModeSV2.Interactable = interactible;
             itemSV2Thread.Interactable = interactible && sv2Controller.IsInteractableModeThreads;
             itemNoiseReduction.Interactable = interactible;
-        }
-
-        /// <summary>
-        /// Change BodyShotSV1
-        /// </summary>
-        /// <param name="index">BodyShot index</param>
-        void ChangeBodyShotSV1(int index)
-        {
-            sv1Controller.BodyShotIndex = index;
-        }
-
-        /// <summary>
-        /// Change RuntimeMode1
-        /// </summary>
-        /// <param name="index">RuntimeMode index</param>
-        void ChangeRuntimeModeSV1(int index)
-        {
-            sv1Controller.ExecModeIndex = index;
-        }
-
-        /// <summary>
-        /// Change thread count of RuntimeMode1
-        /// </summary>
-        /// <param name="val">Thread count</param>
-        void ChangeSV1Threads(float val)
-        {
-            sv1Controller.ModeThreads = Mathf.RoundToInt(val);
         }
 
         /// <summary>
@@ -237,6 +169,34 @@ namespace TofArSettings.Body
         void ChangeSV2Threads(float val)
         {
             sv2Controller.ModeThreads = Mathf.RoundToInt(val);
+        }
+
+        /// <summary>
+        /// Make StartStream UI
+        /// </summary>
+        void MakeUIStartStream()
+        {
+            itemStartStream = settings.AddItem("Start Stream", TofArBodyManager.Instance.autoStart, ChangeStartStream);
+            managerController.OnStreamStartStatusChanged += (val) =>
+            {
+                itemStartStream.OnOff = val;
+            };
+        }
+
+        /// <summary>
+        /// If stream oocurs or not
+        /// </summary>
+        /// <param name="val">Stream started or not</param>
+        void ChangeStartStream(bool val)
+        {
+            if (val)
+            {
+                managerController.StartStream();
+            }
+            else
+            {
+                managerController.StopStream();
+            }
         }
     }
 }

@@ -64,10 +64,52 @@ namespace TofArSettings.Face
             get { return modeNames; }
         }
 
+        public ProcessMode[] ProcessModeList { get; private set; }
+
+        string[] processModeNames = new string[0];
+        public string[] ProcessModeNames
+        {
+            get { return processModeNames; }
+        }
+
+        int processModeLandmarkIndex;
+        public int ProcessModeLandmarkIndex
+        {
+            get { return processModeLandmarkIndex; }
+            set
+            {
+                if (value != processModeLandmarkIndex && 0 <= value &&
+                    value < ProcessModeList.Length)
+                {
+                    ProcessModeLandmark = ProcessModeList[value];
+                }
+            }
+        }
+
+        public ProcessMode ProcessModeLandmark
+        {
+            get
+            {
+                return faceEstimator.LandmarkProcessMode;
+            }
+
+            set
+            {
+                if (value != faceEstimator.LandmarkProcessMode)
+                {
+                    processModeLandmarkIndex = Utils.Find(value, ProcessModeList);
+                    faceEstimator.LandmarkProcessMode = value;
+                    managerController.RestartStream();
+                    OnChangeModelType?.Invoke(processModeLandmarkIndex);
+                }
+            }
+        }
+
         protected override void Start()
         {
             base.Start();
             UpdateRuntimeModeList();
+            UpdateProcessModeList();
         }
 
         public int ModeThreads
@@ -109,9 +151,9 @@ namespace TofArSettings.Face
         public delegate void UpdateRuntimeModeListEvent(string[] list,
             int mode1Index);
 
-        public event ChangeIndexEvent OnChangeRuntimeMode;
+        public event ChangeIndexEvent OnChangeRuntimeMode, OnChangeModelType;
 
-        public event UpdateRuntimeModeListEvent OnUpdateRuntimeModeList;
+        public event UpdateRuntimeModeListEvent OnUpdateRuntimeModeList, OnUpdateProcessModeLandmarkList;
 
         public event ChangeIndexEvent OnChangeModeThreads;
 
@@ -134,13 +176,46 @@ namespace TofArSettings.Face
             }
 
             // Get intial values of RuntimeMode1
-            modeIndex = Utils.Find(faceEstimator.ExecMode, ExecModeList);
-            if (modeIndex < 0)
+            if (faceEstimator != null)
             {
-                modeIndex = 0;
+                modeIndex = Utils.Find(faceEstimator.ExecMode, ExecModeList);
+                if (modeIndex < 0)
+                {
+                    modeIndex = 0;
+                }
             }
 
             OnUpdateRuntimeModeList?.Invoke(ExecModeNames, ExecModeIndex);
+        }
+
+        /// <summary>
+        /// Update ProcessMode list
+        /// </summary>
+        void UpdateProcessModeList()
+        {
+            // Get RuntimeMode list
+            ProcessModeList = (ProcessMode[])Enum.GetValues(typeof(ProcessMode));
+            if (ProcessModeList.Length != processModeNames.Length)
+            {
+                Array.Resize(ref processModeNames, ProcessModeList.Length);
+            }
+
+            for (int i = 0; i < ProcessModeList.Length; i++)
+            {
+                processModeNames[i] = ProcessModeList[i].ToString();
+            }
+
+            // Get intial values of RuntimeMode1
+            if (faceEstimator != null)
+            {
+                processModeLandmarkIndex = Utils.Find(faceEstimator.LandmarkProcessMode, ProcessModeList);
+                if (processModeLandmarkIndex < 0)
+                {
+                    processModeLandmarkIndex = 0;
+                }
+            }
+
+            OnUpdateProcessModeLandmarkList?.Invoke(ProcessModeNames, ProcessModeLandmarkIndex);
         }
 
     }

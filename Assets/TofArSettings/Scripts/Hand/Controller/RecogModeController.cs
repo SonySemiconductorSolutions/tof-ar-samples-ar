@@ -8,12 +8,13 @@
 using System;
 using System.Collections;
 using TofAr.V0.Hand;
+using UnityEngine;
 
 namespace TofArSettings.Hand
 {
     public class RecogModeController : ControllerBase
     {
-        int index = 0;
+        int index = -1;
         public int Index
         {
             get { return index; }
@@ -23,14 +24,7 @@ namespace TofArSettings.Hand
                 if (value != index && 0 <= value && value < ModeList.Length)
                 {
                     index = value;
-                    if (value > 0)
-                    {
-                        Mode = ModeList[value];
-                    }
-                    else
-                    {
-                        OnChangeRecog?.Invoke(Index, null);
-                    }
+                    Mode = ModeList[value];
                 }
             }
         }
@@ -62,6 +56,8 @@ namespace TofArSettings.Hand
 
         bool isRunning = false;
 
+		const float timeOut = 5;
+
         /// <summary>
         /// Event that is called when Hand dictionary is changed
         /// </summary>
@@ -78,12 +74,6 @@ namespace TofArSettings.Hand
             UpdateRecogModeList();
 
             base.Start();
-
-            // default to 1
-            if (Index <= 0)
-            {
-                Index = 1;
-            }
         }
 
         /// <summary>
@@ -95,28 +85,28 @@ namespace TofArSettings.Hand
 
             // Get dictionary list
             var array = TofArHandManager.Instance.SupportedRecogModes;
-            if (ModeList.Length != array.Length + 1)
+            if (ModeList.Length != array.Length)
             {
-                Array.Resize(ref modeList, array.Length + 1);
+                Array.Resize(ref modeList, array.Length);
                 Array.Resize(ref modeNames, ModeList.Length);
             }
 
             // Make top one the first
             ModeList[0] = array[0];
-            RecogModeNames[0] = "-";
             for (int i = 0; i < array.Length; i++)
             {
                 var mode = array[i];
-                ModeList[i + 1] = mode;
-                RecogModeNames[i + 1] = mode.ToString();
+                ModeList[i] = mode;
+                RecogModeNames[i] = mode.ToString();
             }
 
             // Set intial values
-            index = Utils.Find(Mode, ModeList, 1);
-            if (index < 0)
+            int idx = Utils.Find(Mode, ModeList, 0);
+            if (idx < 0)
             {
-                index = 0;
+                idx = 0;
             }
+            Index = idx;
 
             OnUpdateList?.Invoke(RecogModeNames, Index);
         }
@@ -135,7 +125,7 @@ namespace TofArSettings.Hand
 
             isRunning = true;
 
-            index = Utils.Find(mode, ModeList, 1);
+            index = Utils.Find(mode, ModeList, 0);
 
             // Change
             TofArHandManager.Instance.RecogMode = mode;
@@ -144,13 +134,16 @@ namespace TofArSettings.Hand
             // Wait until changes have been reflected
             var mgr = TofArHandManager.Instance;
             RecognizeConfigProperty conf;
+			float time = 0;
             while (true)
             {
                 conf = mgr.GetProperty<RecognizeConfigProperty>();
-                if (mgr.RecogMode == conf.recogMode)
+                if ((conf != null && mgr.RecogMode == conf.recogMode) || time >= timeOut)
                 {
                     break;
                 }
+
+                time += Time.deltaTime;
 
                 yield return null;
             }

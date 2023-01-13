@@ -54,6 +54,39 @@ namespace TofArSettings.Hand
 
         protected override void MakeUI()
         {
+            AddItems();
+
+            AssignPanels();
+
+            AddInformations();
+
+            ShowFps(fps);
+
+            if (handStatus || pose || gesture || distance || cameraIntrinsics ||
+                spanDistance || displayHandpoints)
+            {
+                ShowHandStatus(handStatus);
+                ShowPose(pose);
+                ShowGesture(gesture);
+                ShowDist(distance);
+                ShowCameraIntrinsics(cameraIntrinsics);
+                ShowSpan(spanDistance);
+                ShowHandPoints(displayHandpoints);
+            }
+            else
+            {
+                // Prevent empty panels from being shown when all hidden
+                foreach (var key in informations.Keys)
+                {
+                    ShowInfo(key, false, false);
+                }
+            }
+
+            base.MakeUI();
+        }
+
+        private void AddItems()
+        {
             // Create UI contents
             settings.AddItem("FPS", fps, ShowFps);
             settings.AddItem("Hand Status", handStatus, ShowHandStatus);
@@ -63,7 +96,10 @@ namespace TofArSettings.Hand
             settings.AddItem("Span Distance", spanDistance, ShowSpan);
             settings.AddItem("Camera Intrinsics", cameraIntrinsics, ShowCameraIntrinsics);
             settings.AddItem("Display Hand points", displayHandpoints, ShowHandPoints);
+        }
 
+        private void AssignPanels()
+        {
             // Get UI for DebugInfo display area
             foreach (var panel in GetComponentsInChildren<UI.Panel>())
             {
@@ -86,7 +122,10 @@ namespace TofArSettings.Hand
                     break;
                 }
             }
+        }
 
+        private void AddInformations()
+        {
             var infoUis = panelInfo.PanelObj.GetComponentsInChildren<HandInfo>();
             for (int i = 0; i < infoUis.Length; i++)
             {
@@ -116,30 +155,6 @@ namespace TofArSettings.Hand
                     informations.Add(InfoType.SpanDistance, info);
                 }
             }
-
-            ShowFps(fps);
-
-            if (handStatus || pose || gesture || distance || cameraIntrinsics ||
-                spanDistance || displayHandpoints)
-            {
-                ShowHandStatus(handStatus);
-                ShowPose(pose);
-                ShowGesture(gesture);
-                ShowDist(distance);
-                ShowCameraIntrinsics(cameraIntrinsics);
-                ShowSpan(spanDistance);
-                ShowHandPoints(displayHandpoints);
-            }
-            else
-            {
-                // Prevent empty panels from being shown when all hidden
-                foreach (var key in informations.Keys)
-                {
-                    ShowInfo(key, false, false);
-                }
-            }
-
-            base.MakeUI();
         }
 
         /// <summary>

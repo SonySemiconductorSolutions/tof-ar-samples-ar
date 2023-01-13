@@ -444,7 +444,7 @@ namespace TofArSettings.UI
 
             foreach (var playerSet in playerSets.Values)
             {
-                if (playerSet.Item.Index > 0)
+                if (playerSet.Item != null && playerSet.Item.Index > 0)
                 {
                     selectIndexCheck = true;
                     break;

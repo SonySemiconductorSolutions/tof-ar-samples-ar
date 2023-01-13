@@ -9,52 +9,70 @@ using TofAr.V0.Segmentation;
 using TofAr.V0.Color;
 using System.Threading;
 using System.Collections;
+using UnityEngine;
 
 namespace TofArSettings.Segmentation
 {
     public class SegmentationManagerController : ControllerBase
     {
         private SynchronizationContext context;
+        private bool isStarted = false;
+        private bool isPlaying = false;
+        private bool restartStream = false;
 
         protected void Awake()
         {
-            isStarted = TofArSegmentationManager.Instance.autoStart;
-
             context = SynchronizationContext.Current;
+            isStarted = TofArSegmentationManager.Instance.autoStart;
         }
 
         protected void OnEnable()
         {
-            TofArColorManager.OnStreamStarted += OnColorStreamStarted;
-            TofArColorManager.OnStreamStopped += OnColorStreamStopped;
+            TofArColorManager.OnStreamStarted += OnColorPlaybackStreamStarted;
+            TofArColorManager.OnStreamStopped += OnColorPlaybackStreamStopped;
         }
 
         protected void OnDisable()
         {
-            TofArColorManager.OnStreamStarted -= OnColorStreamStarted;
-            TofArColorManager.OnStreamStopped -= OnColorStreamStopped;
+            TofArColorManager.OnStreamStarted -= OnColorPlaybackStreamStarted;
+            TofArColorManager.OnStreamStopped -= OnColorPlaybackStreamStopped;
         }
 
         public bool IsStreamActive()
         {
-            return TofArSegmentationManager.Instance.IsStreamActive;
+            return isStarted && TofArSegmentationManager.Instance.IsStreamActive;
         }
-
-        private bool isStarted = false;
 
         /// <summary>
         /// Start stream
         /// </summary>
         public void StartStream()
         {
-            isStarted = true;
-            if (TofArColorManager.Instance.IsStreamActive)
+            if (!isStarted)
             {
-                var colorFormat = TofArColorManager.Instance.GetProperty<FormatConvertProperty>();
-                if (colorFormat.format != ColorFormat.BGR)
+                isStarted = true;
+                if (TofArColorManager.Instance.IsPlaying)
+                {
+                    TofArSegmentationManager.Instance.StartPlayback();
+                }
+                else
                 {
                     TofArSegmentationManager.Instance.StartStream();
-                }    
+                }
+                OnStreamStartStatusChanged?.Invoke(isStarted);
+            }
+        }
+
+        /// <summary>
+        /// Stop stream
+        /// </summary>
+        public void StopStream()
+        {
+            if (isStarted)
+            {
+                isStarted = false;
+                TofArSegmentationManager.Instance.StopStream();
+                OnStreamStartStatusChanged?.Invoke(isStarted);
             }
         }
 
@@ -63,50 +81,83 @@ namespace TofArSettings.Segmentation
         /// </summary>
         private IEnumerator StartStreamCoroutine()
         {
-            yield return new UnityEngine.WaitForEndOfFrame();
-            TofArSegmentationManager.Instance.StartStream();
+            yield return new WaitForEndOfFrame();
+
+            StartStream();
+        }
+
+        private IEnumerator StartPlaybackStreamCoroutine()
+        {
+            yield return new WaitForEndOfFrame();
+
+            TofArSegmentationManager.Instance.StartPlayback();
+            OnStreamStartStatusChanged?.Invoke(true);
+            isPlaying = true;
         }
 
         /// <summary>
-        /// Stop stream
+        /// Event that is called when Tof stream is started and status is changed
         /// </summary>
-        public void StopStream()
-        {
-            isStarted = false;
-            if (TofArSegmentationManager.Instance.IsStreamActive)
-            {
-                TofArSegmentationManager.Instance.StopStream();
-            }
-        }
+        public event ChangeToggleEvent OnStreamStartStatusChanged;
 
         /// <summary>
         /// Event that is called when Color stream is started
         /// </summary>
         /// <param name="sender">TofArSegmentationManager</param>
-        void OnColorStreamStarted(object sender, UnityEngine.Texture2D tex)
+        public void OnColorStreamStarted(object sender, UnityEngine.Texture2D tex)
         {
-            var colorFormat = TofArColorManager.Instance.GetProperty<FormatConvertProperty>();
-            if (colorFormat.format != ColorFormat.BGR)
+            context.Post((s) =>
             {
-                if (isStarted)
-                {
-                    context.Post((s) =>
-                    {
-                        StartCoroutine(StartStreamCoroutine());
-                    }, null);
-                }
-            }
+                StartCoroutine(StartStreamCoroutine());
+            }, null);
         }
 
         /// <summary>
         /// Event that is called when Color stream is stopped
         /// </summary>
         /// <param name="sender">TofArColorManager</param>
-        void OnColorStreamStopped(object sender)
+        public void OnColorStreamStopped(object sender)
         {
-            if (isStarted)
+            StopStream();
+        }
+
+        /// <summary>
+        /// Event that is called when Color playback stream is started
+        /// </summary>
+        /// <param name="sender">TofArTofManager</param>
+        private void OnColorPlaybackStreamStarted(object sender, Texture2D tex)
+        {
+            if (TofArColorManager.Instance.IsPlaying)
             {
-                TofArSegmentationManager.Instance.StopStream();
+                if (isStarted)
+                {
+                    restartStream = true;
+                }
+
+                context.Post((s) =>
+                {
+                    StartCoroutine(StartPlaybackStreamCoroutine());
+                }, null);
+            }
+        }
+
+        /// <summary>
+        /// Event that is called when Color playback stream is stopped
+        /// </summary>
+        /// <param name="sender">TofArTofManager</param>
+        private void OnColorPlaybackStreamStopped(object sender)
+        {
+            if (isPlaying)
+            {
+                isPlaying = false;
+                OnColorStreamStopped(sender);
+            }
+
+            // may have to restart mesh stream
+            if (restartStream)
+            {
+                restartStream = false;
+                OnColorStreamStarted(sender, null);
             }
         }
     }
