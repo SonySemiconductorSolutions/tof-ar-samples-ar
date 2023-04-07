@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -13,12 +13,11 @@ namespace TofArSettings.Hand
     public class HandGestureSettings : UI.SettingsBase
     {
         GestureController gestureCtrl;
-        GestureIntervalFrameNotRecogController intervalNotRecogCtrl;
-        GestureFramesForDetectNoHandsController noHandsCtrl;
+        GestureTypeController gestureTypeCtrl;
+        
 
         UI.ItemToggle itemEnable, itemAcc;
-        UI.ItemSlider itemRecogTh, itemNotRecogInterval,
-            itemFrameNoHand, itemEstFrame;
+        
 
         protected override void Start()
         {
@@ -26,17 +25,14 @@ namespace TofArSettings.Hand
             uiOrder = new UnityAction[]
             {
                 MakeUIEnable,
-                MakeUIIntervalFrameNotRecog,
-                MakeUIFramesForDetectNoHands
             };
 
             gestureCtrl = FindObjectOfType<GestureController>();
             controllers.Add(gestureCtrl);
-            intervalNotRecogCtrl = gestureCtrl.GetComponent<GestureIntervalFrameNotRecogController>();
-            controllers.Add(intervalNotRecogCtrl);
-            noHandsCtrl = gestureCtrl.GetComponent<GestureFramesForDetectNoHandsController>();
-            controllers.Add(noHandsCtrl);
-
+            gestureTypeCtrl = gestureCtrl.GetComponent<GestureTypeController>();
+            controllers.Add(gestureTypeCtrl);
+            
+            
             base.Start();
         }
 
@@ -59,60 +55,6 @@ namespace TofArSettings.Hand
         void ChangeEnable(bool onOff)
         {
             gestureCtrl.OnOff = onOff;
-        }
-
-        /// <summary>
-        /// Make IntervalFrameNotRecognized UI
-        /// </summary>
-        void MakeUIIntervalFrameNotRecog()
-        {
-            itemNotRecogInterval = settings.AddItem("IntervalFrame\nNotRecognized",
-                GestureIntervalFrameNotRecogController.Min,
-                GestureIntervalFrameNotRecogController.Max,
-                GestureIntervalFrameNotRecogController.Step,
-                intervalNotRecogCtrl.IntervalFrameNotRecognized,
-                ChangeIntervalFrameNotRecog, -4);
-
-            intervalNotRecogCtrl.OnChange += (val) =>
-            {
-                itemNotRecogInterval.Value = val;
-            };
-        }
-
-        /// <summary>
-        /// Change IntervalFrameNotRecognized
-        /// </summary>
-        /// <param name="val">IntervalFrameNotRecognized</param>
-        void ChangeIntervalFrameNotRecog(float val)
-        {
-            intervalNotRecogCtrl.IntervalFrameNotRecognized = Mathf.RoundToInt(val);
-        }
-
-        /// <summary>
-        /// Make FramesForDetectNoHands UI
-        /// </summary>
-        void MakeUIFramesForDetectNoHands()
-        {
-            itemFrameNoHand = settings.AddItem("FramesFor\nDetectNoHands",
-                GestureFramesForDetectNoHandsController.Min,
-                GestureFramesForDetectNoHandsController.Max,
-                GestureFramesForDetectNoHandsController.Step,
-                noHandsCtrl.FramesForDetectNoHands,
-                ChangeFramesForDetectNoHands, -4);
-
-            noHandsCtrl.OnChange += (val) =>
-            {
-                itemFrameNoHand.Value = val;
-            };
-        }
-
-        /// <summary>
-        /// Change FramesForDetectNoHands
-        /// </summary>
-        /// <param name="val">FramesForDetectNoHands</param>
-        void ChangeFramesForDetectNoHands(float val)
-        {
-            noHandsCtrl.FramesForDetectNoHands = Mathf.RoundToInt(val);
-        }
+        }        
     }
 }

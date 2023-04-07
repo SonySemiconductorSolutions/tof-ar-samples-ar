@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -48,6 +48,8 @@ namespace TofArSettings.Segmentation
             skyDetector = FindObjectOfType<SkySegmentationDetector>();
 
             base.Start();
+
+            settings.OnChangeStart += OnChangePanel;
         }
 
 
@@ -156,6 +158,18 @@ namespace TofArSettings.Segmentation
             else
             {
                 managerController.StopStream();
+            }
+        }
+
+        /// <summary>
+        /// Event called when the state of the panel changes
+        /// </summary>
+        /// <param name="onOff">open/close</param>
+        void OnChangePanel(bool onOff)
+        {
+            if (onOff)
+            {
+                itemStartStream.OnOff = TofArSegmentationManager.Instance.IsStreamActive;
             }
         }
     }

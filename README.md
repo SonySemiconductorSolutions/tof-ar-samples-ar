@@ -95,18 +95,6 @@ Three modes are available. Tap the lower right hand icon and select the mode fro
 * Stamp mode:
  Touch the "Add Stamp Button" and select photos from the camera roll. The photos will be mapped onto the mesh.
 
-### IceWater
-
-A sample for AR flood simulation.
-
-<img src="/Images/08_IceWater.jpg" width="500">
-
-The sample starts with plane recognition and then displays effects on recognized areas.
-
-Pressing the Create button sets the height of flooding based on the position of the effect.
-
-Tapping the screen plays an animation and changes the screen to a flooded scene.
-
 ### BallPool
 
 Generate AR balls in a recognized space.
@@ -144,7 +132,6 @@ The table below shows the relationships between the scenes in the sample applica
 |Juggling            |✓|✓|  |　|✓|  |  |  |✓|  |  |
 |BGChange            |✓|✓|  |  |✓|  |  |✓|  |  |  |
 |TextureRoom         |✓|✓|  |  |  |  |  |✓|  |  |✓|
-|IceWater            |✓|✓|  |  |  |  |  |✓|  |  |✓|
 |BallPool            |✓|✓|  |✓|  |  |  |✓|  |  |✓|
 |StepOn              |✓|✓|  |✓|  |  |  |✓|  |  |  |
 
@@ -189,9 +176,9 @@ ToF AR Development documents are also available on Developer World.
 
 Operation was verified in the following environment:
 
-* Unity Version  : 2020.3.40f1
-* ToF AR Version : 1.2.0
-* AR Foundation  : 4.2.6
+* Unity Version  : 2021.3.18f1
+* ToF AR Version : 1.3.0
+* AR Foundation  : 4.2.7
 
 
 <a name="notes"></a>

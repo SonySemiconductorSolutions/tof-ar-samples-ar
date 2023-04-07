@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -78,9 +78,6 @@ namespace TofArSettings.UI
         {
             var ms = GetComponentsInChildren<SettingsBase>();
 
-            // add GeneralChild Panel if using iOS
-            bool addGeneralChild = (TofArManager.Instance.UsingIos);
-
             for (int i = 0; i < ms.Length; i++)
             {
                 var menu = ms[i];
@@ -89,7 +86,7 @@ namespace TofArSettings.UI
                     continue;
                 }
 
-                if ((addGeneralChild && menu is General.GeneralSettingsChild) || 
+                if (menu is General.GeneralSettingsChild ||
                     IsCompoTypeAvailable(menu))
                 {
                     menus.Add(menu);
@@ -128,6 +125,9 @@ namespace TofArSettings.UI
                 {
                     menu.OpenPanel();
                 });
+
+                // Link a child panel to parent panel
+                menu.LinkParent(settings.RegisterChildPanel);
 
                 // Return back to main menu after pressing back button on sub menu
                 menu.OnBack += () =>

@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -135,6 +135,15 @@ namespace TofArSettings.UI
         }
 
         /// <summary>
+        /// Set the parent-child relationship of the panel
+        /// </summary>
+        /// <param name="parentFunc">Palent's function (Register/UnregisterChildPanel)</param>
+        public void LinkParent(UnityAction<Panel> parentFunc)
+        {
+            parentFunc?.Invoke(settings);
+        }
+
+        /// <summary>
         /// Event that is called when back button is pressed
         /// </summary>
         protected virtual void OnClickBack()
@@ -165,6 +174,7 @@ namespace TofArSettings.UI
         /// </summary>
         IEnumerator WaitAndMakeUI()
         {
+            // Wait 1 frame to execute after other Start functions have completed
             yield return null;
 
             if (controllers.Count > 0)
@@ -174,7 +184,7 @@ namespace TofArSettings.UI
                     bool isFinish = true;
                     for (int i = 0; i < controllers.Count; i++)
                     {
-                        if (!controllers[i].FinishedSetup)
+                        if (controllers[i] != null && !controllers[i].FinishedSetup)
                         {
                             isFinish = false;
                             break;

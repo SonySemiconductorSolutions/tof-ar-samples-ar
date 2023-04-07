@@ -30,9 +30,6 @@ EditorBuildSettings:
     path: Assets/TofArSamplesAr/SamplesAr/TextureRoom/TextureRoom.unity
     guid: dbc293fafc8fb440585930cd9e48a474
   - enabled: 1
-    path: Assets/TofArSamplesAr/SamplesAr/IceWater/IceWater.unity
-    guid: 3cf2e1c8b33294fb580afa1805d6620f
-  - enabled: 1
     path: Assets/TofArSamplesAr/SamplesAr/BallPool/BallPool.unity
     guid: 92325066feb1a4510bed85428623b244
   - enabled: 1

@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -249,7 +249,9 @@ namespace TofArSettings
 
         protected abstract string GetLastRecording();
 
+#if UNITY_EDITOR || UNITY_STANDALONE_OSX || UNITY_STANDALONE_WIN
         private static bool copyInProcess = false;
+#endif
 
         protected IEnumerator CopyToDevice()
         {

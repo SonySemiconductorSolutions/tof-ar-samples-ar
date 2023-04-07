@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -13,7 +13,7 @@ namespace TofArSettings.Slam
 {
     public class SlamInfo : MonoBehaviour
     {
-        Text txtPos, txtRot;
+        Text txtPos, txtRot, txtAcc;
 
         void Start()
         {
@@ -35,6 +35,10 @@ namespace TofArSettings.Slam
                 {
                     txtRot = ui;
                 }
+                if (ui.name.Contains("Accel"))
+                {
+                    txtAcc = ui;
+                }
             }
         }
 
@@ -51,6 +55,7 @@ namespace TofArSettings.Slam
                     txtPos.text = $"{TofArSlamManager.Instance.SlamData.Data.Position:F3}";
                 }
                 txtRot.text = $"{TofArSlamManager.Instance.SlamData.Data.Rotation.eulerAngles:F3}";
+                txtAcc.text = $"{TofArSlamManager.Instance.SlamData.Data.Acceleration:F3}";
             }
         }
     }

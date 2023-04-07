@@ -1,96 +1,79 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using System.Collections.Generic;
+using System.Linq;
 using TofAr.V0;
-using TofAr.V0.Body;
 using TofAr.V0.Color;
-using TofAr.V0.Hand;
-using TofAr.V0.Mesh;
-using TofAr.V0.Segmentation;
 using TofAr.V0.Tof;
 using TofArSettings.UI;
 using UnityEngine;
 
 namespace TofArSettings
 {
+    public abstract class IDependendStreamUIHandler: MonoBehaviour
+    {
+        public delegate void StreamStatusChangedDelegate();
+        public StreamStatusChangedDelegate OnStreamStatusChanged;
+
+        public abstract void AddTofDependendStreams(List<IDependManager> managersDepend);
+
+        public abstract void AddColorDependendStreams(List<IDependManager> managersDepend);
+    }
+
     public class DependendStreamUIHandler : MonoBehaviour
     {
-        private Dictionary<SettingsBase.ComponentType, List<UI.ItemDropdown>> listDropdowns = new Dictionary<SettingsBase.ComponentType, List<UI.ItemDropdown>>();
+        protected Dictionary<SettingsBase.ComponentType, List<UI.ItemDropdown>> listDropdowns = new Dictionary<SettingsBase.ComponentType, List<UI.ItemDropdown>>();
 
         [SerializeField]
         private UI.ToolButton[] buttons;
 
-        private TofArColorManager colorMgr;
-        private TofArTofManager tofMgr;
-        private TofArHandManager handMgr;
-        private TofArBodyManager bodyMgr;
-        private TofArSegmentationManager segMgr;
-        private TofArMeshManager meshMgr;
+        protected TofArColorManager colorMgr;
+        protected TofArTofManager tofMgr;
 
-        private List<IDependManager> managersDependTof = new List<IDependManager>();
-        private List<IDependManager> managersDependColor = new List<IDependManager>();
+        protected List<IDependManager> managersDependTof = new List<IDependManager>();
+        protected List<IDependManager> managersDependColor = new List<IDependManager>();
+
+        private IDependendStreamUIHandler[] subHandlers;
 
         private void Awake()
         {
+            subHandlers = FindObjectsOfType<IDependendStreamUIHandler>();
+
             colorMgr = TofArColorManager.Instance;
             tofMgr = TofArTofManager.Instance;
-            handMgr = TofArHandManager.Instance;
-            bodyMgr = TofArBodyManager.Instance;
-            segMgr = TofArSegmentationManager.Instance;
-            meshMgr = TofArMeshManager.Instance;
 
-            managersDependTof.Add(handMgr);
-            managersDependTof.Add(bodyMgr);
-            managersDependTof.Add(meshMgr);
-
-            managersDependColor.Add(segMgr);
+            foreach (var subHandler in subHandlers)
+            {
+                if (subHandler != null)
+                {
+                    subHandler.AddColorDependendStreams(managersDependColor);
+                    subHandler.AddTofDependendStreams(managersDependTof);
+                    subHandler.OnStreamStatusChanged += UpdateDropdownInteractibility;
+                }
+            }
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             TofArColorManager.OnStreamStarted += OnColorStreamStarted;
             TofArColorManager.OnStreamStopped += OnColorStreamStopped;
 
             TofArTofManager.OnStreamStarted += OnTofStreamStarted;
             TofArTofManager.OnStreamStopped += OnTofStreamStopped;
-
-            TofArHandManager.OnStreamStarted += OnStreamStarted;
-            TofArHandManager.OnStreamStopped += OnStreamStopped;
-
-            TofArBodyManager.OnStreamStarted += OnStreamStarted;
-            TofArBodyManager.OnStreamStopped += OnStreamStopped;
-
-            TofArSegmentationManager.OnStreamStarted += OnStreamStarted;
-            TofArSegmentationManager.OnStreamStopped += OnStreamStopped;
-
-            TofArMeshManager.OnStreamStarted += OnStreamStarted;
-            TofArMeshManager.OnStreamStopped += OnStreamStopped;
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             TofArColorManager.OnStreamStarted -= OnColorStreamStarted;
             TofArColorManager.OnStreamStopped -= OnColorStreamStopped;
 
             TofArTofManager.OnStreamStarted -= OnTofStreamStarted;
             TofArTofManager.OnStreamStopped -= OnTofStreamStopped;
-
-            TofArHandManager.OnStreamStarted -= OnStreamStarted;
-            TofArHandManager.OnStreamStopped -= OnStreamStopped;
-
-            TofArBodyManager.OnStreamStarted -= OnStreamStarted;
-            TofArBodyManager.OnStreamStopped -= OnStreamStopped;
-
-            TofArSegmentationManager.OnStreamStarted -= OnStreamStarted;
-            TofArSegmentationManager.OnStreamStopped -= OnStreamStopped;
-
-            TofArMeshManager.OnStreamStarted -= OnStreamStarted;
-            TofArMeshManager.OnStreamStopped -= OnStreamStopped;
         }
 
         private void OnStreamStarted(object sender)
@@ -123,7 +106,7 @@ namespace TofArSettings
             OnStreamStarted(sender);
         }
 
-        private void UpdateDropdownInteractibility()
+        protected virtual void UpdateDropdownInteractibility()
         {
             UpdateUIForManager(SettingsBase.ComponentType.Color);
             UpdateUIForManager(SettingsBase.ComponentType.Tof);

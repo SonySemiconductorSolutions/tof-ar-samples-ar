@@ -1,14 +1,14 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
-using UnityEngine;
-using UnityEngine.Events;
 using System.Linq;
 using TofAr.V0.Face;
+using UnityEngine;
+using UnityEngine.Events;
 
 namespace TofArSettings.Face
 {
@@ -40,6 +40,8 @@ namespace TofArSettings.Face
             controllers.Add(managerController);
 
             base.Start();
+
+            settings.OnChangeStart += OnChangePanel;
         }
 
         /// <summary>
@@ -57,8 +59,7 @@ namespace TofArSettings.Face
                     itemMode.Index = index;
                     SetExternalInteractability();
                 };
-  
-            } 
+            }
             else
             {
                 itemMode = settings.AddItem("Detector Type", new string[1] { "-" }, 0, (idx) => { });
@@ -91,8 +92,6 @@ namespace TofArSettings.Face
                 FaceEstimatorController.ThreadMin, FaceEstimatorController.ThreadMax,
                 FaceEstimatorController.ThreadStep, faceEstimatorController.ModeThreads,
                 ChangeThreads);
-
-            
 
             faceEstimatorController.OnChangeRuntimeMode += (index) =>
             {
@@ -179,7 +178,7 @@ namespace TofArSettings.Face
         {
             itemStartStream = settings.AddItem("Start Stream", TofArFaceManager.Instance.autoStart, ChangeStartStream);
 
-            if(runtimeController.DetectorTypeNames.Length <= 0)
+            if (runtimeController.DetectorTypeNames.Length <= 0)
             {
                 itemStartStream.Interactable = false;
             }
@@ -206,5 +205,16 @@ namespace TofArSettings.Face
             }
         }
 
+        /// <summary>
+        /// Event called when the state of the panel changes
+        /// </summary>
+        /// <param name="onOff">open/close</param>
+        void OnChangePanel(bool onOff)
+        {
+            if (onOff)
+            {
+                itemStartStream.OnOff = TofArFaceManager.Instance.IsStreamActive;
+            }
+        }
     }
 }

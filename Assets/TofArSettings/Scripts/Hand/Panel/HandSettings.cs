@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -19,12 +19,16 @@ namespace TofArSettings.Hand
         TrackingModeController trackingModeCtrl;
         NoiseReductionLevelController noiseReductionCtrl;
         HandManagerController managerController;
+        IntervalFrameNotRecogController intervalNotRecogCtrl;
+        FramesForDetectNoHandsController noHandsCtrl;
 
         UI.ItemDropdown itemMode, itemRuntimeMode1, itemRuntimeMode2,
             itemProcessLevel, itemNoiseReduction;
         UI.ItemToggle itemTrack;
         UI.ItemSlider itemMode1Thread, itemMode2Thread;
         UI.ItemToggle itemStartStream;
+
+        UI.ItemSlider itemNotRecogInterval, itemFrameNoHand;
 
         StatusHistory statusHistory;
         UI.Panel panelHistory;
@@ -61,7 +65,9 @@ namespace TofArSettings.Hand
                 MakeUIProcessLevel,
                 MakeUITrackingMode,
                 MakeUIStatusHistory,
-                MakeUINoiseReductionLevel
+                MakeUINoiseReductionLevel,
+                MakeUIIntervalFrameNotRecog,
+                MakeUIFramesForDetectNoHands
             };
 
             recogModeCtrl = FindObjectOfType<RecogModeController>();
@@ -75,8 +81,14 @@ namespace TofArSettings.Hand
             noiseReductionCtrl = recogModeCtrl.GetComponent<NoiseReductionLevelController>();
             managerController = FindObjectOfType<HandManagerController>();
             controllers.Add(managerController);
+            noHandsCtrl = FindObjectOfType<FramesForDetectNoHandsController>();
+            controllers.Add(noHandsCtrl);
+            intervalNotRecogCtrl = FindObjectOfType<IntervalFrameNotRecogController>();
+            controllers.Add(intervalNotRecogCtrl);
 
             base.Start();
+
+            settings.OnChangeStart += OnChangePanel;
         }
 
         /// <summary>
@@ -332,6 +344,72 @@ namespace TofArSettings.Hand
             else
             {
                 managerController.StopStream();
+            }
+        }
+
+        /// <summary>
+        /// Make IntervalFrameNotRecognized UI
+        /// </summary>
+        void MakeUIIntervalFrameNotRecog()
+        {
+            itemNotRecogInterval = settings.AddItem("IntervalFrame\nNotRecognized",
+                IntervalFrameNotRecogController.Min,
+                IntervalFrameNotRecogController.Max,
+                IntervalFrameNotRecogController.Step,
+                intervalNotRecogCtrl.IntervalFrameNotRecognized,
+                ChangeIntervalFrameNotRecog, -4);
+
+            intervalNotRecogCtrl.OnChange += (val) =>
+            {
+                itemNotRecogInterval.Value = val;
+            };
+        }
+
+        /// <summary>
+        /// Change IntervalFrameNotRecognized
+        /// </summary>
+        /// <param name="val">IntervalFrameNotRecognized</param>
+        void ChangeIntervalFrameNotRecog(float val)
+        {
+            intervalNotRecogCtrl.IntervalFrameNotRecognized = Mathf.RoundToInt(val);
+        }
+
+        /// <summary>
+        /// Make FramesForDetectNoHands UI
+        /// </summary>
+        void MakeUIFramesForDetectNoHands()
+        {
+            itemFrameNoHand = settings.AddItem("FramesFor\nDetectNoHands",
+                FramesForDetectNoHandsController.Min,
+                FramesForDetectNoHandsController.Max,
+                FramesForDetectNoHandsController.Step,
+                noHandsCtrl.FramesForDetectNoHands,
+                ChangeFramesForDetectNoHands, -4);
+
+            noHandsCtrl.OnChange += (val) =>
+            {
+                itemFrameNoHand.Value = val;
+            };
+        }
+
+        /// <summary>
+        /// Change FramesForDetectNoHands
+        /// </summary>
+        /// <param name="val">FramesForDetectNoHands</param>
+        void ChangeFramesForDetectNoHands(float val)
+        {
+            noHandsCtrl.FramesForDetectNoHands = Mathf.RoundToInt(val);
+        }
+
+        /// <summary>
+        /// Event called when the state of the panel changes
+        /// </summary>
+        /// <param name="onOff">open/close</param>
+        void OnChangePanel(bool onOff)
+        {
+            if (onOff)
+            {
+                itemStartStream.OnOff = TofArHandManager.Instance.IsStreamActive;
             }
         }
     }

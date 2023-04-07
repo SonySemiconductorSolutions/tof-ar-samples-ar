@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -299,10 +299,12 @@ namespace TofArSettings.Body
                 if (value != noiseReductionIndex && 0 <= value &&
                     value < NoiseReductionLevelList.Length)
                 {
+                    var mgr = TofArBodyManager.Instance;
                     noiseReductionIndex = value;
                     var recognizeConfig = TofArBodyManager.Instance.GetProperty<RecognizeConfigProperty>();
                     recognizeConfig.noiseReductionLevel = NoiseReductionLevelList[value];
-                    TofArBodyManager.Instance.SetProperty<RecognizeConfigProperty>(recognizeConfig);
+                    mgr.SetProperty<RecognizeConfigProperty>(recognizeConfig);
+                    mgr.NoiseReductor = recognizeConfig.noiseReductionLevel;
 
                     OnChangeNoiseReductionLevel?.Invoke(noiseReductionIndex);
                 }

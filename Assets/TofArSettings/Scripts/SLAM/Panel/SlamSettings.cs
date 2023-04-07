@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -16,6 +16,8 @@ namespace TofArSettings.Slam
     public class SlamSettings : UI.SettingsBase
     {
         SlamManagerController managerController;
+        General.CameraApiController cameraApiController;
+
         UI.ItemToggle itemStartStream;
         UI.ItemDropdown itemPoseSource;
         
@@ -32,6 +34,12 @@ namespace TofArSettings.Slam
             };
             managerController = FindObjectOfType<SlamManagerController>();
             controllers.Add(managerController);
+
+            cameraApiController = FindObjectOfType<General.CameraApiController>();
+            cameraApiController.OnChangeApi += (idx) =>
+            {
+                UpdateInteractability();
+            };
 
             base.Start();
         }
@@ -52,6 +60,20 @@ namespace TofArSettings.Slam
             {
                 itemPoseSource.Index = index;
             };
+
+            if (TofAr.V0.TofArManager.Instance.UsingIos)
+            {
+                UpdateInteractability();
+            }
+        }
+
+        private void UpdateInteractability()
+        {
+            bool interactable = cameraApiController.CameraApi == TofAr.V0.IosCameraApi.ArKit;
+            if (itemPoseSource)
+            {
+                itemPoseSource.Interactable = interactable;
+            }
         }
 
 

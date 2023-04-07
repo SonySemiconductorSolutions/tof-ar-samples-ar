@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -28,7 +28,13 @@ namespace TofArSettings.Hand
 
         void Start()
         {
-            uiLRInfo = GetComponentInChildren<UI.InfoLR>();
+            foreach (var ui in GetComponentsInChildren<UI.InfoLR>())
+            {
+                if (ui.name.Contains("LR"))
+                {
+                    uiLRInfo = ui;
+                }
+            }
         }
 
         void Update()
@@ -50,7 +56,15 @@ namespace TofArSettings.Hand
             }
 
             // Get
-            manager.HandData.GetPoseIndex(out poseLeft, out poseRight); 
+            if (manager.HandData.Data.handStatus != HandStatus.NoHand)
+            {
+                manager.HandData.GetPoseIndex(out poseLeft, out poseRight);
+            }
+            else
+            {
+                poseLeft = PoseIndex.None;
+                poseRight = PoseIndex.None;
+            }  
         }
     }
 }

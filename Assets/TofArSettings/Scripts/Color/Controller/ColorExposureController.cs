@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 using TofAr.V0.Color;
@@ -72,10 +72,10 @@ namespace TofArSettings.Color
 
         FlashMode Flash
         {
-            get { return FlashList[FlashIndex]; }
+            get { return FlashList != null ? FlashList[FlashIndex] : FlashMode.Off; }
             set
             {
-                if (value != Flash)
+                if (value != Flash && FlashList != null)
                 {
                     FlashIndex = Utils.Find(value, FlashList);
                 }

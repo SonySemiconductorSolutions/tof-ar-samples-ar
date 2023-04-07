@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -67,8 +67,6 @@ namespace TofArSettings.Color
 
         protected override void Start()
         {
-            defaultReso = TofArColorManager.Instance.GetProperty<ResolutionProperty>();
-
             // Get CameraResolution list
             var props = TofArColorManager.Instance.GetProperty<AvailableResolutionsProperty>();
             MakeResoOptions(props);
@@ -171,6 +169,8 @@ namespace TofArSettings.Color
         /// <param name="properties">CameraResolution list</param>
         void MakeResoOptions(AvailableResolutionsProperty properties)
         {
+            defaultReso = TofArColorManager.Instance.GetProperty<ResolutionProperty>();
+
             var props = (properties == null) ? new List<ResolutionProperty>() :
                 properties.resolutions.ToList();
 
@@ -186,7 +186,8 @@ namespace TofArSettings.Color
                 if (prop.cameraId == defaultReso.cameraId &&
                     prop.width == defaultReso.width &&
                     prop.height == defaultReso.height &&
-                    prop.lensFacing == defaultReso.lensFacing)
+                    prop.lensFacing == defaultReso.lensFacing &&
+                    prop.frameRate == defaultReso.frameRate)
                 {
                     defaultIndex = i;
                 }
@@ -212,10 +213,11 @@ namespace TofArSettings.Color
             Resolutions = props.ToArray();
             Options = propTexts.ToArray();
 
-            // If auto start is on, set recommended value
-            if (TofArColorManager.Instance.autoStart && props.Count > 1)
+            // If stream is already running, set to current config
+            if (TofArColorManager.Instance.IsStreamActive && props.Count > 1)
             {
-                index = 1;
+                var prop = TofArColorManager.Instance.GetProperty<ResolutionProperty>();
+                index = FindIndex(prop);
             }
 
             OnMadeOptions?.Invoke();
@@ -239,7 +241,8 @@ namespace TofArSettings.Color
                 if (prop.cameraId == Resolutions[i].cameraId &&
                     prop.width == Resolutions[i].width &&
                     prop.height == Resolutions[i].height &&
-                    prop.lensFacing == Resolutions[i].lensFacing)
+                    prop.lensFacing == Resolutions[i].lensFacing &&
+                    prop.frameRate == Resolutions[i].frameRate)
                 {
                     pIndex = i;
                     break;
@@ -256,6 +259,15 @@ namespace TofArSettings.Color
         /// <returns>String</returns>
         string MakeText(ResolutionProperty prop)
         {
+            if (TofAr.V0.TofArManager.Instance.UsingIos)
+            {
+                var platformConfigProperty = TofAr.V0.TofArManager.Instance.GetProperty<TofAr.V0.PlatformConfigurationProperty>();
+                if (platformConfigProperty?.platformConfigurationIos?.cameraApi == TofAr.V0.IosCameraApi.AvFoundation)
+                {
+                    return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.width}x{prop.height} ({(int)prop.frameRate}FPS)";
+                }
+            }
+
             return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.width}x{prop.height}";
         }
     }

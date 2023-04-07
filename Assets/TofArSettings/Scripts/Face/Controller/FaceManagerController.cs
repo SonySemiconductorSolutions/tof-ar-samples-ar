@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -18,12 +18,8 @@ namespace TofArSettings.Face
         private FaceRuntimeController runtimeController;
         private FaceEstimator faceEstimator;
 
-        private bool isStarted = false;
-
         protected void Awake()
         {
-            isStarted = TofArFaceManager.Instance.autoStart;
-
             faceEstimator = FindObjectOfType<FaceEstimator>();
         }
 
@@ -32,11 +28,10 @@ namespace TofArSettings.Face
         /// </summary>
         public void StartStream()
         {
-            if (!isStarted)
+            if (!TofArFaceManager.Instance.IsStreamActive)
             {
-                isStarted = true;
                 TofArFaceManager.Instance.StartStream();
-                OnStreamStartStatusChanged(isStarted);
+                OnStreamStartStatusChanged?.Invoke(true);
             }
         }
 
@@ -45,11 +40,10 @@ namespace TofArSettings.Face
         /// </summary>
         public void StopStream()
         {
-            if (isStarted)
+            if (TofArFaceManager.Instance.IsStreamActive)
             {
-                isStarted = false;
                 TofArFaceManager.Instance.StopStream();
-                OnStreamStartStatusChanged(isStarted);
+                OnStreamStartStatusChanged?.Invoke(false);
             }
         }
 
@@ -70,6 +64,11 @@ namespace TofArSettings.Face
             // Wait 1 frame when calling OnStreamStarted directly because it does not get executed for the first time only
             yield return null;
             StartStream();
+        }
+
+        public bool IsStreamActive()
+        {
+            return TofArFaceManager.Instance.IsStreamActive;
         }
 
         /// <summary>

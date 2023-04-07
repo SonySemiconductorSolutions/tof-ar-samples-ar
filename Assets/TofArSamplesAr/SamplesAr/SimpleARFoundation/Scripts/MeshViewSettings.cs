@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -28,9 +28,8 @@ namespace TofArARSamples.SimpleARFoundation
         [SerializeField]
         bool occlusion = true;
 
-        UI.ItemToggle itemCube, itemPlane, itemHandOcclusion;
-        UI.ItemSlider itemClippingDistance, itemPlaneDistance;
-        UI.ItemDropdown itemMaterials;
+        UI.ItemToggle itemCube, itemPlane;
+        UI.ItemSlider itemBlur, itemPlaneDistance;
 
         List<UnityAction> list;
 
@@ -123,6 +122,8 @@ namespace TofArARSamples.SimpleARFoundation
             };
 
             itemPlaneDistance.Interactable = occlusionObjectController.IsPlane;
+
+            itemBlur = settings.AddItem("Blur Strength", BlurSettings.Min, BlurSettings.Max, BlurSettings.Step, BlurSettings.BlurStrength, ChangeBlurStrength, 0);
         }
 
         /// <summary>
@@ -141,6 +142,15 @@ namespace TofArARSamples.SimpleARFoundation
         void ChangePlane(bool onOff)
         {
             occlusionObjectController.IsPlane = onOff;
+        }
+
+        /// <summary>
+        /// Change blur strength
+        /// </summary>
+        /// <param name="strength">Strength</param>
+        void ChangeBlurStrength(float strength)
+        {
+            BlurSettings.BlurStrength = strength;
         }
 
         /// <summary>

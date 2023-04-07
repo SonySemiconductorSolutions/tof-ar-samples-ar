@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -14,23 +14,16 @@ namespace TofArSettings.Body
 {
     public class BodyManagerController : ControllerBase
     {
-        private bool isStarted = false;
-
-        protected void Awake()
-        {
-            isStarted = TofArBodyManager.Instance.autoStart;
-        }
-
+        
         /// <summary>
         /// Start stream
         /// </summary>
         public void StartStream()
         {
-            if (!isStarted)
+            if (!TofArBodyManager.Instance.IsStreamActive)
             {
-                isStarted = true;
                 TofArBodyManager.Instance.StartStream();
-                OnStreamStartStatusChanged(isStarted);
+                OnStreamStartStatusChanged(true);
             }
         }
 
@@ -39,11 +32,10 @@ namespace TofArSettings.Body
         /// </summary>
         public void StopStream()
         {
-            if (isStarted)
+            if (TofArBodyManager.Instance.IsStreamActive)
             {
-                isStarted = false;
                 TofArBodyManager.Instance.StopStream();
-                OnStreamStartStatusChanged(isStarted);
+                OnStreamStartStatusChanged(false);
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -48,10 +48,10 @@ namespace TofArSettings.Color
 
         public WhiteBalanceMode WhiteBalance
         {
-            get { return WhiteBalanceList[Index]; }
+            get { return WhiteBalanceList != null ? WhiteBalanceList[Index] : WhiteBalanceMode.Off; }
             set
             {
-                if (value != WhiteBalance)
+                if (value != WhiteBalance && WhiteBalanceList != null)
                 {
                     Index = Utils.Find(value, WhiteBalanceList);
                 }
@@ -115,6 +115,10 @@ namespace TofArSettings.Color
         void GetProperty()
         {
             var prop = TofArColorManager.Instance.GetProperty<WhiteBalanceModeProperty>();
+            if (prop == null)
+            {
+                return;
+            }
             bool isChange = (autoWhiteBalance != prop.autoWhiteBalance || WhiteBalance != prop.mode);
 
             autoWhiteBalance = prop.autoWhiteBalance;

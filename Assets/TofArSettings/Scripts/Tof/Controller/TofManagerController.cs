@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -69,7 +69,6 @@ namespace TofArSettings.Tof
         protected override void Start()
         {
             isProcessTexture = TofArTofManager.Instance.ProcessTexture;
-            defaultConf = TofArTofManager.Instance.GetProperty<Camera2DefaultConfigurationProperty>();
 
             // Get CameraConfig list
             var props = TofArTofManager.Instance.GetProperty<CameraConfigurationsProperty>();
@@ -174,6 +173,8 @@ namespace TofArSettings.Tof
         /// <param name="properties">CameraConfig list</param>
         void MakeConfigOptions(CameraConfigurationsProperty properties)
         {
+            defaultConf = TofArTofManager.Instance.GetProperty<Camera2DefaultConfigurationProperty>();
+
             var props = (properties == null) ? new List<CameraConfigurationProperty>() :
                 properties.configurations.ToList();
 
@@ -216,10 +217,11 @@ namespace TofArSettings.Tof
             Configs = props.ToArray();
             Options = propTexts.ToArray();
 
-            // Set recommended value when automatically starting
-            if (TofArTofManager.Instance.autoStart && props.Count > 1)
+            // If stream is already running, set to current config
+            if (TofArTofManager.Instance.IsStreamActive && props.Count > 1)
             {
-                index = 1;
+                var prop = TofArTofManager.Instance.GetProperty<CameraConfigurationProperty>();
+                index = FindIndex(prop);
             }
 
             OnMadeOptions?.Invoke();
@@ -257,6 +259,15 @@ namespace TofArSettings.Tof
         /// <returns>Text</returns>
         string MakeText(CameraConfigurationProperty prop)
         {
+            if (TofAr.V0.TofArManager.Instance.UsingIos)
+            {
+                var platformConfigProperty = TofAr.V0.TofArManager.Instance.GetProperty<TofAr.V0.PlatformConfigurationProperty>();
+                if (platformConfigProperty?.platformConfigurationIos?.cameraApi == TofAr.V0.IosCameraApi.AvFoundation)
+                {
+                    return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.width}x{prop.height} ({(int)prop.frameRate}FPS)";
+                }
+            }
+
             return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.name} {prop.width}x{prop.height}";
         }
     }

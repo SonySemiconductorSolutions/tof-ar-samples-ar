@@ -1,11 +1,12 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -87,6 +88,7 @@ namespace TofArSettings.UI
         /// <param name="openOrClose">Opened/Closed</param>
         public delegate void ChangeEvent(bool openOrClose);
 
+        public event ChangeEvent OnChangeStart;
         public event ChangeEvent OnChange;
 
         protected RectTransform rt;
@@ -97,6 +99,8 @@ namespace TofArSettings.UI
         protected Coroutine coClose;
         protected bool isRunngingOpen = false;
         protected bool isRunngingClose = false;
+
+        protected List<Panel> childPanels = new List<Panel>();
 
         protected virtual void Awake()
         {
@@ -154,11 +158,51 @@ namespace TofArSettings.UI
         }
 
         /// <summary>
+        /// Register child panel
+        /// </summary>
+        /// <param name="child">child panel</param>
+        public void RegisterChildPanel(Panel child)
+        {
+            child.OnChangeStart += OnChangeChild;
+            childPanels.Add(child);
+        }
+
+        /// <summary>
+        /// Unregister child panel
+        /// </summary>
+        /// <param name="child">child panel</param>
+        public void UnregisterChildPanel(Panel child)
+        {
+            int index = childPanels.IndexOf(child);
+            if (index >= 0)
+            {
+                child.OnChangeStart -= OnChangeChild;
+                childPanels.RemoveAt(index);
+            }
+        }
+
+        /// <summary>
+        /// Action when open
+        /// </summary>
+        protected virtual void OnOpenStart()
+        {
+            OnChangeStart?.Invoke(true);
+        }
+
+        /// <summary>
         /// Action when opened
         /// </summary>
         protected virtual void OnOpen()
         {
             OnChange?.Invoke(true);
+        }
+
+        /// <summary>
+        /// Action when open
+        /// </summary>
+        protected virtual void OnCloseStart()
+        {
+            OnChangeStart?.Invoke(false);
         }
 
         /// <summary>
@@ -228,6 +272,43 @@ namespace TofArSettings.UI
             else
             {
                 ClosePanel();
+
+                // Close child panels
+                if (childPanels != null)
+                {
+                    for (int i = 0; i < childPanels.Count; i++)
+                    {
+                        var child = childPanels[i];
+                        if (child.IsOpen)
+                        {
+                            child.ClosePanel();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Event that is called when child panel is opened
+        /// </summary>
+        /// <param name="openOrClose">Open/Close</param>
+        void OnChangeChild(bool openOrClose)
+        {
+            if (!Btn)
+            {
+                return;
+            }
+
+            // When the child panel is opened, the button color should remain the same
+            if (openOrClose)
+            {
+                Btn.ChangeAppearance(true);
+            }
+
+            // When a child panel is closed, if this panel is also closed, turn off the appearance of the button
+            if (!openOrClose && !IsOpen)
+            {
+                Btn.ChangeAppearance(false);
             }
         }
 
@@ -270,9 +351,18 @@ namespace TofArSettings.UI
                 CloseOther();
             }
 
+            OnOpenStart();
+
             float alpha = 0.0f;
             canvasGroup.alpha = alpha;
             PanelObj.SetActive(true);
+
+            // If child panels exists, set the appearance of the buttons so that they do not look OFF
+            if (Btn && childPanels != null && childPanels.Count > 0)
+            {
+                Btn.ChangeAppearance(true);
+            }
+
             yield return null;
 
             while (alpha < 1.0f)
@@ -309,7 +399,9 @@ namespace TofArSettings.UI
 
             isRunngingClose = true;
 
-            float alpha = 1.0f;
+            OnCloseStart();
+
+            float alpha = canvasGroup.alpha;
             while (alpha > 0.0f)
             {
                 alpha -= (Time.deltaTime / FadeTime);

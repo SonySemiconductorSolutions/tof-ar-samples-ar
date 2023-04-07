@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -12,7 +12,7 @@ namespace TofArSettings.Hand
 {
     public class InfoGesture : HandInfo
     {
-        UI.InfoFade uiInfoFadeLeft, uiInfoFadeRight;
+        UI.InfoFade uiInfoFadeLeft, uiInfoFadeRight, uiInfoFadeBoth;
         SynchronizationContext context;
 
         GestureController gestureCtrl;
@@ -47,6 +47,10 @@ namespace TofArSettings.Hand
                 {
                     uiInfoFadeRight = ui;
                 }
+                else if (ui.name.Contains("Both"))
+                {
+                    uiInfoFadeBoth = ui;
+                }
             }
 
             context = SynchronizationContext.Current;
@@ -80,6 +84,10 @@ namespace TofArSettings.Hand
                 {
                     uiInfoFadeRight.InfoText = text;
                 }
+                else if (result.gestureHand == GestureHand.BothHands)
+                {
+                    uiInfoFadeBoth.InfoText = text;
+                }
             }, null);
         }
 
@@ -97,6 +105,7 @@ namespace TofArSettings.Hand
             {
                 uiInfoFadeLeft.InfoText = "<color=red>Gesture is</color>"; ;
                 uiInfoFadeRight.InfoText = "<color=red>disabled.</color>"; ;
+                uiInfoFadeBoth.InfoText = "";
             }
         }
     }

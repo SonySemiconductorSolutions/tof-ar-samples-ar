@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022, 2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -19,12 +19,6 @@ namespace TofArSettings.Hand
 
         [SerializeField]
         bool handStatus = false;
-
-        [SerializeField]
-        bool pose = false;
-
-        [SerializeField]
-        bool gesture = false;
 
         [SerializeField]
         bool distance = false;
@@ -49,8 +43,17 @@ namespace TofArSettings.Hand
             Handpoints
         }
 
-        UI.Panel panelFps, panelInfo, panelHandPoints;
+        UI.Panel panelFps, panelInfo, panelHandPoints, panelHandPose;
         Dictionary<InfoType, HandInfo> informations = new Dictionary<InfoType, HandInfo>();
+
+        HandPoseInfoSettings poseInfoSettings;
+        HandGestureInfoSettings gestureInfoSettings;
+
+        private void Awake()
+        {
+            poseInfoSettings = GetComponentInChildren<HandPoseInfoSettings>();
+            gestureInfoSettings = GetComponentInChildren<HandGestureInfoSettings>();
+        }
 
         protected override void MakeUI()
         {
@@ -62,12 +65,10 @@ namespace TofArSettings.Hand
 
             ShowFps(fps);
 
-            if (handStatus || pose || gesture || distance || cameraIntrinsics ||
+            if (handStatus || distance || cameraIntrinsics ||
                 spanDistance || displayHandpoints)
             {
                 ShowHandStatus(handStatus);
-                ShowPose(pose);
-                ShowGesture(gesture);
                 ShowDist(distance);
                 ShowCameraIntrinsics(cameraIntrinsics);
                 ShowSpan(spanDistance);
@@ -90,8 +91,39 @@ namespace TofArSettings.Hand
             // Create UI contents
             settings.AddItem("FPS", fps, ShowFps);
             settings.AddItem("Hand Status", handStatus, ShowHandStatus);
-            settings.AddItem("Hand Pose", pose, ShowPose);
-            settings.AddItem("Gesture", gesture, ShowGesture);
+
+            if (poseInfoSettings != null)
+            {
+                settings.AddItem(poseInfoSettings.Title, poseInfoSettings.TitleIcon, poseInfoSettings.IconColor, () =>
+                {
+                    poseInfoSettings.OpenPanel();
+                });
+
+                poseInfoSettings.OnBack += () =>
+                {
+                    settings.OpenPanel();
+                };
+
+                // Link a child panel to parent panel
+                poseInfoSettings.LinkParent(settings.RegisterChildPanel);
+            }
+            
+            if (gestureInfoSettings != null)
+            {
+                settings.AddItem(gestureInfoSettings.Title, gestureInfoSettings.TitleIcon, gestureInfoSettings.IconColor, () =>
+                {
+                    gestureInfoSettings.OpenPanel();
+                });
+
+                gestureInfoSettings.OnBack += () =>
+                {
+                    settings.OpenPanel();
+                };
+
+                // Link a child panel to parent panel
+                gestureInfoSettings.LinkParent(settings.RegisterChildPanel);
+            }
+
             settings.AddItem("Distance", distance, ShowDist);
             settings.AddItem("Span Distance", spanDistance, ShowSpan);
             settings.AddItem("Camera Intrinsics", cameraIntrinsics, ShowCameraIntrinsics);
@@ -119,7 +151,10 @@ namespace TofArSettings.Hand
                 if (panel.PanelObj.name.Contains("HandPoints"))
                 {
                     panelHandPoints = panel;
-                    break;
+                }
+                else if (panel.PanelObj.name.Contains("HandPose"))
+                {
+                    panelHandPose = panel;
                 }
             }
         }
@@ -180,24 +215,6 @@ namespace TofArSettings.Hand
         void ShowHandStatus(bool onOff)
         {
             ShowInfo(InfoType.HandStatus, onOff, true);
-        }
-
-        /// <summary>
-        /// Toggle Pose Status display
-        /// </summary>
-        /// <param name="onOff">On/Off</param>
-        void ShowPose(bool onOff)
-        {
-            ShowInfo(InfoType.PoseStatus, onOff, true);
-        }
-
-        /// <summary>
-        /// Toggle Gesture display
-        /// </summary>
-        /// <param name="onOff">On/Off</param>
-        void ShowGesture(bool onOff)
-        {
-            ShowInfo(InfoType.Gesture, onOff, true);
         }
 
         /// <summary>

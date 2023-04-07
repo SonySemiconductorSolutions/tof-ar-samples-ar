@@ -114,7 +114,7 @@ MonoBehaviour:
     m_Bottom: 0
   m_ChildAlignment: 0
   m_Spacing: 0
-  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
@@ -209,6 +209,8 @@ RectTransform:
   - {fileID: 209577242264092523}
   - {fileID: 2490117178991958714}
   - {fileID: 4030217600547866884}
+  - {fileID: 9053961175954366763}
+  - {fileID: 7646337599679620500}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -238,12 +240,82 @@ MonoBehaviour:
   offset: 20
   fps: 0
   handStatus: 1
-  pose: 1
-  gesture: 1
   distance: 0
   cameraIntrinsics: 0
   spanDistance: 0
   displayHandpoints: 0
+--- !u!1 &8221764279571275968
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7646337599679620500}
+  - component: {fileID: 6875228633609691803}
+  - component: {fileID: 3544770927437019961}
+  m_Layer: 0
+  m_Name: HandGestureInfoSettings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &7646337599679620500
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8221764279571275968}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5309983871076146665}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6875228633609691803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8221764279571275968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4105cd807efa54890b6a36549787f54b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CompoType: 0
+  TitleIcon: {fileID: 2800000, guid: b4d9dbacbf9e64d65b65335a7a359694, type: 3}
+  IconColor: {r: 1, g: 0.9254902, b: 0, a: 1}
+  Title: Hand Gesture
+  toolBtn: {fileID: 0}
+  enableBack: 1
+  offset: 20
+  ignoreGestures: 0000000001000000090000000a000000
+  show: 1
+--- !u!114 &3544770927437019961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8221764279571275968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9e6dbc03eece4a9a9b5dbec378423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handInfo: {fileID: 0}
 --- !u!1 &8913902956161525072
 GameObject:
   m_ObjectHideFlags: 0
@@ -299,6 +371,77 @@ MonoBehaviour:
   WaitSetup: 0
   HeightOffsetPortrait: 200
   HeightOffsetLandscape: 40
+--- !u!1 &9100932266215061247
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9053961175954366763}
+  - component: {fileID: 5971033895843956931}
+  - component: {fileID: 5547262892037997873}
+  m_Layer: 0
+  m_Name: HandPoseInfoSettings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &9053961175954366763
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9100932266215061247}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5309983871076146665}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &5971033895843956931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9100932266215061247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdd8d6a5451854ca5b5b8faf754c27be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CompoType: 0
+  TitleIcon: {fileID: 2800000, guid: b4d9dbacbf9e64d65b65335a7a359694, type: 3}
+  IconColor: {r: 1, g: 0.5803922, b: 0, a: 1}
+  Title: Hand Pose
+  toolBtn: {fileID: 0}
+  enableBack: 1
+  offset: 20
+  show: 1
+--- !u!114 &5547262892037997873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9100932266215061247}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a813e4ce5fa194872a67f59c636334b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  handInfo: {fileID: 0}
 --- !u!1001 &5309983869161473633
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -959,7 +1102,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3066394898674298993, guid: 377962fbd403c4dad8ac4de05848d22b, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 380
+      value: 330
       objectReference: {fileID: 0}
     - target: {fileID: 3066394898674298993, guid: 377962fbd403c4dad8ac4de05848d22b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1024,6 +1167,10 @@ PrefabInstance:
     - target: {fileID: 3676078937849600610, guid: 377962fbd403c4dad8ac4de05848d22b, type: 3}
       propertyPath: m_AnchorMin.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3676078937849600610, guid: 377962fbd403c4dad8ac4de05848d22b, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 3676078937849600610, guid: 377962fbd403c4dad8ac4de05848d22b, type: 3}
       propertyPath: m_AnchoredPosition.x

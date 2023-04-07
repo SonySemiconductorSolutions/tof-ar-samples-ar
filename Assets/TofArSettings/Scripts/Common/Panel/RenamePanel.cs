@@ -1,10 +1,11 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,34 +45,10 @@ namespace TofArSettings.UI
 
         private bool IsNameValid(string fileName)
         {
-            var invalidChars = System.IO.Path.GetInvalidPathChars();
-            foreach (var c in invalidChars)
-            {
-                if (fileName.Contains(c.ToString()))
-                {
-                    return false;
-                }
-            }
+            Regex regex = new Regex(@"^([a-zA-Z0-9_-]+)$");
+            var matches = regex.Matches(fileName);
 
-            invalidChars = System.IO.Path.GetInvalidFileNameChars();
-            foreach (var c in invalidChars)
-            {
-                if (fileName.Contains(c.ToString()))
-                {
-                    return false;
-                }
-            }
-
-            invalidChars = new char[] { '#', '%', '&', '{', '}', '\\', '/', '<', '>', '*', '?', '!', ' ', '$', '"', '\'', ':', ';', '@', '+', '`', '|', '=', '.', ',' };
-            foreach (var c in invalidChars)
-            {
-                if (fileName.Contains(c.ToString()))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return matches.Count > 0;
         }
 
         public void Apply()

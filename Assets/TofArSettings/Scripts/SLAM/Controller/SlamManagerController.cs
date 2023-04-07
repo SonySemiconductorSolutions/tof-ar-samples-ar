@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -18,6 +18,25 @@ namespace TofArSettings.Slam
         private void Awake()
         {
             isStarted = TofArSlamManager.Instance.autoStart;
+            var ctrl = FindObjectOfType<General.CameraApiController>();
+
+            ctrl.OnChangeApi += (idx) =>
+            {
+                if (ctrl.CameraApi == TofAr.V0.IosCameraApi.AvFoundation)
+                {
+                    lastPoseSource = this.CameraPoseSource;
+                    this.CameraPoseSource = CameraPoseSource.Gyro;
+                }
+                else
+                {
+                    this.CameraPoseSource = lastPoseSource;
+                }
+            };
+
+            if (TofAr.V0.TofArManager.Instance.UsingIos && ctrl.CameraApi == TofAr.V0.IosCameraApi.AvFoundation)
+            {
+                this.CameraPoseSource = CameraPoseSource.Gyro;
+            }
 
             SetupPoseSourceLists();
         }
@@ -103,6 +122,8 @@ namespace TofArSettings.Slam
                 }
             }
         }
+
+        private CameraPoseSource lastPoseSource;
 
         private int index = 0;
         public int Index

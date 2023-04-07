@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -54,6 +54,8 @@ namespace TofArSettings.ColorDepth
             }
 
             base.Start();
+
+            settings.OnChangeStart += OnChangePanel;
         }
 
         /// <summary>
@@ -72,6 +74,11 @@ namespace TofArSettings.ColorDepth
             colorMgrCtrl.OnChangeAfter += (index) =>
             {
                 itemColor.Index = index;
+            };
+
+            colorMgrCtrl.OnMadeOptions += () =>
+            {
+                itemColor.Options = colorMgrCtrl.Options;
             };
         }
 
@@ -102,6 +109,11 @@ namespace TofArSettings.ColorDepth
             {
                 itemDepth.Index = index;
             };
+
+            tofMgrCtrl.OnMadeOptions += () =>
+            {
+                itemDepth.Options = tofMgrCtrl.Options;
+            };
         }
 
         /// <summary>
@@ -112,6 +124,28 @@ namespace TofArSettings.ColorDepth
         {
             tofMgrCtrl.Index = index;
             ClosePanel();
+        }
+
+        /// <summary>
+        /// Event called when the state of the panel changes
+        /// </summary>
+        /// <param name="onOff">open/close</param>
+        void OnChangePanel(bool onOff)
+        {
+            if (onOff)
+            {
+                if (itemColor != null && colorMgrCtrl != null)
+                {
+                    Debug.Log($"Set color index to {colorMgrCtrl.Index}");
+                    itemColor.Index = colorMgrCtrl.Index;
+                }   
+
+                if (itemDepth != null && tofMgrCtrl != null)
+                {
+                    Debug.Log($"Set tof index to {tofMgrCtrl.Index}");
+                    itemDepth.Index = tofMgrCtrl.Index;
+                }
+            }
         }
     }
 }

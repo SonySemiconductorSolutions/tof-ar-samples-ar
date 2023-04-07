@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -151,36 +151,7 @@ namespace TofArSettings.UI
 
         private float GetDPI()
         {
-            if (TofArManager.Instance != null)
-            {
-                var deviceCapability = TofArManager.Instance.GetProperty<DeviceCapabilityProperty>();
-                string modelName = deviceCapability.modelName;
-
-                if (modelName.Equals("iPhone14,7")) //iPhone 14 6.1inch 1170x2532
-                {
-                    return 457;
-                }
-                else if (modelName.Equals("iPhone14,8")) //iPhone 14 Plus 6.7inch 1284x2778
-                {
-                    return 457;
-                }
-                else if (modelName.Equals("iPhone15,2")) //iPhone 14 Pro 6.1inch 1179x2556
-                {
-                    return 461;
-                }
-                else if (modelName.Equals("iPhone15,3")) //iPhone 14 Pro Max 6.7inch 1290x2796
-                {
-                    return 460;
-                }
-                else
-                {
-                    return Screen.dpi;
-                }
-            }
-            else
-            {
-                return Screen.dpi;
-            }
+            return Screen.dpi;           
         } 
     }
 }

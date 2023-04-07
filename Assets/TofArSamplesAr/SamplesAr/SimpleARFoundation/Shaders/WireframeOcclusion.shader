@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -13,6 +13,7 @@ Shader "ARFoundation/WireframeOcclusion"
 	{
 		_MainColor("Color", Color) = (1, 1, 1)
 		_LineWidth("Line Width", float) = 0.01
+		_Filled("Filled", int) = 0
 	}
 	SubShader
 	{
@@ -50,6 +51,7 @@ Shader "ARFoundation/WireframeOcclusion"
 
 			float _LineWidth;
 			fixed4 _MainColor;
+			int _Filled;
 
 			v2f vert(appdata v)
 			{
@@ -69,6 +71,10 @@ Shader "ARFoundation/WireframeOcclusion"
 
 			fixed4 frag(v2f i) : SV_Target
 			{
+				if (_Filled)
+				{
+					return _MainColor;
+                }
 
 				float depth = (i.vertex.z);
 				float lineWidth = _LineWidth * 15000 * depth;
@@ -98,6 +104,7 @@ Shader "ARFoundation/WireframeOcclusion"
 				fixed4 col = _MainColor;
 
 				return fixed4(col.rgb,alpha);
+				
 			}
 			ENDCG
 		}

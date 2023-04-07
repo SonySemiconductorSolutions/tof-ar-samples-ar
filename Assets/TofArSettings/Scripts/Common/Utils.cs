@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -23,12 +23,15 @@ namespace TofArSettings
             where T : Enum
         {
             int index = -1;
-            for (int i = startIndex; i < array.Length; i++)
+            if (array != null)
             {
-                if (val.CompareTo(array[i]) == 0)
+                for (int i = startIndex; i < array.Length; i++)
                 {
-                    index = i;
-                    break;
+                    if (val.CompareTo(array[i]) == 0)
+                    {
+                        index = i;
+                        break;
+                    }
                 }
             }
 

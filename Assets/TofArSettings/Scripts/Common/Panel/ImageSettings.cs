@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -33,9 +33,19 @@ namespace TofArSettings
             exposureCtrl = mgrCtrl.GetComponent<ImageExposureController>();
             controllers.Add(exposureCtrl);
 
-            componentCtrl = FindObjectOfType<DependendStreamUIHandler>();
+            var ctrls = FindObjectsOfType<DependendStreamUIHandler>();
+            foreach (var controller in ctrls)
+            {
+                if (controller.GetType() == typeof(DependendStreamUIHandler))
+                {
+                    componentCtrl = controller;
+                    break;
+                }    
+            }
 
             base.Start();
+
+            settings.OnChangeStart += OnChangePanel;
         }
 
         protected override void MakeUI()
@@ -57,6 +67,11 @@ namespace TofArSettings
             mgrCtrl.OnChangeAfter += (index) =>
             {
                 itemMode.Index = index;
+            };
+
+            mgrCtrl.OnMadeOptions += () =>
+            {
+                itemMode.Options = mgrCtrl.Options;
             };
         }
 
@@ -213,6 +228,18 @@ namespace TofArSettings
         protected virtual void SwitchExposureUIInteractable()
         {
             itemExpoTime.Interactable = (!itemAutoExpo.OnOff);
+        }
+
+        /// <summary>
+        /// Event called when the state of the panel changes
+        /// </summary>
+        /// <param name="onOff">open/close</param>
+        void OnChangePanel(bool onOff)
+        {
+            if (onOff)
+            {
+                itemMode.Index = mgrCtrl.Index;
+            }
         }
     }
 }

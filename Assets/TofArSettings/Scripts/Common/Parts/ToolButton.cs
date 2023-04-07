@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -22,7 +22,7 @@ namespace TofArSettings.UI
                 if (onOff != value)
                 {
                     onOff = value;
-                    ChangeAppearance();
+                    ChangeAppearance(OnOff);
                 }
             }
         }
@@ -31,9 +31,18 @@ namespace TofArSettings.UI
         {
             set
             {
-                imgBtnTrigger.Interactable = value;
-                imgIcon.color = value ? initColor : disabledColor;
-                shadow.effectDistance = value ? shadowDist : Vector2.zero;
+                if (imgBtnTrigger != null)
+                {
+                    imgBtnTrigger.Interactable = value;
+                }
+                if (imgIcon != null)
+                {
+                    imgIcon.color = value ? initColor : disabledColor;
+                }
+                if (shadow != null)
+                {
+                    shadow.effectDistance = value ? shadowDist : Vector2.zero;
+                }
             }
         }
 
@@ -79,20 +88,31 @@ namespace TofArSettings.UI
             // Register button event
             imgBtnTrigger.OnClick += () =>
             {
-                OnOff = !OnOff;
+                // Only change the appearance when the actual ON/OFF and appearance are different
+                // (e.g. when a child panel is open)
+                if (OnOff != imgPushed.enabled)
+                {
+                    ChangeAppearance(OnOff);
+                }
+                else
+                {
+                    OnOff = !OnOff;
+                }
+
                 OnClick?.Invoke(OnOff);
             };
 
-            ChangeAppearance();
+            ChangeAppearance(OnOff);
         }
 
         /// <summary>
         /// Change appearance
         /// </summary>
-        void ChangeAppearance()
+        /// <param name="onOff">ON/OFF</param>
+        public void ChangeAppearance(bool onOff)
         {
-            imgPushed.enabled = OnOff;
-            shadow.effectDistance = (OnOff) ? Vector2.zero : shadowDist;
+            imgPushed.enabled = onOff;
+            shadow.effectDistance = (onOff) ? Vector2.zero : shadowDist;
         }
     }
 }

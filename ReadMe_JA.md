@@ -100,17 +100,6 @@ Hand、Mesh、Modelingそれぞれの動作を確認することができます�
 * Stampモード：
   "Add Stamp Button"を押すことでカメラロールから写真を選択でき(複数選択可)、マッピングすることができます。
 
-### IceWater
-
-AR浸水シミュレーション。
-
-<img src="/Images/08_IceWater.jpg" width="500">
-
-シーン起動後、空間の平面認識を行い、認識された部分にエフェクトが表示されます。
-
-Createボタンを押すとエフェクトの位置が浸水する高さに決定されます。
-
-画面をタップするとアニメーションが開始され、画面が浸水した表示に変わります。
 
 ### BallPool
 
@@ -148,7 +137,6 @@ BallのToggleをOnにすると画面上部からボールが出現します。
 |Juggling            |✓|✓|  |　|✓|  |  |  |✓|  |  |
 |BGChange            |✓|✓|  |  |✓|  |  |✓|  |  |  |
 |TextureRoom         |✓|✓|  |  |  |  |  |✓|  |  |✓|
-|IceWater            |✓|✓|  |  |  |  |  |✓|  |  |✓|
 |BallPool            |✓|✓|  |✓|  |  |  |✓|  |  |✓|
 |StepOn              |✓|✓|  |✓|  |  |  |✓|  |  |  |
 
@@ -189,9 +177,9 @@ ToF ARの開発ドキュメントも、Developer Worldで公開しています�
 
 動作検証は、下記の環境で行っています。
 
-* Unity Version  : 2020.3.40f1
-* ToF AR Version : 1.2.0
-* AR Foundation  : 4.2.6
+* Unity Version  : 2021.3.18f1
+* ToF AR Version : 1.3.0
+* AR Foundation  : 4.2.7
 
 
 <a name="notes"></a>

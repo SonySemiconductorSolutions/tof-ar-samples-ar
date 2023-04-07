@@ -283,8 +283,6 @@ MonoBehaviour:
   offset: 20
   fps: 0
   handStatus: 1
-  pose: 0
-  gesture: 0
   distance: 0
   cameraIntrinsics: 0
   spanDistance: 0
@@ -1540,7 +1538,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3066394898674298993, guid: 377962fbd403c4dad8ac4de05848d22b, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 380
+      value: 330
       objectReference: {fileID: 0}
     - target: {fileID: 3066394898674298993, guid: 377962fbd403c4dad8ac4de05848d22b, type: 3}
       propertyPath: m_LocalPosition.x
