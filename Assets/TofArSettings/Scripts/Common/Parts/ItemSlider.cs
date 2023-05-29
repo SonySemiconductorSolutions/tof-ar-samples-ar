@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -37,7 +37,7 @@ namespace TofArSettings.UI
                 if (val != value && CheckRange(value))
                 {
                     val = value;
-                    itemInput.Value = val.ToString();
+                    itemInput.Value = val.ToString(System.Globalization.CultureInfo.InvariantCulture);
                     adjuster.Value = val;
                     slider.value = adjuster.PlainValue;
 
@@ -104,7 +104,7 @@ namespace TofArSettings.UI
             set
             {
                 // Count the number of decimal places and set them in Adjuster
-                string str = value.ToString();
+                string str = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 string[] split = str.Split('.');
                 adjuster.DecimalDigit = (split.Length > 1) ?
                     split[1].Length : 0;
@@ -261,7 +261,7 @@ namespace TofArSettings.UI
         /// </summary>
         void SetRangeText()
         {
-            itemInput.TxtRange.text = $"{Min} ~ {Max} , step = {Step}";
+            itemInput.TxtRange.text = System.FormattableString.Invariant($"{Min} ~ {Max} , step = {Step}");
         }
     }
 }

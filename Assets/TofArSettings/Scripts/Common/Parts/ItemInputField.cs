@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -62,7 +62,7 @@ namespace TofArSettings.UI
         {
             get
             {
-                if (int.TryParse(Value, out int v))
+                if (int.TryParse(Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out int v))
                 {
                     return v;
                 }
@@ -78,7 +78,7 @@ namespace TofArSettings.UI
         {
             get
             {
-                if (float.TryParse(Value, out float v))
+                if (float.TryParse(Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float v))
                 {
                     return v;
                 }
@@ -297,7 +297,7 @@ namespace TofArSettings.UI
                 return true;
             }
 
-            if (float.TryParse(val, out float v))
+            if (float.TryParse(val, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float v))
             {
                 return (Min <= v && v <= Max);
             }
