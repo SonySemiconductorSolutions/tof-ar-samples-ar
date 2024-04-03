@@ -107,9 +107,7 @@ namespace TofArSettings.Body
             var mgr = TofArBodyManager.Instance;
 
             recogModeIndex = Utils.Find(mode, RecogModeList);
-            var currentProperty = mgr.GetProperty<RecognizeConfigProperty>();
-            currentProperty.recogMode = mode;
-            TofArBodyManager.Instance.SetProperty(currentProperty);
+            mgr.RecogMode = mode;
 
             yield return null;
 
@@ -164,6 +162,7 @@ namespace TofArSettings.Body
             UpdateRuntimeModeList();
             UpdateRecogModeList();
             UpdateNoiseReductionList();
+            UpdateHumanTrackingModeList();
         }
 
         public int ModeThreads
@@ -209,12 +208,12 @@ namespace TofArSettings.Body
         /// <summary>
         /// Event that is called when NNL, RuntimeModel or RuntimeMode2 is changed
         /// </summary>
-        public event ChangeIndexEvent OnChangeRuntimeMode, OnChangeNoiseReductionLevel;
+        public event ChangeIndexEvent OnChangeRuntimeMode, OnChangeNoiseReductionLevel, OnChangeHumanTrackingMode;
 
         /// <summary>
         /// Event that is called when RuntimeMode list is updated
         /// </summary>
-        public event UpdateListEvent OnUpdateRuntimeModeList, OnUpdateRecogModeList, OnUpdateNoiseReductionList;
+        public event UpdateListEvent OnUpdateRuntimeModeList, OnUpdateRecogModeList, OnUpdateNoiseReductionList, OnUpdateHumanTrackingModeList;
 
         /// <summary>
         /// Event that is called when thread count is changed
@@ -356,6 +355,67 @@ namespace TofArSettings.Body
             }
 
             OnUpdateNoiseReductionList?.Invoke(NoiseReductionLevelNames, NoiseReductionIndex);
+        }
+
+        int humanTrackingModeIndex;
+        public int HumanTrackingModeIndex
+        {
+            get { return humanTrackingModeIndex; }
+            set
+            {
+                if (value != humanTrackingModeIndex && 0 <= value &&
+                    value < HumanTrackingModeList.Length)
+                {
+                    humanTrackingModeIndex = value;
+                    TofArBodyManager.Instance.HumanTrackingMode = HumanTrackingModeList[value];
+                    OnChangeHumanTrackingMode?.Invoke(humanTrackingModeIndex);
+                }
+            }
+        }
+
+        public HumanTrackingMode HumanTrackingMode
+        {
+            get
+            {
+                return TofArBodyManager.Instance.HumanTrackingMode;
+            }
+
+            set
+            {
+                if (value != HumanTrackingMode)
+                {
+                    HumanTrackingModeIndex = Utils.Find(value, HumanTrackingModeList);
+                }
+            }
+        }
+
+        string[] humanTrackingModeNames = new string[0];
+        public string[] HumanTrackingModeNames
+        {
+            get { return humanTrackingModeNames; }
+        }
+
+        public HumanTrackingMode[] HumanTrackingModeList { get; private set; }
+
+        /// <summary>
+        /// Update list
+        /// </summary>
+        void UpdateHumanTrackingModeList()
+        {
+            var mgr = TofArBodyManager.Instance;
+
+            // Get Human Tracking Mode list
+            HumanTrackingModeList = (HumanTrackingMode[])Enum.GetValues(typeof(HumanTrackingMode));
+            humanTrackingModeNames = Enum.GetNames(typeof(HumanTrackingMode));
+
+            // Get initial values
+            humanTrackingModeIndex = Utils.Find(mgr.HumanTrackingMode, HumanTrackingModeList);
+            if (humanTrackingModeIndex < 0)
+            {
+                humanTrackingModeIndex = 0;
+            }
+
+            OnUpdateHumanTrackingModeList?.Invoke(HumanTrackingModeNames, HumanTrackingModeIndex);
         }
     }
 }

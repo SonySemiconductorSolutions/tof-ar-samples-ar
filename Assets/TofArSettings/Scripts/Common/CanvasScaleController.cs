@@ -21,6 +21,7 @@ namespace TofArSettings.UI
 
         /// <summary>
         /// Physical width of toolbar (Unit: mm)
+        /// (Settings for mobile)
         /// </summary>
         [SerializeField]
         protected float realBarWidth = 8;
@@ -50,12 +51,12 @@ namespace TofArSettings.UI
 
         public ChangeEvent OnChangeSafeArea;
 
-        protected Rect area;
+        protected Rect area = new Rect();
         protected Vector2 baseReso;
         protected Toolbar toolbar;
         protected Vector2 latestSafeAreaSize;
 
-        private float dpi;
+        private string modelName;
 
         protected virtual void Awake()
         {
@@ -75,13 +76,17 @@ namespace TofArSettings.UI
             }
 
             baseReso = canvasScaler.referenceResolution;
+
+            if (TofArManager.Instance != null)
+            {
+                var deviceCapability = TofArManager.Instance.GetProperty<DeviceCapabilityProperty>();
+                modelName = deviceCapability.modelName;
+            }
         }
 
         protected virtual void Start()
         {
             toolbar = FindObjectOfType<Toolbar>();
-            dpi = GetDPI();
-
             AdjustSafeArea(Screen.safeArea);
         }
 
@@ -101,37 +106,33 @@ namespace TofArSettings.UI
         protected virtual void AdjustSafeArea(Rect newArea)
         {
             // Do not do anything if SafeArea has not changed
-            if (area == newArea && latestSafeAreaSize == SafeAreaSize)
+            if (area.size == newArea.size && area.position == newArea.position &&
+                latestSafeAreaSize == SafeAreaSize)
             {
                 return;
             }
 
-            //don't run this for debug server
-            /*if(TofAr.V0.TofArManager.Instance?.RuntimeSettings.runMode == TofAr.V0.RunMode.MultiNode)
-            {
-                return;
-            }*/
+            area.Set(newArea.x, newArea.y, newArea.width, newArea.height);
+            area.position = newArea.position;
 
-            if (Application.isEditor)
+#if UNITY_EDITOR
+            // If the Editor's game view is "Simulator", calculate as if running on mobile
+            if (UnityEngine.Device.Application.isEditor)
             {
-                return;
+                canvasScaler.referenceResolution = baseReso;
             }
-
-            area = newArea;
+            else
+#endif
+            {
+#if UNITY_ANDROID || UNITY_IOS
+                CalcResolutionByRealSize();
+#else
+                canvasScaler.referenceResolution = baseReso;
+#endif
+            }
 
             float scWidth = Screen.width;
             float scHeight = Screen.height;
-
-            // Calculate the actual saize per pixel from the screen width and CanvasScaler's ReferenceResolution
-            float realScWidth = (scWidth < scHeight) ? scWidth : scHeight;
-
-            realScWidth *= 25.4f / dpi;
-            float pixelSize = realScWidth / baseReso.x;
-
-            // Scale the UI so that the toolbar width matches the actual size
-            float barWidth = toolbar.BarWidth * pixelSize;
-            float ratio = realBarWidth / barWidth;
-            canvasScaler.referenceResolution = baseReso / ratio;
 
             // Adjust the UI area to fit within the SafeArea
             var anchorMin = area.position;
@@ -149,9 +150,55 @@ namespace TofArSettings.UI
             OnChangeSafeArea?.Invoke(latestSafeAreaSize);
         }
 
+        /// <summary>
+        /// Calculate CanvasScaler's ReferenceResolution using the actual size
+        /// </summary>
+        protected virtual void CalcResolutionByRealSize()
+        {
+            float scWidth = Screen.width;
+            float scHeight = Screen.height;
+
+            // Calculate the actual size per pixel from the screen width and CanvasScaler's ReferenceResolution
+            float realScWidth = (scWidth < scHeight) ? scWidth : scHeight;
+
+            realScWidth *= 25.4f / GetDPI(); ;
+            float pixelSize = realScWidth / baseReso.x;
+
+            // Scale the UI so that the toolbar width matches the actual size
+            float barWidth = toolbar.BarWidth * pixelSize;
+            float ratio = realBarWidth / barWidth;
+            canvasScaler.referenceResolution = baseReso / ratio;
+        }
+
         private float GetDPI()
         {
-            return Screen.dpi;           
-        } 
+            if (!string.IsNullOrEmpty(modelName))
+            {
+                if (modelName.Equals("iPhone15,4")) //iPhone 15 6.1inch 1179x2556
+                {
+                    return 461;
+                }
+                else if (modelName.Equals("iPhone15,5")) //iPhone 15 Plus 6.7inch 1290x2796
+                {
+                    return 460;
+                }
+                else if (modelName.Equals("iPhone16,1")) //iPhone 15 Pro 6.1inch 1179x2556
+                {
+                    return 461;
+                }
+                else if (modelName.Equals("iPhone16,2")) //iPhone 15 Pro Max 6.7inch 1290x2796
+                {
+                    return 460;
+                }
+                else
+                {
+                    return Screen.dpi;
+                }
+            }
+            else
+            {
+                return Screen.dpi;
+            }
+        }
     }
 }

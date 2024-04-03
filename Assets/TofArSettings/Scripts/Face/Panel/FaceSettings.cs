@@ -110,22 +110,19 @@ namespace TofArSettings.Face
                 itemThread.Value = val;
             };
 
-            if (!TofAr.V0.TofArManager.Instance.UsingIos)
+            itemProcessModeLandmark = settings.AddItem("Process Mode\nLandmark", faceEstimatorController.ProcessModeNames,
+            faceEstimatorController.ProcessModeLandmarkIndex, ChangeProcessModeLandmark, -2);
+
+            faceEstimatorController.OnUpdateProcessModeLandmarkList += (list, detectionTypeIndex) =>
             {
-                itemProcessModeLandmark = settings.AddItem("Process Mode Landmark", faceEstimatorController.ProcessModeNames,
-                faceEstimatorController.ProcessModeLandmarkIndex, ChangeProcessModeLandmark);
+                itemProcessModeLandmark.Options = list;
+                itemProcessModeLandmark.Index = detectionTypeIndex;
+            };
 
-                faceEstimatorController.OnUpdateProcessModeLandmarkList += (list, detectionTypeIndex) =>
-                {
-                    itemProcessModeLandmark.Options = list;
-                    itemProcessModeLandmark.Index = detectionTypeIndex;
-                };
-
-                faceEstimatorController.OnChangeModelType += (index) =>
-                {
-                    itemProcessModeLandmark.Index = index;
-                };
-            }
+            faceEstimatorController.OnChangeModelType += (index) =>
+            {
+                itemProcessModeLandmark.Index = index;
+            };
 
             SetExternalInteractability();
         }

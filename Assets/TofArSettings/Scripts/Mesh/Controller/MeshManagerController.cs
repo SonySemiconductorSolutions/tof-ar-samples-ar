@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -22,7 +22,8 @@ namespace TofArSettings.Mesh
         private void Awake()
         {
             context = SynchronizationContext.Current;
-            isStarted = TofArMeshManager.Instance.autoStart;
+            var mgr = TofArMeshManager.Instance;
+            isStarted = (mgr && mgr.autoStart);
         }
 
         protected void OnEnable()
@@ -39,7 +40,8 @@ namespace TofArSettings.Mesh
 
         public bool IsStreamActive()
         {
-            return isStarted && TofArTofManager.Instance.IsStreamActive;
+            var mgr = TofArTofManager.Instance;
+            return (isStarted && mgr && mgr.IsStreamActive);
         }
 
         /// <summary>
@@ -50,14 +52,16 @@ namespace TofArSettings.Mesh
             if (!isStarted)
             {
                 isStarted = true;
-                if (TofArTofManager.Instance.IsPlaying)
+                var tofMgr = TofArTofManager.Instance;
+                if (tofMgr && tofMgr.IsPlaying)
                 {
-                    TofArMeshManager.Instance.StartPlayback();
+                    TofArMeshManager.Instance?.StartPlayback();
                 }
                 else
                 {
-                    TofArMeshManager.Instance.StartStream();
+                    TofArMeshManager.Instance?.StartStream();
                 }
+
                 OnStreamStartStatusChanged?.Invoke(isStarted);
             }
         }
@@ -67,10 +71,12 @@ namespace TofArSettings.Mesh
         /// </summary>
         public void StopStream()
         {
-            if (isStarted)
+            var mgr = TofArMeshManager.Instance;
+            if (mgr && isStarted)
             {
                 isStarted = false;
-                TofArMeshManager.Instance.StopStream();
+                mgr.StopStream();
+
                 OnStreamStartStatusChanged?.Invoke(isStarted);
             }
         }
@@ -90,7 +96,7 @@ namespace TofArSettings.Mesh
         {
             yield return new UnityEngine.WaitForEndOfFrame();
 
-            TofArMeshManager.Instance.StartPlayback();
+            TofArMeshManager.Instance?.StartPlayback();
             OnStreamStartStatusChanged?.Invoke(true);
             isPlaying = true;
         }
@@ -127,7 +133,8 @@ namespace TofArSettings.Mesh
         /// <param name="sender">TofArTofManager</param>
         private void OnTofPlaybackStreamStarted(object sender, UnityEngine.Texture2D depth, UnityEngine.Texture2D conf, PointCloudData pc)
         {
-            if (TofArTofManager.Instance.IsPlaying)
+            var mgr = TofArTofManager.Instance;
+            if (mgr && mgr.IsPlaying)
             {
                 if (isStarted)
                 {

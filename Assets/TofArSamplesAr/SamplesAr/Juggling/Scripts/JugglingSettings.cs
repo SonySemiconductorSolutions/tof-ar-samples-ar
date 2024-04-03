@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -51,12 +51,12 @@ namespace TofArARSamples.Juggling
 
             list.Add(() =>
             {
-                throwRangeSlider = settings.AddItem("Throw Range", 0.01f, 0.5f, 0.01f, throwRangeIndex, ChangeThrowRange);
+                throwRangeSlider = settings.AddItem("Throw\nRange", 0.01f, 0.5f, 0.01f, throwRangeIndex, ChangeThrowRange, -2);
             });
 
             list.Add(() =>
             {
-                catchRangeSlider = settings.AddItem("Catch Ball Range", 0.01f, 0.5f, 0.01f, catchRangeIndex, ChangeCatchBallRange,-3);
+                catchRangeSlider = settings.AddItem("Catch Ball\nRange", 0.01f, 0.5f, 0.01f, catchRangeIndex, ChangeCatchBallRange, -2);
             });
 
             list.Add(() =>

@@ -62,7 +62,7 @@ namespace TofArSettings
         protected void MakeUIMode()
         {
             itemMode = settings.AddItem("Mode", mgrCtrl.Options,
-                mgrCtrl.Index, ChangeMode, 0, 0, 400);
+                mgrCtrl.Index, ChangeMode, 0, 0, 360);
 
             mgrCtrl.OnChangeAfter += (index) =>
             {
@@ -125,9 +125,9 @@ namespace TofArSettings
         /// </summary>
         protected void MakeUIFpsRequest()
         {
-            itemFpsRequest = settings.AddItem("FPS Request", fpsReqCtrl.Min,
+            itemFpsRequest = settings.AddItem("FPS\nRequest", fpsReqCtrl.Min,
                 fpsReqCtrl.Max, ImageFpsRequestController.Step, fpsReqCtrl.FrameRate,
-                ChangeFpsRequest);
+                ChangeFpsRequest, -2);
 
             fpsReqCtrl.OnChangeFrameRate += (val) =>
             {
@@ -169,9 +169,9 @@ namespace TofArSettings
                 };
 
                 // ExposureTime
-                itemExpoTime = settings.AddItem("Exposure Time", exposureCtrl.TimeMin,
+                itemExpoTime = settings.AddItem("Exposure\nTime", exposureCtrl.TimeMin,
                     exposureCtrl.TimeMax, ImageExposureController.TimeStep,
-                    exposureCtrl.ExposureTime, ChangeExpoTime, -3);
+                    exposureCtrl.ExposureTime, ChangeExpoTime, -2, 0, lineAlpha);
 
                 exposureCtrl.OnChangeTime += (time) =>
                 {

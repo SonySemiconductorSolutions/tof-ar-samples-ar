@@ -92,7 +92,7 @@ namespace TofArSettings.Hand
             settings.AddItem("FPS", fps, ShowFps);
             settings.AddItem("Hand Status", handStatus, ShowHandStatus);
 
-            if (poseInfoSettings != null)
+            if (poseInfoSettings)
             {
                 settings.AddItem(poseInfoSettings.Title, poseInfoSettings.TitleIcon, poseInfoSettings.IconColor, () =>
                 {
@@ -107,8 +107,8 @@ namespace TofArSettings.Hand
                 // Link a child panel to parent panel
                 poseInfoSettings.LinkParent(settings.RegisterChildPanel);
             }
-            
-            if (gestureInfoSettings != null)
+
+            if (gestureInfoSettings)
             {
                 settings.AddItem(gestureInfoSettings.Title, gestureInfoSettings.TitleIcon, gestureInfoSettings.IconColor, () =>
                 {

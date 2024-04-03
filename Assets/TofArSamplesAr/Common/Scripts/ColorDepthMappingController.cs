@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -51,7 +51,7 @@ namespace TofArSamples.ColorDepth
             base.Start();
         }
 
-        void OnChangeFov(float fov, float aspect, float fillScale)
+        void OnChangeFov(float fov, float aspect)
         {
             fitterColor.Fitting();
         }

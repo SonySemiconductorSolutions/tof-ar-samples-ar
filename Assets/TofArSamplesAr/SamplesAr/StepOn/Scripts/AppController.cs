@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -28,17 +28,17 @@ namespace TofArARSamples.StepOn
         private float fpsTime = 0;
         private int fpsCount = 0;
 
-        private Texture2D humanTexture;    
-        
+        private Texture2D humanTexture;
+
         private SynchronizationContext context;
-        
+
         public InputField humanColliderIntervalInputField;
 
         [SerializeField]
         private HumanColliderManager humanColliderManager;
-        
 
-        
+
+
         // Start is called before the first frame update
         void Start()
         {
@@ -48,17 +48,17 @@ namespace TofArARSamples.StepOn
             TofArTofManager.Instance.CalibrationSettingsLoaded.AddListener(OnCalibrationSettingsLoaded);
 
             stayColliderFrameNumsInputField.text = stayColliderFrameNum.ToString();
-            stayColliderRatioThresholdInputField.text = stayColliderRatioThreshold.ToString(); 
-                
-            humanColliderIntervalInputField.text = humanColliderManager.humanColliderInterval.ToString(); 
+            stayColliderRatioThresholdInputField.text = stayColliderRatioThreshold.ToString();
+
+            humanColliderIntervalInputField.text = humanColliderManager.humanColliderInterval.ToString();
             areaIntervalInputField.text = areaInterval.ToString();
-            
+
             slopeInputField.text = slope.ToString();
             interceptInputField.text = intercept.ToString();
             minColliderInputField.text = minColliderThreshold.ToString();
-            
+
             framesBeforeShowEffectInputField.text = framesBeforeShowEffect.ToString();
-            
+
             planeManager.planesChanged += OnPlanesChanged;
 
             floorEffects = new EffectObject[maxFloorEffects];
@@ -94,15 +94,15 @@ namespace TofArARSamples.StepOn
                 m.framesBeforeShowEffect = framesBeforeShowEffect;
                 m.ShowColliderCountsText(showColliderCounts);
                 m.SetAreaInterval(areaInterval);
-                
+
                 if (planes.Contains(plane)) { continue; }
                 planes.Add(plane);
                 managers.Add(m);
-                
+
                 if (!plane.TryGetComponent<PlaneMeshVisuallizer>(out var v)) { continue; }
                 v.visible = showPlane;
             }
-            
+
             foreach (var plane in args.removed)
             {
                 if (!plane.TryGetComponent<PlaneTouchManager>(out var m)) { continue; }
@@ -125,10 +125,10 @@ namespace TofArARSamples.StepOn
             }
             fpsTime += Time.deltaTime;
             fpsCount++;
-            
+
             time += Time.deltaTime;
         }
-        
+
         [SerializeField]
         private EffectObject[] prefabEffectFloor;
         [SerializeField]
@@ -144,7 +144,7 @@ namespace TofArARSamples.StepOn
         private int wallEffectsIndex = 0;
 
         // Called before OnTriggerStay
-        private void FixedUpdate() 
+        private void FixedUpdate()
         {
             //Update plane area
             foreach (var m in managers)
@@ -170,7 +170,7 @@ namespace TofArARSamples.StepOn
                     if (effect == null)
                     {
                         var createdEffects = effects.Where((e) => e != null);
-                        
+
                         // For afford to create effect
                         if (createdEffects.Count() - 1 < effects.Length - 1)
                         {
@@ -207,7 +207,7 @@ namespace TofArARSamples.StepOn
                                 {
                                     wallEffectsIndex = 0;
                                 }
-                                 else
+                                else
                                 {
                                     wallEffectsIndex++;
                                 }
@@ -216,7 +216,7 @@ namespace TofArARSamples.StepOn
                             effect.gameObject.SetActive(false);
                         }
                     }
-                    
+
                     // Update effect
                     effect.areaPoint = areaPoint;
                     effect.transform.position = areaPoint.worldPosition;
@@ -236,19 +236,19 @@ namespace TofArARSamples.StepOn
                     // Show effect
                     effect.gameObject.SetActive(true);
                 }
-            } 
-            
+            }
+
             // Add collision counts
             if (stayColliderCounts.Count == stayColliderFrameNum)
             {
                 stayColliderCounts.Clear();
-            }        
+            }
             stayColliderCounts.Add(stayColliders.Count());
-            
+
             //stayColliderCountsText.text = string.Join("\n", stayColliderCounts);        
-            stayColliders.Clear(); 
+            stayColliders.Clear();
         }
-        
+
         public Text stayColliderCountsText;
         public int stayColliderFrameNum = 5;
         public float stayColliderRatioThreshold = 0.6f;
@@ -267,95 +267,95 @@ namespace TofArARSamples.StepOn
         private List<int> stayColliderCounts = new List<int>();
         private List<HumanCollider> stayColliders = new List<HumanCollider>();
 
-        
+
         public void OnValueChangedSlope(string text)
         {
             if (int.TryParse(text, out int s))
             {
                 slope = s;
-                
+
                 foreach (var m in managers)
                 {
                     m.slope = slope;
                 }
             }
         }
-        
+
         public void OnValueChangedIntercept(string text)
         {
             if (int.TryParse(text, out int i))
             {
                 intercept = i;
-                
+
                 foreach (var m in managers)
                 {
                     m.intercept = intercept;
                 }
             }
         }
-        
+
         public void OnValueChangedMinColliderThreshold(string text)
         {
             if (int.TryParse(text, out int threshold))
             {
                 minColliderThreshold = threshold;
-                
+
                 foreach (var m in managers)
                 {
                     m.minColliderThreshold = threshold;
                 }
             }
         }
-        
+
         public void OnValueChangedFramesBeforeShowEffect(string text)
         {
             if (int.TryParse(text, out int frames))
             {
                 framesBeforeShowEffect = frames;
-                
+
                 foreach (var m in managers)
                 {
                     m.framesBeforeShowEffect = framesBeforeShowEffect;
                 }
             }
         }
-        
+
         private void OnTriggerStayHumanCollider(HumanCollider humanCollider)
         {
             stayColliders.Add(humanCollider);
         }
 
-        
+
         private float CalcHumanColliderSize(float fov, float z, int length)
         {
             var rad = fov / 2 * Mathf.Deg2Rad;
             var l = 2 * z * Mathf.Tan(rad);
             return l / length;
-        }      
-        
+        }
+
         public void OnValueChangedShowColliderToggle(bool visible)
         {
             humanColliderManager.ShowCollider(visible);
-        }  
-        
-        
+        }
+
+
         public void OnValueChangedStayColliderFrameNums(string text)
         {
             if (int.TryParse(text, out int frameNum))
             {
                 stayColliderCounts.Clear();
                 stayColliderFrameNum = frameNum;
-                
+
                 foreach (var m in managers)
                 {
                     m.stayColliderFrameNum = stayColliderFrameNum;
                 }
             }
         }
-        
+
         public void OnValueChangedStayColliderRatioThreshold(string text)
         {
-            if (float.TryParse(text, out float rationThreshold))
+            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float rationThreshold))
             {
                 stayColliderRatioThreshold = rationThreshold;
                 foreach (var m in managers)
@@ -364,19 +364,19 @@ namespace TofArARSamples.StepOn
                 }
             }
         }
-        
+
         private bool showPlane = false;
         public void OnValueChangedVisibleToggle(bool value)
-        {          
+        {
             showPlane = value;
             foreach (var p in planeManager.trackables)
             {
                 if (!p.TryGetComponent<PlaneMeshVisuallizer>(out var v)) { continue; }
                 v.visible = showPlane;
-            }  
+            }
         }
-        
-        
+
+
         public void OnValueChangedColliderInterval(string text)
         {
             if (int.TryParse(text, out int interval))
@@ -384,7 +384,7 @@ namespace TofArARSamples.StepOn
                 humanColliderManager.humanColliderInterval = interval;
             }
         }
-        
+
         private bool showColliderCounts = false;
         public void OnValueChangedShowColliderCountsToggle(bool visible)
         {
@@ -397,23 +397,23 @@ namespace TofArARSamples.StepOn
                 m.showEffect = !showColliderCounts;
             }
         }
-        
+
         public InputField areaIntervalInputField;
         public float areaInterval = 0.15f;
         public void OnValueChangedAreaInterval(string text)
         {
-            if (float.TryParse(text, out float interval))
+            if (float.TryParse(text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float interval))
             {
                 areaInterval = interval;
-                
+
                 foreach (var p in planeManager.trackables)
                 {
                     var m = p.GetComponent<PlaneTouchManager>();
                     m?.SetAreaInterval(areaInterval);
-                }  
+                }
             }
         }
-        
+
         public Text stencilFpsText;
         private int count = 0;
         private float time = 0;

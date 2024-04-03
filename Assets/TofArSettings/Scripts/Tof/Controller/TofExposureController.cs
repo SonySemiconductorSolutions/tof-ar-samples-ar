@@ -1,10 +1,12 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
+using SensCord;
+using TofAr.V0;
 using TofAr.V0.Tof;
 using UnityEngine;
 
@@ -41,7 +43,15 @@ namespace TofArSettings.Tof
         {
             base.GetProperty();
 
-            var prop = TofArTofManager.Instance.GetProperty<ExposureProperty>();
+            TofAr.V0.Tof.ExposureProperty prop = null;
+            try
+            {
+                prop = TofArTofManager.Instance.GetProperty<TofAr.V0.Tof.ExposureProperty>();
+            }
+            catch (ApiException e)
+            {
+                TofArManager.Logger.WriteLog(LogLevel.Debug, TofAr.V0.Utils.FormatException(e));
+            }
             if (prop == null)
             {
                 return;
@@ -69,7 +79,7 @@ namespace TofArSettings.Tof
 
         protected override void Apply()
         {
-            var prop = new ExposureProperty
+            var prop = new TofAr.V0.Tof.ExposureProperty
             {
                 autoExposure = AutoExposure,
                 exposureTime = ExposureTime * 1000

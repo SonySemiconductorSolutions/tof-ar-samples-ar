@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -43,14 +43,21 @@ namespace TofArSamples
         protected virtual void OnEnable()
         {
             fovAdjuster.OnChangeFov += Fitting;
-            scRotCtrl.OnRotateScreen += OnRotateScreen;
+            scRotCtrl.OnRotateDevice += OnRotateDevice;
             Fitting();
         }
 
         protected virtual void OnDisable()
         {
-            fovAdjuster.OnChangeFov -= Fitting;
-            scRotCtrl.OnRotateScreen -= OnRotateScreen;
+            if (fovAdjuster)
+            {
+                fovAdjuster.OnChangeFov -= Fitting;
+            }
+
+            if (scRotCtrl)
+            {
+                scRotCtrl.OnRotateDevice -= OnRotateDevice;
+            }
         }
 
         /// <summary>
@@ -60,8 +67,7 @@ namespace TofArSamples
         {
             float fov = fovAdjuster.Fov;
             float aspect = fovAdjuster.Aspect;
-            float fillScale = fovAdjuster.FillScale;
-            Fitting(fov, aspect, fillScale);
+            Fitting(fov, aspect);
         }
 
         /// <summary>
@@ -69,10 +75,10 @@ namespace TofArSamples
         /// </summary>
         /// <param name="fov">Camera FoV</param>
         /// <param name="aspect">Camera Aspect</param>
-        protected void Fitting(float fov, float aspect, float fillScale)
+        protected void Fitting(float fov, float aspect)
         {
             aspectFitter.ScaleFactor = PlacementDistance;
-            bool isPortrait = scRotCtrl.IsPortrait;
+            bool isPortrait = scRotCtrl.IsPortraitDevice;
 
             // Scale is set in landscape mode, so when the screen is oriented in portrait mode, get size accordingly
             float w = ViewTr.localScale.x;
@@ -86,10 +92,10 @@ namespace TofArSamples
 
             // Calculate and place at the distance from the camera in order for it to fit perfectly
             var pos = ViewTr.localPosition;
-            pos.z = 0.5f / Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad) * fillScale;
+            pos.z = 0.5f / Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad);
             if (isPortrait)
             {
-                pos.z *= (w / aspect);
+                pos.z *= w / aspect;
             }
             else
             {
@@ -100,10 +106,10 @@ namespace TofArSamples
         }
 
         /// <summary>
-        /// Event that is called when screen is rotated
+        /// Event that is called when device is rotated
         /// </summary>
         /// <param name="ori">Screen orientation</param>
-        void OnRotateScreen(ScreenOrientation ori)
+        void OnRotateDevice(ScreenOrientation ori)
         {
             Fitting();
         }

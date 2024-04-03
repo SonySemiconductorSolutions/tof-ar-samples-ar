@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -12,11 +12,6 @@ namespace TofArSettings.UI
 {
     public class Adjuster : MonoBehaviour
     {
-        /// <summary>
-        /// Initial value
-        /// </summary>
-        public int DefaultValue = 0;
-
         /// <summary>
         /// Number of decimal places
         /// </summary>
@@ -71,7 +66,7 @@ namespace TofArSettings.UI
         /// <summary>
         /// Value used for calculation
         /// </summary>
-        int val;
+        int val = int.MaxValue;
         public int PlainValue
         {
             get { return val; }
@@ -156,8 +151,6 @@ namespace TofArSettings.UI
 
                 trigger.OnTouchUp += OnTouchUp;
             }
-
-            val = DefaultValue;
 
             finishedSetup = true;
         }

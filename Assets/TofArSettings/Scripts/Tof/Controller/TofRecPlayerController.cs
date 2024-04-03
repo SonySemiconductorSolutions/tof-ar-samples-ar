@@ -1,15 +1,14 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
-using System.Linq;
+using System.IO;
 using TofAr.V0;
 using TofAr.V0.Tof;
 using TofArSettings.UI;
-using UnityEngine;
 
 namespace TofArSettings.Tof
 {
@@ -25,32 +24,56 @@ namespace TofArSettings.Tof
             base.Start();
         }
 
+        protected override void PlayPrep_internal()
+        {
+            TofArTofManager.Instance?.PauseStream();
+        }
+
         protected override bool Play_internal(string fileName)
         {
-
-            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
-            string fileRoot = directoryListProp.path;
-
-            if (fileRoot == null)
+            var directoryListProp = TofArManager.Instance?.GetProperty<DirectoryListProperty>();
+            if (directoryListProp == null)
             {
                 return false;
             }
-            var file = $"{fileRoot}/{fileName}";
 
-            TofArTofManager.Instance.StartPlayback(file);
+            string fileRoot = directoryListProp.path;
+            if (fileRoot.Length <= 0)
+            {
+                return false;
+            }
+
+            var tofMgr = TofArTofManager.Instance;
+            if (!tofMgr)
+            {
+                return false;
+            }
+
+            var file = $"{fileRoot}{Path.AltDirectorySeparatorChar}{fileName}";
+            tofMgr.PauseStream();
+            tofMgr.StartPlayback(file);
+
             return true;
         }
 
         protected override void Pause_internal()
         {
-            Debug.Log("Tof Pause");
-            TofArTofManager.Instance.PauseStream();
+            TofArTofManager.Instance?.PauseStream();
         }
 
         protected override void UnPause_internal()
         {
-            TofArTofManager.Instance.UnpauseStream();
-            Debug.Log("tof UnPause");
+            TofArTofManager.Instance?.UnpauseStream();
+        }
+
+        protected override void Stop_internal()
+        {
+            TofArTofManager.Instance?.StopPlayback();
+        }
+
+        protected override void StopCleanup_internal()
+        {
+            TofArTofManager.Instance?.UnpauseStream();
         }
 
         protected override void OnEndRecord(bool result, string filePath)
@@ -63,21 +86,6 @@ namespace TofArSettings.Tof
             var options = GetFileNames(dirPath, TofArTofManager.StreamKey);
 
             return options;
-        }
-
-        protected override void Stop_internal()
-        {
-            TofArTofManager.Instance.StopPlayback();
-        }
-
-        protected override void PlayPrep_internal()
-        {
-            TofArTofManager.Instance.PauseStream();
-        }
-
-        protected override void StopCleanup_internal()
-        {
-            TofArTofManager.Instance.UnpauseStream();
         }
     }
 }

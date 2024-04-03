@@ -18,6 +18,7 @@ namespace TofArSettings.Hand
         ProcessLevelController processLevelCtrl;
         TrackingModeController trackingModeCtrl;
         NoiseReductionLevelController noiseReductionCtrl;
+        DetectionThresholdController detectionThresholdController;
         HandManagerController managerController;
         IntervalFrameNotRecogController intervalNotRecogCtrl;
         FramesForDetectNoHandsController noHandsCtrl;
@@ -25,7 +26,7 @@ namespace TofArSettings.Hand
         UI.ItemDropdown itemMode, itemRuntimeMode1, itemRuntimeMode2,
             itemProcessLevel, itemNoiseReduction;
         UI.ItemToggle itemTrack;
-        UI.ItemSlider itemMode1Thread, itemMode2Thread;
+        UI.ItemSlider itemMode1Thread, itemMode2Thread, itemDetectionThreshold;
         UI.ItemToggle itemStartStream;
 
         UI.ItemSlider itemNotRecogInterval, itemFrameNoHand;
@@ -66,6 +67,7 @@ namespace TofArSettings.Hand
                 MakeUITrackingMode,
                 MakeUIStatusHistory,
                 MakeUINoiseReductionLevel,
+                MakeUIDetectionThreshold,
                 MakeUIIntervalFrameNotRecog,
                 MakeUIFramesForDetectNoHands
             };
@@ -79,6 +81,7 @@ namespace TofArSettings.Hand
             trackingModeCtrl = recogModeCtrl.GetComponent<TrackingModeController>();
             controllers.Add(trackingModeCtrl);
             noiseReductionCtrl = recogModeCtrl.GetComponent<NoiseReductionLevelController>();
+            detectionThresholdController = FindObjectOfType<DetectionThresholdController>();
             managerController = FindObjectOfType<HandManagerController>();
             controllers.Add(managerController);
             noHandsCtrl = FindObjectOfType<FramesForDetectNoHandsController>();
@@ -127,18 +130,18 @@ namespace TofArSettings.Hand
         {
             itemRuntimeMode1 = settings.AddItem("Runtime Mode1",
                 runtimeCtrl.RuntimeModeNames, runtimeCtrl.RuntimeMode1Index,
-                ChangeRuntimeMode1);
-            itemMode1Thread = settings.AddItem("  Threads",
+                ChangeRuntimeMode1, 0, 0, 200);
+            itemMode1Thread = settings.AddItem(" Threads",
                 RuntimeController.ThreadMin, RuntimeController.ThreadMax,
                 RuntimeController.ThreadStep, runtimeCtrl.Mode1Threads,
-                ChangeMode1Threads);
+                ChangeMode1Threads, 0, 0, lineAlpha);
             itemRuntimeMode2 = settings.AddItem("Runtime Mode2",
                 runtimeCtrl.RuntimeModeNames, runtimeCtrl.RuntimeMode2Index,
-                ChangeRuntimeMode2);
-            itemMode2Thread = settings.AddItem("  Threads",
+                ChangeRuntimeMode2, 0, 0, 200);
+            itemMode2Thread = settings.AddItem(" Threads",
                 RuntimeController.ThreadMin, RuntimeController.ThreadMax,
                 RuntimeController.ThreadStep, runtimeCtrl.Mode2Threads,
-                ChangeMode2Threads);
+                ChangeMode2Threads, 0, 0, lineAlpha);
 
             runtimeCtrl.OnChangeRuntimeMode1 += (index) =>
             {
@@ -218,7 +221,7 @@ namespace TofArSettings.Hand
         {
             itemProcessLevel = settings.AddItem("Process Level",
                 processLevelCtrl.ProcessLevelNames, processLevelCtrl.Index,
-                ChangeProcessLevel);
+                ChangeProcessLevel, 0, 0, 240);
 
             processLevelCtrl.OnChange += (index) =>
             {
@@ -249,7 +252,7 @@ namespace TofArSettings.Hand
         {
             itemNoiseReduction = settings.AddItem("Noise Reduction Level",
                 noiseReductionCtrl.NoiseReductionLevelNames, noiseReductionCtrl.Index,
-                ChangeNoiseReductionLevel, -7);
+                ChangeNoiseReductionLevel, -2, 0, 160);
 
             noiseReductionCtrl.OnChange += (index) =>
             {
@@ -273,12 +276,36 @@ namespace TofArSettings.Hand
         }
 
         /// <summary>
+        /// Make Detection Threshold UI
+        /// </summary>
+        void MakeUIDetectionThreshold()
+        {
+            itemDetectionThreshold = settings.AddItem("Detection Threshold",0, 1,
+                0.1f, (float)detectionThresholdController.Threshold,
+                ChangeDetectionThreshold, -5);
+
+            detectionThresholdController.OnChange += (index) =>
+            {
+                itemDetectionThreshold.Value = index;
+            };
+        }
+
+        /// <summary>
+        /// Change value of Detection Threshold
+        /// </summary>
+        /// <param name="val">Threshold</param>
+        void ChangeDetectionThreshold(float val)
+        {
+            detectionThresholdController.Threshold = (double)val;
+        }
+
+        /// <summary>
         /// Make Tracking Mode UI
         /// </summary>
         void MakeUITrackingMode()
         {
             itemTrack = settings.AddItem("Tracking Mode", trackingModeCtrl.OnOff,
-    ChangeTrackingMode);
+                ChangeTrackingMode);
 
             trackingModeCtrl.OnChange += (onOff) =>
             {

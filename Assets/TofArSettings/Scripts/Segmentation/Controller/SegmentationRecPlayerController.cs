@@ -1,12 +1,13 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
-using System.Linq;
-using TofAr.V0;
+using System.Collections;
+using System.Collections.Generic;
+using TofAr.V0.Color;
 using TofAr.V0.Segmentation;
 using TofArSettings.UI;
 using UnityEngine;
@@ -16,53 +17,106 @@ namespace TofArSettings.Segmentation
     public class SegmentationRecPlayerController : RecPlayerController
     {
         public override SettingsBase.ComponentType ComponentType => SettingsBase.ComponentType.Segmentation;
+        public override bool HasDropdown => true;
 
-        public override bool HasDropdown => false;
+        private bool isStreamActive = false;
+        private SkyDetectorSettingsProperty skyDetectorSettingsProperty;
+        private HumanDetectorSettingsProperty humanDetectorSettingsProperty;
 
-        private SegmentationManagerController managerController;
-
-        private void Awake()
+        protected override void Start()
         {
-            managerController = FindObjectOfType<SegmentationManagerController>();
+            var fnames = new List<string>();
+            fnames.Add("-");
+            fnames.Add(RecPlayerSettings.fnamePlayBackEstimate_color);
+            FileNames = fnames.ToArray();
+
+            base.Start();
         }
 
         protected override void PlayPrep_internal()
         {
-            TofArSegmentationManager.Instance.StopStream();
-            TofArSegmentationManager.Instance.StopPlayback();
+            isStreamActive = false;
+
+            var segmentationMgr = TofArSegmentationManager.Instance;
+            if (segmentationMgr != null)
+            {
+                skyDetectorSettingsProperty = segmentationMgr.GetProperty<SkyDetectorSettingsProperty>();
+                humanDetectorSettingsProperty = segmentationMgr.GetProperty<HumanDetectorSettingsProperty>();
+
+                segmentationMgr.PauseStream();
+            }
         }
 
         protected override bool Play_internal(string fileName)
         {
-            if (managerController.IsStreamActive())
+            var segmentationMgr = TofArSegmentationManager.Instance;
+            if (!segmentationMgr)
             {
-                TofArSegmentationManager.Instance.StartPlayback();
+                return false;
             }
-            return true;
+
+            if (fileName.Equals(RecPlayerSettings.fnamePlayBackEstimate_color))
+            {
+                var colorMgr = TofArColorManager.Instance;
+                if (!colorMgr)
+                {
+                    return false;
+                }
+
+                if (!TofArColorManager.Instance.IsPlaying)
+                {
+                    return false;
+                }
+
+                segmentationMgr.UnpauseStream();
+
+                if (segmentationMgr.IsStreamActive)
+                {
+                    isStreamActive = true;
+                    segmentationMgr.StopStream();
+                }
+
+                segmentationMgr.SetProperty(skyDetectorSettingsProperty);
+                segmentationMgr.SetProperty(humanDetectorSettingsProperty);
+
+                segmentationMgr.StartPlayback();
+
+                return true;
+            }
+
+            return false;
         }
 
         protected override void Pause_internal()
         {
-            Debug.Log("Segmentation Pause");
-            TofArSegmentationManager.Instance.PauseStream();
+            TofArSegmentationManager.Instance?.PauseStream();
         }
 
         protected override void UnPause_internal()
         {
-            TofArSegmentationManager.Instance.UnpauseStream();
-            Debug.Log("Segmentation UnPause");
+            TofArSegmentationManager.Instance?.UnpauseStream();
         }
 
         protected override void Stop_internal()
         {
-            TofArSegmentationManager.Instance.StopPlayback();
+            TofArSegmentationManager.Instance?.StopPlayback();
         }
 
         protected override void StopCleanup_internal()
         {
-            if (managerController.IsStreamActive())
+            var segmentationMgr = TofArSegmentationManager.Instance;
+            if (segmentationMgr != null)
             {
-                TofArSegmentationManager.Instance.StartStream();
+                if (isStreamActive)
+                {
+                    segmentationMgr.StartStream();
+                    segmentationMgr.PauseStream();
+                }
+
+                segmentationMgr.UnpauseStream();
+
+                segmentationMgr.SetProperty(skyDetectorSettingsProperty);
+                segmentationMgr.SetProperty(humanDetectorSettingsProperty);
             }
         }
 

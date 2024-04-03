@@ -27,6 +27,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -43,16 +44,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 257247f9e580445808051b6ec6f4d78b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PanelPrefab: {fileID: 6198554019751055769, guid: d2a10336c65a94b3f9d6f221efb26f9d, type: 3}
-  LinePrefab: {fileID: 2075288848679003816, guid: 2d206b10f668c4628bf086fd80a3e3a0, type: 3}
-  ItemNestMenuPrefab: {fileID: 5823850617178265283, guid: 8dbcc5decb8704f70a4d0d8224d4493b, type: 3}
-  ItemButtonPrefab: {fileID: 8245896629079563080, guid: 9889b08432a4e43a793623d34b3e403f, type: 3}
-  ItemDropdownPrefab: {fileID: 7008322449065123806, guid: dbff3bd6fa9df4b55aec3b710656c00f, type: 3}
-  ItemInputFieldPrefab: {fileID: 8005761069374678593, guid: cdb41bd8a3ae04c149213221884b246d, type: 3}
-  ItemSliderPrefab: {fileID: 4971717897118868746, guid: 3d6f28789d5294684a62921e5f600400, type: 3}
-  ItemTextPrefab: {fileID: 3852986062642544575, guid: 9d8ee3d4a4c414cf9be11d4c73b0ad12, type: 3}
-  ItemTogglePrefab: {fileID: 3852986062642544575, guid: 20316fabbffea4bda90ab7a02c352afc, type: 3}
-  ItemToggleMultiPrefab: {fileID: 7273709615349737619, guid: 59281fdcd820b47e3ab07c756568fa33, type: 3}
-  DropdownDialogPrefab: {fileID: 7520370751148591841, guid: 222519263364a42b4a59b4672fd65092, type: 3}
-  DropdownOptionPrefab: {fileID: 7474050807182596644, guid: 6a2574de6b9fa244fa8d0ffb77e6e131, type: 3}
-  DropdownOptionEditablePrefab: {fileID: 7474050807182596644, guid: 6a2574de6b9fa244fa8d0ffb77e6e131, type: 3}
+  PanelPrefab: {fileID: 6198554019751055769, guid: d2a10336c65a94b3f9d6f221efb26f9d,
+    type: 3}
+  LinePrefab: {fileID: 2075288848679003816, guid: 2d206b10f668c4628bf086fd80a3e3a0,
+    type: 3}
+  ItemNestMenuPrefab: {fileID: 5823850617178265283, guid: 8dbcc5decb8704f70a4d0d8224d4493b,
+    type: 3}
+  ItemButtonPrefab: {fileID: 8245896629079563080, guid: 9889b08432a4e43a793623d34b3e403f,
+    type: 3}
+  ItemDropdownPrefab: {fileID: 7008322449065123806, guid: dbff3bd6fa9df4b55aec3b710656c00f,
+    type: 3}
+  ItemInputFieldPrefab: {fileID: 8005761069374678593, guid: cdb41bd8a3ae04c149213221884b246d,
+    type: 3}
+  ItemSliderPrefab: {fileID: 4971717897118868746, guid: 3d6f28789d5294684a62921e5f600400,
+    type: 3}
+  ItemTextPrefab: {fileID: 3852986062642544575, guid: 9d8ee3d4a4c414cf9be11d4c73b0ad12,
+    type: 3}
+  ItemTogglePrefab: {fileID: 3852986062642544575, guid: 20316fabbffea4bda90ab7a02c352afc,
+    type: 3}
+  ItemToggleMultiPrefab: {fileID: 7273709615349737619, guid: 59281fdcd820b47e3ab07c756568fa33,
+    type: 3}
+  DropdownDialogPrefab: {fileID: 7520370751148591841, guid: 222519263364a42b4a59b4672fd65092,
+    type: 3}
+  DropdownOptionPrefab: {fileID: 7474050807182596644, guid: 6a2574de6b9fa244fa8d0ffb77e6e131,
+    type: 3}
+  TextDialogPrefab: {fileID: 7520370751148591841, guid: 1877dabdd62684343a57d18fa90d9276,
+    type: 3}

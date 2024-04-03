@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -111,7 +111,7 @@ namespace TofArSettings.UI
             float max = Mathf.Max(Screen.width, Screen.height);
             var bandSize = Vector2.zero;
 
-            if (scRotCtrl.IsPortrait)
+            if (scRotCtrl.IsPortraitScreen)
             {
                 AdjustBar(true);
                 AdjustIcons(true, rtLeft, iconWidthLeft, padLeft, spaceLeft,
@@ -254,7 +254,7 @@ namespace TofArSettings.UI
         /// </summary>
         protected virtual void SetOutArea()
         {
-            if (scRotCtrl.IsPortrait)
+            if (scRotCtrl.IsPortraitScreen)
             {
                 // Move to bottom and make horizontal
                 rtBottom.anchorMin = new Vector2(0.5f, 0);
@@ -272,7 +272,7 @@ namespace TofArSettings.UI
             float max = Mathf.Max(rtBand.sizeDelta.x, rtBand.sizeDelta.y) * 2;
             float w = 300;
             float h = 300;
-            if (scRotCtrl.IsPortrait)
+            if (scRotCtrl.IsPortraitScreen)
             {
                 w = max;
             }

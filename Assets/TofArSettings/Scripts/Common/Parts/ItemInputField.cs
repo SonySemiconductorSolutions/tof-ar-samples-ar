@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -31,6 +31,7 @@ namespace TofArSettings.UI
             {
                 if (value > 0)
                 {
+                    inputParentRt.sizeDelta = new Vector2(value, inputParentRt.sizeDelta.y);
                     inputRt.sizeDelta = new Vector2(value, inputRt.sizeDelta.y);
                 }
             }
@@ -62,7 +63,7 @@ namespace TofArSettings.UI
         {
             get
             {
-                if (int.TryParse(Value, out int v))
+                if (int.TryParse(Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out int v))
                 {
                     return v;
                 }
@@ -78,7 +79,7 @@ namespace TofArSettings.UI
         {
             get
             {
-                if (float.TryParse(Value, out float v))
+                if (float.TryParse(Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float v))
                 {
                     return v;
                 }
@@ -147,6 +148,7 @@ namespace TofArSettings.UI
 
         InputField inputField;
         RectTransform inputRt;
+        RectTransform inputParentRt;
         bool isNum = false;
 
         protected override void Awake()
@@ -161,6 +163,7 @@ namespace TofArSettings.UI
             // Get UI
             inputField = GetComponentInChildren<InputField>();
             inputRt = inputField.GetComponent<RectTransform>();
+            inputParentRt = inputRt.transform.parent.GetComponent<RectTransform>();
             foreach (var txt in GetComponentsInChildren<Text>())
             {
                 if (txt.name.Contains("Range"))
@@ -264,9 +267,13 @@ namespace TofArSettings.UI
 
             // Calculate and set the overall size
             var rt = GetComponent<RectTransform>();
+            float w = titleRt.sizeDelta.x + inputRt.sizeDelta.x;
             var layout = GetComponent<HorizontalOrVerticalLayoutGroup>();
-            float w = titleRt.sizeDelta.x + inputRt.sizeDelta.x + layout.spacing +
-                layout.padding.left + layout.padding.right;
+            if (layout)
+            {
+                w += layout.spacing + layout.padding.left + layout.padding.right;
+            }
+
             rt.sizeDelta = new Vector2(w, rt.sizeDelta.y);
         }
 
@@ -297,7 +304,7 @@ namespace TofArSettings.UI
                 return true;
             }
 
-            if (float.TryParse(val, out float v))
+            if (float.TryParse(val, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float v))
             {
                 return (Min <= v && v <= Max);
             }

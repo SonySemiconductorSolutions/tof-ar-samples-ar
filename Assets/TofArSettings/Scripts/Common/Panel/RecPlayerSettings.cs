@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -13,6 +13,8 @@ using TofArSettings.Tof;
 using TofArSettings.Face;
 using UnityEngine;
 using UnityEngine.Events;
+using TofArSettings.Plane;
+using TofArSettings.Segmentation;
 
 namespace TofArSettings.UI
 {
@@ -33,6 +35,18 @@ namespace TofArSettings.UI
         bool tof = true;
 
         /// <summary>
+        /// Use/do not use Hand component
+        /// </summary>
+        [SerializeField]
+        bool hand = false;
+
+        /// <summary>
+        /// Use/do not use Segmentation component
+        /// </summary>
+        [SerializeField]
+        bool segmentation = false;
+
+        /// <summary>
         /// Use/do not use Body component
         /// </summary>
         [SerializeField]
@@ -44,6 +58,12 @@ namespace TofArSettings.UI
         [SerializeField]
         bool face = false;
 
+        /// <summary>
+        /// Use/do not use Plane component
+        /// </summary>
+        [SerializeField]
+        bool plane = false;
+
         [Space]
 
         /// <summary>
@@ -51,6 +71,13 @@ namespace TofArSettings.UI
         /// </summary>
         [SerializeField]
         bool matchTofAndColor = true;
+
+        /// <summary>
+        /// Match Tof and Hand options
+        /// </summary>
+        [SerializeField]
+        bool matchTofAndHand = true;
+
         /// <summary>
         /// Match Tof and Color options
         /// </summary>
@@ -58,21 +85,26 @@ namespace TofArSettings.UI
         bool matchTofAndBody = true;
 
         /// <summary>
+        /// Match Tof and Color options
+        /// </summary>
+        [SerializeField]
+        bool matchTofAndPlane = true;
+
+        /// <summary>
         /// Match Color and Face options
         /// </summary>
         [SerializeField]
         bool matchColorAndFace = true;
 
-        /// <summary>
-        /// Use/do not use Hand component
-        /// </summary>
-        //[SerializeField]
-        //bool hand = true;
-
         const string idleText = "Play";
         const string stopText = "Stop";
         const string pauseText = "Pause";
         const string unpauseText = "UnPause";
+
+        public const string fnamePlayBackEstimate_tof = "Tof PlayBack Estimate";
+        public const string fnamePlayBackEstimate_color = "Color PlayBack Estimate";
+
+        UnityEvent addControllersAndPlayerSetsEvent = new UnityEvent();
 
         /// <summary>
         /// Data set required for playback
@@ -119,10 +151,23 @@ namespace TofArSettings.UI
 
             if (tof)
             {
-                var colorCtrl = FindObjectOfType<TofRecPlayerController>();
-                controllers.Add(colorCtrl);
+                var tofCtrl = FindObjectOfType<TofRecPlayerController>();
+                controllers.Add(tofCtrl);
                 playerSets.Add(ComponentType.Tof, new PlayerSet(
-                    colorCtrl, null, ChangeTofIndex, (idx) => DeleteEntry(idx, ComponentType.Tof), (idx, newName) => RenameEntry(idx, newName, ComponentType.Tof)));
+                    tofCtrl, null, ChangeTofIndex, (idx) => DeleteEntry(idx, ComponentType.Tof), (idx, newName) => RenameEntry(idx, newName, ComponentType.Tof)));
+            }
+
+            if (hand)
+            {
+                addControllersAndPlayerSetsEvent.Invoke();
+            }
+
+            if (segmentation)
+            {
+                var segmentationCtrl = FindObjectOfType<SegmentationRecPlayerController>();
+                controllers.Add(segmentationCtrl);
+                playerSets.Add(ComponentType.Segmentation, new PlayerSet(
+                    segmentationCtrl, null, ChangeSegmentationIndex, (idx) => DeleteEntry(idx, ComponentType.Segmentation), (idx, newName) => RenameEntry(idx, newName, ComponentType.Segmentation)));
             }
 
             if (body)
@@ -141,15 +186,13 @@ namespace TofArSettings.UI
                     faceCtrl, null, ChangeFaceIndex, (idx) => DeleteEntry(idx, ComponentType.Face), (idx, newName) => RenameEntry(idx, newName, ComponentType.Face)));
             }
 
-            foreach (var ctrl in FindObjectsOfType<RecPlayerController>())
+            if (plane)
             {
-                if (!playerSets.ContainsKey(ctrl.ComponentType))
-                {
-                    controllers.Add(ctrl);
-                    playerSets.Add(ctrl.ComponentType, new PlayerSet(ctrl, null, null, null, null));
-                }
+                var planeCtrl = FindObjectOfType<PlaneRecPlayerController>();
+                controllers.Add(planeCtrl);
+                playerSets.Add(ComponentType.Plane, new PlayerSet(
+                    planeCtrl, null, ChangePlaneIndex, (idx) => DeleteEntry(idx, ComponentType.Plane), (idx, newName) => RenameEntry(idx, newName, ComponentType.Plane)));
             }
-
 
             for (int i = 0; i < controllers.Count; i++)
             {
@@ -181,10 +224,17 @@ namespace TofArSettings.UI
                     var fileNamesEditable = new KeyValuePair<string, EditFlags>[fileNames.Length];
                     for (int i = 0; i < fileNames.Length; i++)
                     {
-                        fileNamesEditable[i] = new KeyValuePair<string, EditFlags>(fileNames[i], (i == 0) || runtimeMode ? EditFlags.None : (EditFlags.Deletable | EditFlags.Renamable));
+                        fileNamesEditable[i] = new KeyValuePair<string, EditFlags>(fileNames[i], (i == 0) || runtimeMode || fileNames[i].Equals(fnamePlayBackEstimate_tof) || fileNames[i].Equals(fnamePlayBackEstimate_color) ? EditFlags.None : (EditFlags.Deletable | EditFlags.Renamable));
                     }
 
-                    var item = settings.AddItem(key.ToString(), fileNamesEditable,
+                    string titleName = key.ToString();
+
+                    if (key == ComponentType.Segmentation)
+                    {
+                        titleName = "Seg";
+                    }
+
+                    var item = settings.AddItem(titleName, fileNamesEditable,
                         ctrl.Index, set.ChangeFunc, set.DeleteFunc, set.RenameFunc, -2, 100, 400);
                     set.Item = item;
                     playerSets[key] = set;
@@ -199,11 +249,10 @@ namespace TofArSettings.UI
                         var optionsEditable = new KeyValuePair<string, EditFlags>[list.Length];
                         for (int i = 0; i < optionsEditable.Length; i++)
                         {
-                            optionsEditable[i] = new KeyValuePair<string, EditFlags>(list[i], (i == 0) || runtimeMode ? EditFlags.None : (EditFlags.Deletable | EditFlags.Renamable));
+                            optionsEditable[i] = new KeyValuePair<string, EditFlags>(list[i], (i == 0) || runtimeMode || list[i].Equals(fnamePlayBackEstimate_tof) || list[i].Equals(fnamePlayBackEstimate_color) ? EditFlags.None : (EditFlags.Deletable | EditFlags.Renamable));
                         }
-
-                        item.OptionsEditable = optionsEditable;
                         item.Index = index;
+                        item.OptionsEditable = optionsEditable;
                     };
                 }
             }
@@ -261,36 +310,6 @@ namespace TofArSettings.UI
             ctrl.Index = index;
         }
 
-
-        /// <summary>
-        /// Change Body file index
-        /// </summary>
-        /// <param name="index">Index</param>
-        void ChangeBodyIndex(int index)
-        {
-            var ctrl = playerSets[ComponentType.Body].Controller;
-
-            if (matchTofAndBody && tof)
-            {
-                var fnames = playerSets[ComponentType.Body].Item.Options;
-                if (index < fnames.Length)
-                {
-                    var splitName = fnames[index].Split('_');
-                    var fname = splitName[0] + "_" + splitName[1];
-                    var tofNames = playerSets[ComponentType.Tof].Item.Options;
-                    for (int i = 0; i < tofNames.Length; i++)
-                    {
-                        if (tofNames[i].Contains(fname))
-                        {
-                            playerSets[ComponentType.Tof].Item.Index = i;
-                            break;
-                        }
-                    }
-                }
-            }
-            ctrl.Index = index;
-        }
-
         /// <summary>
         /// Change Tof file index
         /// </summary>
@@ -340,6 +359,74 @@ namespace TofArSettings.UI
         }
 
         /// <summary>
+        /// Change Hand file index
+        /// </summary>
+        /// <param name="index">Index</param>
+        void ChangeHandIndex(int index)
+        {
+            var ctrl = playerSets[ComponentType.Hand].Controller;
+
+            if (matchTofAndHand && tof)
+            {
+                var fnames = playerSets[ComponentType.Hand].Item.Options;
+                if (index < fnames.Length)
+                {
+                    var splitName = fnames[index].Split('_');
+                    var fname = splitName[0] + "_" + splitName[1];
+                    var tofNames = playerSets[ComponentType.Tof].Item.Options;
+                    for (int i = 0; i < tofNames.Length; i++)
+                    {
+                        if (tofNames[i].Contains(fname))
+                        {
+                            playerSets[ComponentType.Tof].Item.Index = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            ctrl.Index = index;
+        }
+
+        /// <summary>
+        /// Change Segmentation file index
+        /// </summary>
+        /// <param name="index">Index</param>
+        void ChangeSegmentationIndex(int index)
+        {
+            var ctrl = playerSets[ComponentType.Segmentation].Controller;
+            ctrl.Index = index;
+        }
+
+        /// <summary>
+        /// Change Body file index
+        /// </summary>
+        /// <param name="index">Index</param>
+        void ChangeBodyIndex(int index)
+        {
+            var ctrl = playerSets[ComponentType.Body].Controller;
+
+            if (matchTofAndBody && tof)
+            {
+                var fnames = playerSets[ComponentType.Body].Item.Options;
+                if (index < fnames.Length)
+                {
+                    var splitName = fnames[index].Split('_');
+                    var fname = splitName[0] + "_" + splitName[1];
+                    var tofNames = playerSets[ComponentType.Tof].Item.Options;
+                    for (int i = 0; i < tofNames.Length; i++)
+                    {
+                        if (tofNames[i].Contains(fname))
+                        {
+                            playerSets[ComponentType.Tof].Item.Index = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            ctrl.Index = index;
+        }
+
+        /// <summary>
         /// Change Face file index
         /// </summary>
         /// <param name="index">Index</param>
@@ -360,6 +447,35 @@ namespace TofArSettings.UI
                         if (colorNames[i].Contains(fname))
                         {
                             playerSets[ComponentType.Color].Item.Index = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            ctrl.Index = index;
+        }
+
+        /// <summary>
+        /// Change Plane file index
+        /// </summary>
+        /// <param name="index">Index</param>
+        void ChangePlaneIndex(int index)
+        {
+            var ctrl = playerSets[ComponentType.Plane].Controller;
+
+            if (matchTofAndPlane && plane)
+            {
+                var fnames = playerSets[ComponentType.Plane].Item.Options;
+                if (index < fnames.Length)
+                {
+                    var splitName = fnames[index].Split('_');
+                    var fname = splitName[0] + "_" + splitName[1];
+                    var tofNames = playerSets[ComponentType.Plane].Item.Options;
+                    for (int i = 0; i < tofNames.Length; i++)
+                    {
+                        if (tofNames[i].Contains(fname))
+                        {
+                            playerSets[ComponentType.Plane].Item.Index = i;
                             break;
                         }
                     }
@@ -485,6 +601,37 @@ namespace TofArSettings.UI
                         playerSet.Controller.StopCleanup();
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Controller registration event
+        /// </summary>
+        /// <param name="unityAction">Argumentless delegate</param>
+        public void AddListenerAddControllersAndPlayerSetsEvent(UnityAction unityAction)
+        {
+            addControllersAndPlayerSetsEvent.AddListener(unityAction);
+        }
+
+        /// <summary>
+        /// Register controller
+        /// </summary>
+        /// <param name="controller">RecordController</param>
+        public void SetController(ControllerBase controller)
+        {
+            controllers.Add(controller);
+        }
+
+        /// <summary>
+        /// Register playerSets
+        /// </summary>
+        /// <param name="controller">RecordController</param>
+        public void SetPlayerSets(ComponentType type, RecPlayerController ctrl)
+        {
+            if (type == ComponentType.Hand)
+            {
+                playerSets.Add(ComponentType.Hand, new PlayerSet(
+                                    ctrl, null, ChangeHandIndex, (idx) => DeleteEntry(idx, ComponentType.Hand), (idx, newName) => RenameEntry(idx, newName, ComponentType.Hand)));
             }
         }
     }

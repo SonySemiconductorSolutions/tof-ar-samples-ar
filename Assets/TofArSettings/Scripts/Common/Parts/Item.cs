@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -23,6 +23,7 @@ namespace TofArSettings.UI
                 // Adjust text width
                 float width = (fixedTitleWidth > 0) ?
                     fixedTitleWidth : txtTitle.preferredWidth;
+                width = Mathf.Max(width, defaultTitleWidth);
                 titleRt.sizeDelta = new Vector2(
                     width, titleRt.sizeDelta.y);
             }
@@ -107,7 +108,32 @@ namespace TofArSettings.UI
 
             txtTitle.fontSize += relativeFontSize;
             this.fixedTitleWidth = fixedTitleWidth;
+
             Title = title;
+        }
+
+        /// <summary>
+        /// Initialize
+        /// </summary>
+        /// <param name="title">Title</param>
+        /// <param name="fontStyle">Font Style</param>
+        /// <param name="relativeFontSize">Title font size (relative)</param>
+        /// <param name="fixedTitleWidth">Title fixed width</param>
+        public virtual void Init(string title, FontStyle fontStyle, int relativeFontSize,
+            float fixedTitleWidth)
+        {
+            Init(title, relativeFontSize, fixedTitleWidth);
+            txtTitle.fontStyle = fontStyle;
+
+            Title = title;
+        }
+
+        /// <summary>
+        /// Adjust UI width with scroll bar
+        /// </summary>
+        /// <param name="scrollBarSpace">scroll bar width + spacing</param>
+        public virtual void AdjustUIWidth(float scrollBarSpace)
+        {
         }
     }
 }

@@ -14,7 +14,7 @@ ToF AR, Time of Flight Augmented Reality, is a toolkit library intended to aid i
 
 As well as ToF AR, Unity and a compatible device with a ToF sensor are required to build and execute this sample application.
 
-Please see [the ToF AR Site on Sony Developer World](https://developer.sony.com/develop/tof-ar) for ToF AR downloads and development guides, sample applications, and a list of compatible devices.
+Please see [ToF AR official website](https://tof-ar.com/) (Currently available only in Japanese) for ToF AR downloads and development guides, sample applications, and a list of compatible devices.
 
 
 <a name="overview"></a>
@@ -159,26 +159,26 @@ Prefabs and scripts are stored as the Configuration change UI used by each compo
 
 ## Build library
 ToF AR is required in order to build.
-Please download the Toolkit from [the ToF AR Site on Sony Developer World](https://developer.sony.com/develop/tof-ar) and import it.
-Please see [Setting up AR Foundation](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_en.html#_setting_up_ar_foundation) in the [ToF AR user manual](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_en.html) for more information on how to set up AR Foundation.  
+Please download the Toolkit from [ToF AR official website](https://tof-ar.com/) and import it.
+Please see [Setting up AR Foundation](https://tof-ar.com/files/2/tofar/manual_reference/ToF_AR_User_Manual_ja.html#_setting_up_ar_foundation) in the [ToF AR user manual](https://tof-ar.com/files/2/tofar/manual_reference/ToF_AR_User_Manual_ja.html) for more information on how to set up AR Foundation.  
 If the project is opened before importing, a confirmation message for entering safe mode will appear depending on the settings.  
 If safe mode is entered, please import after exiting safe mode from the safe mode menu etc.
 
 ## Documents
 
-ToF AR Development documents are also available on Developer World.
+ToF AR Development documents are also available on the official website.
 
-* [ToF AR user manual](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_en.html) for overview and usage
-* [ToF AR reference articles](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_Reference_Articles_en.html) for articles about each component
-* [ToF AR API references](https://developer.sony.com/develop/tof-ar/development-guides/reference-api/reference/api/TofAr.V0.html)
+* [ToF AR user manual](https://tof-ar.com/files/2/tofar/manual_reference/ToF_AR_User_Manual_ja.html) for overview and usage
+* [ToF AR reference articles](https://tof-ar.com/files/2/tofar/manual_reference/ToF_AR_Reference_Articles_ja.html) for articles about each component
+* [ToF AR API references](https://tof-ar.com/files/2/tofar/manual_reference/reference_ja/reference/api/TofAr.V0.html)
 
 ## Verification environment
 
 Operation was verified in the following environment:
 
-* Unity Version  : 2021.3.18f1
-* ToF AR Version : 1.3.0
-* AR Foundation  : 4.2.7
+* Unity Version  : 2021.3.31f1
+* ToF AR Version : 1.4.0
+* AR Foundation  : 4.2.8
 
 
 <a name="notes"></a>

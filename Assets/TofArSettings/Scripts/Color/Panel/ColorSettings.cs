@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -19,10 +19,12 @@ namespace TofArSettings.Color
         FocusController focusCtrl;
         StabilizationController stabCtrl;
         ColorWhiteBalanceController whiteBalanceCtrl;
+        ColorCapturePhotoController capturePhotoController;
 
         UI.ItemSlider itemFrDu, itemSens, itemFocusDist;
-        UI.ItemDropdown itemFlash, itemFormat, itemWhiteBalance;
+        UI.ItemDropdown itemFlash, itemFormat, itemWhiteBalance, itemPhotoFormat;
         UI.ItemToggle itemAutoFocus, itemStab, itemAutoWhiteBalance;
+        UI.ItemButton itemCapturePhoto;
 
         UI.Panel panelMsg;
 
@@ -39,8 +41,18 @@ namespace TofArSettings.Color
             }
         }
 
+        void OnEnable()
+        {
+            TofArColorManager.OnStreamStarted += OnColorStreamStarted;
+            TofArColorManager.OnStreamStopped += OnColorStreamStopped;
+
+        }
+
         void OnDisable()
         {
+            TofArColorManager.OnStreamStarted -= OnColorStreamStarted;
+            TofArColorManager.OnStreamStopped -= OnColorStreamStopped;
+
             // When not using this panel, also hide associated panels
             panelMsg.PanelObj.SetActive(false);
         }
@@ -57,7 +69,8 @@ namespace TofArSettings.Color
                 MakeUILensStabilization,
                 MakeUIFocus,
                 MakeUIExposure,
-                MakeUIWhiteBalance
+                MakeUIWhiteBalance,
+                MakeUICapturePhoto
             };
 
             mgrCtrl = FindObjectOfType<ColorManagerController>();
@@ -70,6 +83,8 @@ namespace TofArSettings.Color
             controllers.Add(stabCtrl);
             whiteBalanceCtrl = mgrCtrl.GetComponent<ColorWhiteBalanceController>();
             controllers.Add(whiteBalanceCtrl);
+            capturePhotoController = mgrCtrl.GetComponent<ColorCapturePhotoController>();
+            controllers.Add(capturePhotoController);
 
             // Do not add as it is the same as exposureCtrl and is already added
             colorExposureCtrl = mgrCtrl.GetComponent<ColorExposureController>();
@@ -96,7 +111,7 @@ namespace TofArSettings.Color
         void MakeUIFormat()
         {
             itemFormat = settings.AddItem("Color Format", formatCtrl.FormatNames,
-                formatCtrl.Index, ChangeFormat);
+                formatCtrl.Index, ChangeFormat, 0, 0, 280);
 
             formatCtrl.OnChange += (index) =>
             {
@@ -184,7 +199,7 @@ namespace TofArSettings.Color
             // Distance
             itemFocusDist = settings.AddItem("Distance", focusCtrl.DistMin,
                 focusCtrl.DistMax, FocusController.DistStep, focusCtrl.Distance,
-                ChangeFocusDist);
+                ChangeFocusDist, 0, 0, lineAlpha);
 
             focusCtrl.OnChangeDist += (val) =>
             {
@@ -244,11 +259,11 @@ namespace TofArSettings.Color
             if (focusCtrl.DistMax <= focusCtrl.DistMin)
             {
                 itemFocusDist.Interactable = false;
-            } 
+            }
             else
             {
                 itemFocusDist.Interactable = !itemAutoFocus.OnOff;
-            }    
+            }
         }
 
         protected override void MakeUIExposure()
@@ -257,11 +272,10 @@ namespace TofArSettings.Color
             {
                 base.MakeUIExposure();
 
-
                 // Frame Duration
-                itemFrDu = settings.AddItem("Frame Duration", colorExposureCtrl.FrameDurationMin,
+                itemFrDu = settings.AddItem("Frame\nDuration", colorExposureCtrl.FrameDurationMin,
                     colorExposureCtrl.FrameDurationMax, ColorExposureController.FrameDurationStep,
-                    colorExposureCtrl.FrameDuration, ChangeFrameDuration);
+                    colorExposureCtrl.FrameDuration, ChangeFrameDuration, 0, 0, lineAlpha);
 
                 colorExposureCtrl.OnChangeFrameDuration += (frameDuration) =>
                 {
@@ -271,7 +285,7 @@ namespace TofArSettings.Color
                 // Sensitivity
                 itemSens = settings.AddItem("Sensitivity", colorExposureCtrl.SensitivityMin,
                     colorExposureCtrl.SensitivityMax, ColorExposureController.SensitivityStep,
-                    colorExposureCtrl.Sensitivity, ChangeSensitivity);
+                    colorExposureCtrl.Sensitivity, ChangeSensitivity, 0, 0, lineAlpha);
 
                 colorExposureCtrl.OnChangeSensitivity += (sen) =>
                 {
@@ -325,8 +339,8 @@ namespace TofArSettings.Color
                     SwitchWhiteBalanceUIInteractable();
                 };
 
-                itemWhiteBalance = settings.AddItem("WhiteBalanceMode", whiteBalanceCtrl.WhiteBalanceNames,
-                    whiteBalanceCtrl.Index, ChangeWhiteBalanceMode);
+                itemWhiteBalance = settings.AddItem("White\nBalanceMode", whiteBalanceCtrl.WhiteBalanceNames,
+                    whiteBalanceCtrl.Index, ChangeWhiteBalanceMode, -2, 0, 0, lineAlpha);
 
                 whiteBalanceCtrl.OnChange += (index) =>
                 {
@@ -429,6 +443,65 @@ namespace TofArSettings.Color
             if (itemSens)
             {
                 itemSens.Interactable = (!itemAutoExpo.OnOff);
+            }
+        }
+
+        /// <summary>
+        /// Make CapturePhoto UI
+        /// </summary>
+        void MakeUICapturePhoto()
+        {
+            if (TofArManager.Instance.UsingIos)
+            {
+                itemCapturePhoto = settings.AddItem("Capture Photo", OnClickCapturePhoto);
+
+                itemPhotoFormat = settings.AddItem("Photo Format", capturePhotoController.FormatNames,
+                    capturePhotoController.Index, ChangePhotoFormat);
+
+                SetInteractableUICapturePhoto(false);
+
+                capturePhotoController.OnChange += (index) =>
+                {
+                    itemPhotoFormat.Index = index;
+                };
+            }
+        }
+
+        private void SetInteractableUICapturePhoto(bool state)
+        {
+            if (itemCapturePhoto != null && itemPhotoFormat != null)
+            {
+                itemCapturePhoto.Interactable = state;
+                itemPhotoFormat.Interactable = state;
+            }
+        }
+
+        private void OnClickCapturePhoto()
+        {
+            if (TofArColorManager.Instance.IsStreamActive)
+            {
+                capturePhotoController.SetProperty();
+            }
+        }
+
+        private void ChangePhotoFormat(int index)
+        {
+            capturePhotoController.Index = index;
+        }
+
+        private void OnColorStreamStarted(object sender, Texture2D colorTex)
+        {
+             if(TofArManager.Instance.UsingIos && mgrCtrl != null && mgrCtrl is ColorManagerController)
+             {
+                SetInteractableUICapturePhoto((mgrCtrl as ColorManagerController).CurrentResolution.enablePhoto);
+            }
+        }
+
+        private void OnColorStreamStopped(object sender)
+        {
+            if (TofArManager.Instance.UsingIos)
+            {
+                SetInteractableUICapturePhoto(false);
             }
         }
     }

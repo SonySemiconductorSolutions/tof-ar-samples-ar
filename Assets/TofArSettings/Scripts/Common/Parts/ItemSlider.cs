@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -28,7 +28,7 @@ namespace TofArSettings.UI
 
         public bool IsNotifyImmediately = false;
 
-        float val;
+        float val = float.MaxValue;
         public float Value
         {
             get { return val; }
@@ -37,7 +37,7 @@ namespace TofArSettings.UI
                 if (val != value && CheckRange(value))
                 {
                     val = value;
-                    itemInput.Value = val.ToString();
+                    itemInput.Value = val.ToString(System.Globalization.CultureInfo.InvariantCulture);
                     adjuster.Value = val;
                     slider.value = adjuster.PlainValue;
 
@@ -104,7 +104,7 @@ namespace TofArSettings.UI
             set
             {
                 // Count the number of decimal places and set them in Adjuster
-                string str = value.ToString();
+                string str = value.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 string[] split = str.Split('.');
                 adjuster.DecimalDigit = (split.Length > 1) ?
                     split[1].Length : 0;
@@ -132,6 +132,7 @@ namespace TofArSettings.UI
         Adjuster adjuster;
 
         bool operating = false;
+        float sliderWidth;
 
         protected override void Awake()
         {
@@ -166,6 +167,18 @@ namespace TofArSettings.UI
             {
                 Value = val;
             };
+        }
+
+        /// <summary>
+        /// Adjust UI width with scroll bar
+        /// </summary>
+        /// <param name="scrollBarSpace">scroll bar width + spacing</param>
+        public override void AdjustUIWidth(float scrollBarSpace)
+        {
+            base.AdjustUIWidth(scrollBarSpace);
+
+            float w = sliderWidth - scrollBarSpace;
+            sliderRt.sizeDelta = new Vector2(w, sliderRt.sizeDelta.y);
         }
 
         /// <summary>
@@ -209,10 +222,9 @@ namespace TofArSettings.UI
 
             SetRangeText();
 
-            adjuster.DefaultValue = adjuster.ConvertToPlain(Value);
-
             // Adjust size of Slider to fit the size of ItemInput
-            sliderRt.sizeDelta = new Vector2(sliderRt.sizeDelta.x - WidthDiff, sliderRt.sizeDelta.y);
+            sliderWidth = sliderRt.sizeDelta.x - WidthDiff;
+            sliderRt.sizeDelta = new Vector2(sliderWidth, sliderRt.sizeDelta.y);
         }
 
         /// <summary>
@@ -261,7 +273,7 @@ namespace TofArSettings.UI
         /// </summary>
         void SetRangeText()
         {
-            itemInput.TxtRange.text = $"{Min} ~ {Max} , step = {Step}";
+            itemInput.TxtRange.text = System.FormattableString.Invariant($"{Min} ~ {Max} , step = {Step}");
         }
     }
 }

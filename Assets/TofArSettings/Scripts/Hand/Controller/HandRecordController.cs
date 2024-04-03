@@ -1,52 +1,30 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using TofAr.V0.Hand;
 using UnityEngine;
-using TofAr.V0.Tof;
-using System;
 using TofAr.V0;
+using SensCord;
+using System.Linq;
 
 namespace TofArSettings.Hand
 {
     public class HandRecordController : RecordController
     {
-        private RecognizeResultProperty handDataCopy;
-        private bool isSaveData = false;
-        private string rawPath, imgPath , csvPath;
+        private bool isRecording = false;
+        string recordingPath = "";
 
-        public override bool IsMultiple => false;
-
-        protected override string Output()
-        {
-            return rawPath;
-        }
-
-        protected override void StopRecording()
-        {
-            Debug.Log("Stop Hand");
-        }
-
-        private void OnEnable()
-        {
-            TofArHandManager.OnFrameArrived += HandFrameArrived;
-        }
-
-        private void OnDisable()
-        {
-            TofArHandManager.OnFrameArrived -= HandFrameArrived;
-        }
+        public override bool IsMultiple => true;
 
         protected override bool IsRecord()
         {
-            var instance_t = TofArTofManager.Instance;
-            var instance_h = TofArHandManager.Instance;
+            var instance = TofArHandManager.Instance;
 
-            if (instance_t.IsStreamActive && instance_h.IsStreamActive)
+            if (instance.IsStreamActive)
             {
                 return true;
             }
@@ -56,197 +34,130 @@ namespace TofArSettings.Hand
 
         protected override bool Record()
         {
-            isSaveData = true;
+            var instance = TofArHandManager.Instance;
 
-            bool rawSaved = false;
-            bool csvSaved = false;
-            bool imgSaved = false;
-
-            // Use timestamp
-            string dataPath = Application.persistentDataPath + "/handdata/";
-            string timeStamp = DateTime.Now.ToString("yyyyMMdd-HHmmssfff");
-
-
-            if (!System.IO.Directory.Exists(dataPath))
+            if (instance.IsStreamActive)
             {
-                System.IO.Directory.CreateDirectory(dataPath);
-            }
+                var recordProperty = instance.GetProperty<RecordProperty>();
+                var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
 
+                var runTime = TofArManager.Instance.RuntimeSettings;
 
-            rawPath = dataPath + timeStamp + ".raw";
-            imgPath = dataPath + timeStamp + ".png";
-            csvPath = dataPath + "joints.csv";
-
-
-            try
-            {
-                var depthData = TofArTofManager.Instance.DepthData;
-                var rawDepthData = depthData.Data;
-
-                using (var depthFile = System.IO.File.Open(rawPath, System.IO.FileMode.Create))
+                if (runTime.runMode == RunMode.MultiNode)
                 {
+                    recordingPath = System.IO.Path.Combine(Application.persistentDataPath, "recordings");
+                    if (!System.IO.Directory.Exists(recordingPath))
                     {
-                        byte[] outarr = new byte[rawDepthData.Length * 2];
-                        System.Buffer.BlockCopy(rawDepthData, 0, outarr, 0, outarr.Length);
+                        try
+                        {
+                            System.IO.Directory.CreateDirectory(recordingPath);
+                        }
+                        catch (System.IO.IOException e)
+                        {
+                            TofArManager.Logger.WriteLog(LogLevel.Debug, $"Failed to create directory {recordingPath}. Reason: {e.Message}");
+                            return false;
+                        }
+                        catch (System.ArgumentException e)
+                        {
+                            TofArManager.Logger.WriteLog(LogLevel.Debug, $"Failed to create directory {recordingPath}. Reason: {e.Message}");
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    recordingPath = directoryListProp.path;
+                }
 
-                        depthFile.Write(outarr, 0, outarr.Length);
+
+                this.isRecording = true;
+
+
+                var channelInfo = instance.GetProperty<ChannelInfoProperty>();
+
+                recordProperty = new RecordProperty()
+                {
+                    Enabled = this.isRecording,
+                    Path = recordingPath,
+                    BufferNum = 5
+                };
+
+                foreach (var channel in channelInfo.Channels)
+                {
+                    if (channel.Key >= 0x80000000)
+                    {
+                        continue;
                     }
 
-                    rawSaved = true;
+                    recordProperty.Formats[channel.Key] = "raw";
                 }
-
-
-                if (TofArManager.Instance.RuntimeSettings.runMode == RunMode.MultiNode)
-                {
-                    ScreenCapture.CaptureScreenshot(dataPath + timeStamp + ".png");
-                }
-                else
-                {
-                    ScreenCapture.CaptureScreenshot("/handdata/" + timeStamp + ".png");
-                }
-                imgSaved = true;
-
-                // get joint data
-                SaveCsv(dataPath, timeStamp);
-
-                csvSaved = true;
-
+                instance.SetProperty(recordProperty);
+                return true;
             }
-            catch (System.IO.IOException e)
+            else
             {
-                TofArManager.Logger.WriteLog(LogLevel.Debug, TofAr.V0.Utils.FormatException(e));
+                return false;
             }
-            catch (ArgumentException e)
-            {
-                TofArManager.Logger.WriteLog(LogLevel.Debug, TofAr.V0.Utils.FormatException(e));
-            }
-            finally
-            {
-                isSaveData = false;
-
-                var sb = new System.Text.StringBuilder();
-
-                if (imgSaved)
-                {
-                    sb.AppendLine("Screenshot saved to: " + imgPath + "\n");
-                }
-                else
-                {
-                    sb.AppendLine("Failed to save screenshot\n");
-                }
-                if (rawSaved)
-                {
-                    sb.AppendLine("Raw depth data saved to: " + rawPath + "\n");
-                }
-                else
-                {
-                    sb.AppendLine("Failed to save raw depth data\n");
-                }
-
-                if (csvSaved)
-                {
-                    sb.AppendLine("CSV joint data saved to: " + csvPath + "\n");
-                }
-                else
-                {
-                    sb.AppendLine("Failed to save CSV joint data\n");
-                }
-                TofArManager.Logger.WriteLog(LogLevel.Debug, sb.ToString());
-            }
-            return rawSaved && imgSaved && csvSaved;
         }
 
-        private void SaveCsv(string dataPath, string timeStamp)
+        protected override void StopRecording()
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            var instance = TofArHandManager.Instance;
+            var runTime = TofArManager.Instance.RuntimeSettings;
+            this.isRecording = false;
 
-            if (!System.IO.File.Exists(dataPath + "/joints.csv"))
+            var channelInfo = instance.GetProperty<ChannelInfoProperty>();
+
+            var recordProperty = new RecordProperty()
             {
-                sb.Append("Timestamp,");
+                Enabled = this.isRecording,
+                Path = recordingPath,
+                BufferNum = 5
+            };
 
-                // Left
-                foreach (var j in Enum.GetNames(typeof(HandPointIndex)))
+            foreach (var channel in channelInfo.Channels)
+            {
+                if (channel.Key >= 0x80000000)
                 {
-                    sb.Append("L_" + j.ToString() + "_X,");
-                    sb.Append("L_" + j.ToString() + "_Y,");
-                    sb.Append("L_" + j.ToString() + "_Z,");
+                    continue;
                 }
-
-                // Right
-                foreach (var j in Enum.GetNames(typeof(HandPointIndex)))
-                {
-                    sb.Append("R_" + j.ToString() + "_X,");
-                    sb.Append("R_" + j.ToString() + "_Y,");
-                    sb.Append("R_" + j.ToString() + "_Z,");
-                }
-
-                sb.AppendLine();
+                recordProperty.Formats[channel.Key] = "raw";
             }
+            instance.SetProperty(recordProperty);
 
-            sb.Append(timeStamp + ",");
-
-
-            var pointsLeft = handDataCopy?.featurePointsLeft;
-            var pointsRight = handDataCopy?.featurePointsRight;
-
-            if (pointsLeft != null && pointsLeft.Length > 0)
+            if (!recordProperty.Enabled) // stopped
             {
-                foreach (var p in pointsLeft)
+                // Copy to device (for DebugServer)
+
+                if (runTime.runMode == RunMode.MultiNode)
                 {
-                    if (p.z <= 0)
-                    {
-                        sb.Append("0,0,0,");
-                    }
-                    else
-                    {
-                        sb.Append(p.x + "," + p.y + "," + p.z + ",");
-                    }
+                    StartCoroutine(CopyToDevice());
                 }
             }
-
-
-            if (pointsRight != null && pointsRight.Length > 0)
-            {
-                foreach (var p in pointsRight)
-                {
-                    if (p.z <= 0)
-                    {
-                        sb.Append("0,0,0,");
-                    }
-                    else
-                    {
-                        sb.Append(p.x + "," + p.y + "," + p.z + ",");
-                    }
-                }
-            }
-
-            sb.AppendLine();
-
-            System.IO.File.AppendAllText(csvPath, sb.ToString());
         }
 
-        private void HandFrameArrived(object sender)
+        protected override string Output()
         {
-            var manager = sender as TofArHandManager;
-            if (manager == null)
+            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>().directoryList
+                    .Where(x => x.Contains(TofArHandManager.StreamKeyTFLite)).OrderBy(x => x);
+            if (directoryListProp.Count() == 0)
             {
-                return;
+                return string.Empty;
             }
-
-            if (isSaveData)
-            {
-                return;
-            }
-
-            handDataCopy = new RecognizeResultProperty();
-            handDataCopy.handStatus = manager.HandData.Data.handStatus;
-            handDataCopy.featurePointsLeft = manager.HandData.Data.featurePointsLeft;
-            handDataCopy.featurePointsRight = manager.HandData.Data.featurePointsRight;
+            return directoryListProp.Last();
         }
+
 
         protected override string GetLastRecording()
         {
-            return null;
+            var recordings = new System.IO.DirectoryInfo($"{Application.persistentDataPath}/recordings/").EnumerateDirectories()
+                .Where(x => x.Name.Contains(TofArHandManager.StreamKeyTFLite));
+            if (recordings.Count() == 0)
+            {
+                return null;
+            }
+
+            return recordings.Last().FullName;
         }
     }
 }

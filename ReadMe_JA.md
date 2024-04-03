@@ -16,7 +16,7 @@ ToF AR は、Time-of-Flight(ToF)/Light detection and ranging(Lidar)などの距�
 
 ToF AR のパッケージや開発ドキュメント、ToF ARを使ったアプリケーションソフト、対応スマートフォンのリストにつきましては、
 
-Developer World の[ToF AR サイト](https://developer.sony.com/develop/tof-ar)をご覧ください。
+[ToF AR サイト](https://tof-ar.com/)をご覧ください。
 
 
 <a name="overview"></a>
@@ -161,25 +161,25 @@ BallのToggleをOnにすると画面上部からボールが出現します。
 
 ## ビルド用ライブラリ
 ビルドには、ToF AR と AR Foundation が必要です。
-ToF AR はDeveloper Worldの[ToF AR サイト](https://developer.sony.com/develop/tof-ar)からダウンロードし、インポートして使用してください。
-AR Foundationは[ToF AR user manual](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_ja.html)の[Setting up AR Foundation](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_ja.html#_setting_up_ar_foundation)を参照して、セットアップを行ってください。  
+ToF AR は[ToF AR サイト](https://tof-ar.com/)からダウンロードし、インポートして使用してください。
+AR Foundationは[ToF AR user manual](https://tof-ar.com/files/2/tofar/manual_reference/ToF_AR_User_Manual_ja.html)の[Setting up AR Foundation](https://tof-ar.com/files/2/tofar/manual_reference/ToF_AR_User_Manual_ja.html#_setting_up_ar_foundation)を参照して、セットアップを行ってください。  
 インポート前にプロジェクトを開くと、設定によってはセーフモードへの移行確認メッセージが表示されます。  
 セーフモードに移行した場合、セーフモードメニューなどからセーフモードを終了してインポートを行ってください。
 
 ## ドキュメント
 
-ToF ARの開発ドキュメントも、Developer Worldで公開しています。
-* 概要や使い方についてのマニュアルは[ToF AR user manual](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_User_Manual_ja.html)
-* 各コンポーネントの詳細記事は[ToF AR reference articles](https://developer.sony.com/develop/tof-ar/development-guides/docs/ToF_AR_Reference_Articles_ja.html)
-* APIリファレンスは[ToF AR API references](https://developer.sony.com/develop/tof-ar/development-guides/reference-api-ja/reference/api/TofAr.V0.html)
+ToF ARの開発ドキュメントも、ToF AR サイトで公開しています。
+* 概要や使い方についてのマニュアルは[ToF AR user manual](https://tof-ar.com/files/2/tofar/manual_reference/ToF_AR_User_Manual_ja.html)
+* 各コンポーネントの詳細記事は[ToF AR reference articles](https://tof-ar.com/files/2/tofar/manual_reference/ToF_AR_Reference_Articles_ja.html)
+* APIリファレンスは[ToF AR API references](https://tof-ar.com/files/2/tofar/manual_reference/reference_ja/reference/api/TofAr.V0.html)
 
 ## 動作検証環境
 
 動作検証は、下記の環境で行っています。
 
-* Unity Version  : 2021.3.18f1
-* ToF AR Version : 1.3.0
-* AR Foundation  : 4.2.7
+* Unity Version  : 2021.3.31f1
+* ToF AR Version : 1.4.0
+* AR Foundation  : 4.2.8
 
 
 <a name="notes"></a>

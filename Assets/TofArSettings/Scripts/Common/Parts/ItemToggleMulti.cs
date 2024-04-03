@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -87,6 +87,7 @@ namespace TofArSettings.UI
                 Array.Resize(ref itemTgls, title.Length);
             }
 
+            int baseRelativeFontSize = 0;
             for (int i = 0; i < itemTgls.Length; i++)
             {
                 if (!itemTgls[i])
@@ -95,7 +96,17 @@ namespace TofArSettings.UI
                     itemTgls[i] = obj.GetComponent<ItemToggle>();
                 }
 
+                // To prevent the second and subsequent sizes from changing, the first value is stored
                 int font = (relativeFontSize == null) ? 0 : relativeFontSize[i];
+                if (i <= 0)
+                {
+                    baseRelativeFontSize = font;
+                }
+                else
+                {
+                    font = baseRelativeFontSize - font;
+                }
+
                 float fix = (fixedTitleWidth == null) ? 0 : fixedTitleWidth[i];
 
                 itemTgls[i].Init(title[i], font, fix, onOff[i], i,

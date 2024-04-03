@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -34,7 +34,7 @@ namespace TofArSettings.UI
         /// <param name="ori">Screen orientation</param>
         void OnRotateScreen(ScreenOrientation ori)
         {
-            layout.padding.bottom = (scRotCtrl.IsPortrait) ?
+            layout.padding.bottom = (scRotCtrl.IsPortraitScreen) ?
                 bottom + Mathf.RoundToInt(toolbar.BarWidth) : bottom;
         }
     }

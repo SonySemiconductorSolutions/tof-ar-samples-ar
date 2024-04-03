@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -76,6 +76,7 @@ namespace TofArSettings.MarkRecog
             brush.DrawStarted -= BrushOnStartDraw;
             brush.DrawStopped -= BrushOnStopDraw;
         }
+
         private void BrushOnStopDraw()
         {
             IsDrawing = false;
@@ -99,7 +100,6 @@ namespace TofArSettings.MarkRecog
             tex.ReadPixels(new Rect(0, 0, markImage.width, markImage.height), 0, 0);
             tex.Apply();
 
-
             RenderTexture.active = null;
 
             ResultProperty prop = new ResultProperty()
@@ -107,11 +107,13 @@ namespace TofArSettings.MarkRecog
                 image = tex
             };
 
-            prop = TofArMarkRecogManager.Instance.GetProperty<ResultProperty>(prop);
-
+            prop = TofArMarkRecogManager.Instance?.GetProperty<ResultProperty>(prop);
+            if (prop == null)
+            {
+                return;
+            }
 
             var levels = prop.levels;
-
             if (levels != null)
             {
                 float max_level = 0f;
@@ -132,6 +134,7 @@ namespace TofArSettings.MarkRecog
                 {
                     maxIdx = (int)ChannelIds.None;
                 }
+
                 CurrentClassId = (ChannelIds)maxIdx;
             }
         }

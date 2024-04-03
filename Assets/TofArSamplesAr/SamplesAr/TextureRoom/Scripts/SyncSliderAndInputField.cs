@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -32,15 +32,15 @@ namespace TofArARSamples.TextureRoom
 
         public void SyncInputFieldChanged()
         {
-            if (float.Parse(inputField.text) > maxNumber)
+            if (float.Parse(inputField.text, System.Globalization.CultureInfo.InvariantCulture) > maxNumber)
             {
                 inputField.text = maxNumber.ToString();
             }
-            else if (float.Parse(inputField.text) < minNumber)
+            else if (float.Parse(inputField.text, System.Globalization.CultureInfo.InvariantCulture) < minNumber)
             {
                 inputField.text = minNumber.ToString();
             }
-            slider.value = Common.map(float.Parse(inputField.text), minNumber, maxNumber, 0, 1f);
+            slider.value = Common.map(float.Parse(inputField.text, System.Globalization.CultureInfo.InvariantCulture), minNumber, maxNumber, 0, 1f);
         }
     }
 }

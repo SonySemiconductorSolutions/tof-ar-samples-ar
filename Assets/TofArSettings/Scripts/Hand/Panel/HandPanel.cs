@@ -5,36 +5,49 @@
  *
  */
 
-using UnityEngine;
-using UnityEngine.UI;
 using TofAr.V0.Hand;
 using TofArSettings.UI;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace TofArSettings.Hand
 {
     public class HandPanel : MonoBehaviour
     {
         [SerializeField]
-        private CanvasGroup imageCanvas;
+        CanvasGroup imageCanvas;
         [SerializeField]
-        private Text poseText;
+        Text poseText;
         [SerializeField]
-        private Image poseImage;
+        Image poseImage;
 
-        private float initPosX, initPosY;
+        float initPosX, initPosY;
         ScreenRotateController scRotCtrl;
         Toolbar toolbar;
+        RectTransform rt;
 
-        private void Awake()
+        void Awake()
         {
-            initPosX = this.GetComponent<RectTransform>().anchoredPosition.x;
-            initPosY = this.GetComponent<RectTransform>().anchoredPosition.y;
+            initPosX = GetComponent<RectTransform>().anchoredPosition.x;
+            initPosY = GetComponent<RectTransform>().anchoredPosition.y;
             toolbar = FindObjectOfType<Toolbar>();
             scRotCtrl = FindObjectOfType<ScreenRotateController>();
+            rt = GetComponent<RectTransform>();
+        }
+
+        void OnEnable()
+        {
             scRotCtrl.OnRotateScreen += OnRotateScreen;
         }
 
-        // Start is called before the first frame update
+        void OnDisable()
+        {
+            if (scRotCtrl)
+            {
+                scRotCtrl.OnRotateScreen -= OnRotateScreen;
+            }
+        }
+
         void Start()
         {
             poseText.text = "None";
@@ -48,9 +61,11 @@ namespace TofArSettings.Hand
             poseText.text = pose.ToString();
             poseImage.sprite = image;
 
-            if (imageCanvas == null) { 
-                return; 
+            if (imageCanvas == null)
+            {
+                return;
             }
+
             imageCanvas.alpha = pose == PoseIndex.None ? 0 : 1;
         }
 
@@ -60,18 +75,15 @@ namespace TofArSettings.Hand
         /// <param name="ori">Screen orientation</param>
         void OnRotateScreen(ScreenOrientation ori)
         {
-            RectTransform rectTransform = this.GetComponent<RectTransform>();
-
-            if (scRotCtrl.IsPortrait)
+            if (scRotCtrl.IsPortraitScreen)
             {
-                rectTransform.anchoredPosition = new Vector2(initPosX, initPosY + toolbar.BarWidth);
+                rt.anchoredPosition = new Vector2(initPosX, initPosY + toolbar.BarWidth);
             }
             else
             {
-                float offset = rectTransform.anchorMin.x == 1f ? toolbar.BarWidth : 0f;
-                rectTransform.anchoredPosition = new Vector2(initPosX - offset, initPosY);
+                float offset = rt.anchorMin.x == 1f ? toolbar.BarWidth : 0f;
+                rt.anchoredPosition = new Vector2(initPosX - offset, initPosY);
             }
-
         }
     }
 }

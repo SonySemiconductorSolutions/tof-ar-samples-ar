@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -15,51 +15,27 @@ namespace TofArSettings.Segmentation
 {
     public class SegmentationManagerController : ControllerBase
     {
-        private SynchronizationContext context;
-        private bool isStarted = false;
-        private bool isPlaying = false;
-        private bool restartStream = false;
-
-        protected void Awake()
-        {
-            context = SynchronizationContext.Current;
-            isStarted = TofArSegmentationManager.Instance.autoStart;
-        }
-
-        protected void OnEnable()
-        {
-            TofArColorManager.OnStreamStarted += OnColorPlaybackStreamStarted;
-            TofArColorManager.OnStreamStopped += OnColorPlaybackStreamStopped;
-        }
-
-        protected void OnDisable()
-        {
-            TofArColorManager.OnStreamStarted -= OnColorPlaybackStreamStarted;
-            TofArColorManager.OnStreamStopped -= OnColorPlaybackStreamStopped;
-        }
-
-        public bool IsStreamActive()
-        {
-            return isStarted && TofArSegmentationManager.Instance.IsStreamActive;
-        }
-
         /// <summary>
         /// Start stream
         /// </summary>
         public void StartStream()
         {
-            if (!isStarted)
+            var segmentationMgr = TofArSegmentationManager.Instance;
+            if (segmentationMgr && !TofArSegmentationManager.Instance.IsStreamActive && !TofArSegmentationManager.Instance.IsPlaying)
             {
-                isStarted = true;
-                if (TofArColorManager.Instance.IsPlaying)
+                var colorMgr = TofArColorManager.Instance;
+                if (colorMgr && TofArColorManager.Instance.IsPlaying)
                 {
-                    TofArSegmentationManager.Instance.StartPlayback();
+                    if (TofArSegmentationManager.Instance.Stream != null)
+                    {
+                        TofArSegmentationManager.Instance.StartPlayback();
+                    }
                 }
                 else
                 {
                     TofArSegmentationManager.Instance.StartStream();
                 }
-                OnStreamStartStatusChanged?.Invoke(isStarted);
+                OnStreamStartStatusChanged?.Invoke(true);
             }
         }
 
@@ -68,11 +44,18 @@ namespace TofArSettings.Segmentation
         /// </summary>
         public void StopStream()
         {
-            if (isStarted)
+            var segmentationMgr = TofArSegmentationManager.Instance;
+            if (segmentationMgr && TofArSegmentationManager.Instance.IsStreamActive)
             {
-                isStarted = false;
-                TofArSegmentationManager.Instance.StopStream();
-                OnStreamStartStatusChanged?.Invoke(isStarted);
+                if (TofArSegmentationManager.Instance.IsPlaying)
+                {
+                    TofArSegmentationManager.Instance.StopPlayback();
+                }
+                else
+                {
+                    TofArSegmentationManager.Instance.StopStream();
+                }
+                OnStreamStartStatusChanged?.Invoke(false);
             }
         }
 
@@ -86,15 +69,6 @@ namespace TofArSettings.Segmentation
             StartStream();
         }
 
-        private IEnumerator StartPlaybackStreamCoroutine()
-        {
-            yield return new WaitForEndOfFrame();
-
-            TofArSegmentationManager.Instance.StartPlayback();
-            OnStreamStartStatusChanged?.Invoke(true);
-            isPlaying = true;
-        }
-
         /// <summary>
         /// Event that is called when Tof stream is started and status is changed
         /// </summary>
@@ -106,10 +80,7 @@ namespace TofArSettings.Segmentation
         /// <param name="sender">TofArSegmentationManager</param>
         public void OnColorStreamStarted(object sender, UnityEngine.Texture2D tex)
         {
-            context.Post((s) =>
-            {
-                StartCoroutine(StartStreamCoroutine());
-            }, null);
+            StartCoroutine(StartStreamCoroutine());
         }
 
         /// <summary>
@@ -119,46 +90,6 @@ namespace TofArSettings.Segmentation
         public void OnColorStreamStopped(object sender)
         {
             StopStream();
-        }
-
-        /// <summary>
-        /// Event that is called when Color playback stream is started
-        /// </summary>
-        /// <param name="sender">TofArTofManager</param>
-        private void OnColorPlaybackStreamStarted(object sender, Texture2D tex)
-        {
-            if (TofArColorManager.Instance.IsPlaying)
-            {
-                if (isStarted)
-                {
-                    restartStream = true;
-                }
-
-                context.Post((s) =>
-                {
-                    StartCoroutine(StartPlaybackStreamCoroutine());
-                }, null);
-            }
-        }
-
-        /// <summary>
-        /// Event that is called when Color playback stream is stopped
-        /// </summary>
-        /// <param name="sender">TofArTofManager</param>
-        private void OnColorPlaybackStreamStopped(object sender)
-        {
-            if (isPlaying)
-            {
-                isPlaying = false;
-                OnColorStreamStopped(sender);
-            }
-
-            // may have to restart mesh stream
-            if (restartStream)
-            {
-                restartStream = false;
-                OnColorStreamStarted(sender, null);
-            }
         }
     }
 }

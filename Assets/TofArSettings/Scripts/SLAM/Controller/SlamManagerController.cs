@@ -5,11 +5,10 @@
  *
  */
 
-using TofAr.V0.Slam;
 using System;
 using System.Linq;
+using TofAr.V0.Slam;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace TofArSettings.Slam
 {
@@ -17,9 +16,7 @@ namespace TofArSettings.Slam
     {
         private void Awake()
         {
-            isStarted = TofArSlamManager.Instance.autoStart;
             var ctrl = FindObjectOfType<General.CameraApiController>();
-
             ctrl.OnChangeApi += (idx) =>
             {
                 if (ctrl.CameraApi == TofAr.V0.IosCameraApi.AvFoundation)
@@ -33,7 +30,8 @@ namespace TofArSettings.Slam
                 }
             };
 
-            if (TofAr.V0.TofArManager.Instance.UsingIos && ctrl.CameraApi == TofAr.V0.IosCameraApi.AvFoundation)
+            var mgr = TofAr.V0.TofArManager.Instance;
+            if (mgr && mgr.UsingIos && ctrl.CameraApi == TofAr.V0.IosCameraApi.AvFoundation)
             {
                 this.CameraPoseSource = CameraPoseSource.Gyro;
             }
@@ -58,8 +56,14 @@ namespace TofArSettings.Slam
             TofArSlamManager.OnStreamStarted -= OnSlamStreamStarted;
 
             // change back to gyro when debugging
-            if ((TofAr.V0.TofArManager.Instance.UsingIos && !TofAr.V0.TofArManager.Instance.RuntimeSettings.isRemoteServer) ||
-                TofAr.V0.TofArManager.Instance.RuntimeSettings.runMode == TofAr.V0.RunMode.MultiNode)
+            var mgr = TofAr.V0.TofArManager.Instance;
+            if (!mgr)
+            {
+                return;
+            }
+
+            if ((mgr.UsingIos && !mgr.RuntimeSettings.isRemoteServer) ||
+                mgr.RuntimeSettings.runMode == TofAr.V0.RunMode.MultiNode)
             {
                 StopStream();
                 CameraPoseSource = CameraPoseSource.Gyro;
@@ -70,9 +74,15 @@ namespace TofArSettings.Slam
 
         private void OnSlamStreamStarted(object sender)
         {
-            isStarted = true;
-            OnStreamStartStatusChanged?.Invoke(isStarted);
-            var idx = Utils.Find(TofArSlamManager.Instance.CameraPoseSource, PoseSources);
+            OnStreamStartStatusChanged?.Invoke(true);
+
+            var mgr = TofArSlamManager.Instance;
+            if (!mgr)
+            {
+                return;
+            }
+
+            int idx = Utils.Find(mgr.CameraPoseSource, PoseSources);
             if (idx != index)
             {
                 Index = idx;
@@ -81,23 +91,21 @@ namespace TofArSettings.Slam
 
         private void OnSlamStreamStopped(object sender)
         {
-            isStarted = false;
-            OnStreamStartStatusChanged?.Invoke(isStarted);
+            OnStreamStartStatusChanged?.Invoke(false);
         }
 
         public bool IsStreamActive()
         {
-            return TofArSlamManager.Instance.IsStreamActive;
+            var mgr = TofArSlamManager.Instance;
+            return (mgr && mgr.IsStreamActive);
         }
-
-        private bool isStarted = false;
 
         /// <summary>
         /// Start stream
         /// </summary>
         public void StartStream()
         {
-            TofArSlamManager.Instance.StartStream();
+            TofArSlamManager.Instance?.StartStream();
         }
 
         /// <summary>
@@ -105,19 +113,25 @@ namespace TofArSettings.Slam
         /// </summary>
         public void StopStream()
         {
-            TofArSlamManager.Instance.StopStream();
+            TofArSlamManager.Instance?.StopStream();
         }
 
         public event ChangeToggleEvent OnStreamStartStatusChanged;
 
         public CameraPoseSource CameraPoseSource
         {
-            get => TofArSlamManager.Instance.CameraPoseSource;
+            get
+            {
+                var mgr = TofArSlamManager.Instance;
+                return (mgr) ? mgr.CameraPoseSource : CameraPoseSource.Gyro;
+            }
+
             set
             {
-                if (value != TofArSlamManager.Instance.CameraPoseSource)
+                var mgr = TofArSlamManager.Instance;
+                if (mgr && value != mgr.CameraPoseSource)
                 {
-                    TofArSlamManager.Instance.CameraPoseSource = value;
+                    mgr.CameraPoseSource = value;
                     Index = Utils.Find(value, PoseSources);
                 }
             }
@@ -153,8 +167,14 @@ namespace TofArSettings.Slam
 
         private void SetupPoseSourceLists()
         {
+            var mgr = TofAr.V0.TofArManager.Instance;
+            if (!mgr)
+            {
+                return;
+            }
+
             PoseSources = ((CameraPoseSource[])Enum.GetValues(typeof(CameraPoseSource)));
-            if (!TofAr.V0.TofArManager.Instance.UsingIos)
+            if (!mgr.UsingIos)
             {
                 var internalTracker = Resources.Load("Prefabs/KPoseTracker");
                 var internalTracker2 = Resources.Load("Prefabs/SdsPoseTracker");
@@ -162,7 +182,7 @@ namespace TofArSettings.Slam
                 var poseSources = PoseSources.Distinct();
                 if (internalTracker == null)
                 {
-                    poseSources = poseSources.Where(x => x != CameraPoseSource.InternalEngine).ToArray(); 
+                    poseSources = poseSources.Where(x => x != CameraPoseSource.InternalEngine).ToArray();
                 }
 
                 if (internalTracker2 == null)
@@ -176,8 +196,8 @@ namespace TofArSettings.Slam
             {
                 PoseSources = PoseSources.Distinct().Where(x => x != CameraPoseSource.InternalEngine && x != CameraPoseSource.InternalEngine02).ToArray();
             }
+
             PoseSourceNames = PoseSources.Select((s) => s.ToString()).ToArray();
         }
-
     }
 }

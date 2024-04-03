@@ -281,7 +281,7 @@ namespace TofArSettings.Hand
                 if (attr != null)
                 {
                     var enumNames = Enum.GetNames(attr.customType);
-                    if (int.TryParse(property.propertyPath.Split('[', ']')[1], out int idx))
+                    if (int.TryParse(property.propertyPath.Split('[', ']')[1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out int idx))
                     {
                         label = new GUIContent(enumNames[idx]);
                     }

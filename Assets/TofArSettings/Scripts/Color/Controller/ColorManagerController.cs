@@ -7,9 +7,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using TofAr.V0.Color;
 using UnityEngine;
+using TofAr.V0;
+using TofAr.V0.Color;
+using TofAr.V0.Tof;
 using TofArSettings.Tof;
+using LensFacing = TofAr.V0.Color.LensFacing;
 
 namespace TofArSettings.Color
 {
@@ -54,6 +57,8 @@ namespace TofArSettings.Color
             TofArColorManager.OnAvailableResolutionsChanged += MakeResoOptions;
             TofArColorManager.OnStreamStarted += OnColorStreamStarted;
             TofArColorManager.OnStreamStopped += OnColorStreamStopped;
+
+            TofArManager.Instance?.postInternalSessionStart.AddListener(OnInternalSessionStarted);
         }
 
         protected override void OnDisable()
@@ -63,12 +68,14 @@ namespace TofArSettings.Color
             TofArColorManager.OnAvailableResolutionsChanged -= MakeResoOptions;
             TofArColorManager.OnStreamStarted -= OnColorStreamStarted;
             TofArColorManager.OnStreamStopped -= OnColorStreamStopped;
+
+            TofArManager.Instance?.postInternalSessionStart.RemoveListener(OnInternalSessionStarted);
         }
 
         protected override void Start()
         {
             // Get CameraResolution list
-            var props = TofArColorManager.Instance.GetProperty<AvailableResolutionsProperty>();
+            var props = TofArColorManager.Instance?.GetProperty<AvailableResolutionsProperty>();
             MakeResoOptions(props);
 
             base.Start();
@@ -81,7 +88,8 @@ namespace TofArSettings.Color
 
         public override bool IsStreamActive()
         {
-            return TofArColorManager.Instance.IsStreamActive;
+            var mgr = TofArColorManager.Instance;
+            return (mgr && mgr.IsStreamActive);
         }
 
         protected override void StartStream()
@@ -94,13 +102,16 @@ namespace TofArSettings.Color
                 tofManagerController.Index = 0;
                 var conf = tofManagerController.Configs[tofIndex];
                 var currentColor = Resolutions[Index];
-                if (TofAr.V0.TofArManager.Instance.UsingIos)
+
+                var mgr = TofArManager.Instance;
+                var tofMgr = TofArTofManager.Instance;
+                if (mgr && mgr.UsingIos)
                 {
                     float ratioTof = (float)conf.width / (float)conf.height;
                     float ratioColor = (float)currentColor.width / (float)currentColor.height;
                     if (ratioTof != ratioColor || conf.cameraId != currentColor.cameraId)
                     {
-                        TofAr.V0.Tof.TofArTofManager.Instance.StopStream();
+                        tofMgr?.StopStream();
                         var resolutionsFiltered = tofManagerController.Configs.Where(x =>
                         {
                             ratioTof = (float)x.width / (float)x.height;
@@ -113,12 +124,13 @@ namespace TofArSettings.Color
                         }
                     }
                 }
-                TofAr.V0.Tof.TofArTofManager.Instance.StartStreamWithColor(
+
+                tofMgr?.StartStreamWithColor(
                     tofManagerController.Configs[tofIndex], Resolutions[index], tofManagerController.IsProcessTexture, IsProcessTexture);
             }
             else
             {
-                TofArColorManager.Instance.StartStream(Resolutions[Index], IsProcessTexture);
+                TofArColorManager.Instance?.StartStream(Resolutions[Index], IsProcessTexture);
             }
         }
 
@@ -126,11 +138,16 @@ namespace TofArSettings.Color
         {
             base.StopStream();
 
-            TofArColorManager.Instance.StopStream();
+            TofArColorManager.Instance?.StopStream();
         }
 
         protected override string GetApplyText()
         {
+            if (Resolutions == null)
+            {
+                return string.Empty;
+            }
+
             string text = MakeText(Resolutions[Index]);
             return $"Color mode {text} has been selected.";
         }
@@ -169,7 +186,13 @@ namespace TofArSettings.Color
         /// <param name="properties">CameraResolution list</param>
         void MakeResoOptions(AvailableResolutionsProperty properties)
         {
-            defaultReso = TofArColorManager.Instance.GetProperty<ResolutionProperty>();
+            defaultReso = TofArColorManager.Instance?.GetProperty<ResolutionProperty>();
+            if (defaultReso == null)
+            {
+                return;
+            }
+
+            TofArManager.Logger.WriteLog(LogLevel.Debug, $"Defaulut Color Resolution - cameraId:{defaultReso.cameraId} width:{defaultReso.width} height:{defaultReso.height} frameRate:{defaultReso.frameRate}");
 
             var props = (properties == null) ? new List<ResolutionProperty>() :
                 properties.resolutions.ToList();
@@ -177,6 +200,7 @@ namespace TofArSettings.Color
             // Make option
             var propTexts = new List<string>();
             int defaultIndex = 0;
+            var mgr = TofArManager.Instance;
             for (int i = 0; i < props.Count; i++)
             {
                 var prop = props[i];
@@ -186,10 +210,19 @@ namespace TofArSettings.Color
                 if (prop.cameraId == defaultReso.cameraId &&
                     prop.width == defaultReso.width &&
                     prop.height == defaultReso.height &&
-                    prop.lensFacing == defaultReso.lensFacing &&
-                    prop.frameRate == defaultReso.frameRate)
+                    prop.lensFacing == defaultReso.lensFacing)
                 {
-                    defaultIndex = i;
+                    if (mgr && mgr.UsingIos)
+                    {
+                        if (prop.frameRate == defaultReso.frameRate)
+                        {
+                            defaultIndex = i;
+                        }
+                    }
+                    else
+                    {
+                        defaultIndex = i;
+                    }
                 }
 
                 propTexts.Add(text);
@@ -214,9 +247,10 @@ namespace TofArSettings.Color
             Options = propTexts.ToArray();
 
             // If stream is already running, set to current config
-            if (TofArColorManager.Instance.IsStreamActive && props.Count > 1)
+            var colorMgr = TofArColorManager.Instance;
+            if (colorMgr && colorMgr.IsStreamActive && props.Count > 1)
             {
-                var prop = TofArColorManager.Instance.GetProperty<ResolutionProperty>();
+                var prop = colorMgr.GetProperty<ResolutionProperty>();
                 index = FindIndex(prop);
             }
 
@@ -235,17 +269,34 @@ namespace TofArSettings.Color
                 return 0;
             }
 
+            var mgr = TofArManager.Instance;
+            if (!mgr)
+            {
+                return 0;
+            }
+
             int pIndex = 0;
             for (int i = 0; i < Resolutions.Length; i++)
             {
                 if (prop.cameraId == Resolutions[i].cameraId &&
                     prop.width == Resolutions[i].width &&
                     prop.height == Resolutions[i].height &&
-                    prop.lensFacing == Resolutions[i].lensFacing &&
-                    prop.frameRate == Resolutions[i].frameRate)
+                    prop.lensFacing == Resolutions[i].lensFacing)
                 {
-                    pIndex = i;
-                    break;
+                    if (mgr.UsingIos)
+                    {
+                        if (prop.frameRate == Resolutions[i].frameRate &&
+                            prop.enablePhoto == Resolutions[i].enablePhoto)
+                        {
+                            pIndex = i;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        pIndex = i;
+                        break;
+                    };
                 }
             }
 
@@ -259,16 +310,30 @@ namespace TofArSettings.Color
         /// <returns>String</returns>
         string MakeText(ResolutionProperty prop)
         {
-            if (TofAr.V0.TofArManager.Instance.UsingIos)
+            var mgr = TofArManager.Instance;
+            if (mgr && mgr.UsingIos)
             {
-                var platformConfigProperty = TofAr.V0.TofArManager.Instance.GetProperty<TofAr.V0.PlatformConfigurationProperty>();
-                if (platformConfigProperty?.platformConfigurationIos?.cameraApi == TofAr.V0.IosCameraApi.AvFoundation)
+                var platformConfigProperty = mgr.GetProperty<PlatformConfigurationProperty>();
+                if (platformConfigProperty?.platformConfigurationIos?.cameraApi == IosCameraApi.AvFoundation)
                 {
-                    return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.width}x{prop.height} ({(int)prop.frameRate}FPS)";
+                    if (prop.enablePhoto)
+                    {
+                        return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.width}x{prop.height} (Photo)";
+                    }
+                    else
+                    {
+                        return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.width}x{prop.height} ({(int)prop.frameRate}FPS)";
+                    }
                 }
             }
 
             return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.width}x{prop.height}";
+        }
+
+        private void OnInternalSessionStarted()
+        {
+            var props = TofArColorManager.Instance?.GetProperty<AvailableResolutionsProperty>();
+            MakeResoOptions(props);
         }
     }
 }

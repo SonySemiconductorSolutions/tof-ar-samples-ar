@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -16,50 +16,34 @@ namespace TofArSettings.Hand
     public class HandManagerController : ControllerBase
     {
         private SynchronizationContext context;
-        private bool isStarted = false;
-        private bool isPlaying = false;
-        private bool restartStream = false;
 
         void Awake()
         {
             context = SynchronizationContext.Current;
-            isStarted = TofArHandManager.Instance.autoStart;
         }
-
-        protected void OnEnable()
-        {
-            TofArTofManager.OnStreamStarted += OnTofPlaybackStreamStarted;
-            TofArTofManager.OnStreamStopped += OnTofPlaybackStreamStopped;
-        }
-
-        protected void OnDisable()
-        {
-            TofArTofManager.OnStreamStarted -= OnTofPlaybackStreamStarted;
-            TofArTofManager.OnStreamStopped -= OnTofPlaybackStreamStopped;
-        }
-
-        /// <summary>
-        /// Is the stream currently running if tof is on
-        /// </summary>
-        public bool IsStreamActive => isStarted && TofArTofManager.Instance.IsStreamActive;
 
         /// <summary>
         /// Start stream
         /// </summary>
         public void StartStream()
         {
-            if (!isStarted)
+            var handMgr = TofArHandManager.Instance;
+            if (handMgr && !TofArHandManager.Instance.IsStreamActive && !TofArHandManager.Instance.IsPlaying)
             {
-                isStarted = true;
-                if (TofArTofManager.Instance.IsPlaying)
+                var tofMgr = TofArTofManager.Instance;
+                if (tofMgr && TofArTofManager.Instance != null && TofArTofManager.Instance.IsPlaying)
                 {
-                    TofArHandManager.Instance.StartPlayback();
+                    if(TofArHandManager.Instance.Stream != null)
+                    {
+                        TofArHandManager.Instance.StartPlayback();
+                    }
                 }
                 else
                 {
                     TofArHandManager.Instance.StartStream();
                 }
-                OnStreamStartStatusChanged(isStarted);
+
+                OnStreamStartStatusChanged?.Invoke(true);
             }
         }
 
@@ -68,11 +52,18 @@ namespace TofArSettings.Hand
         /// </summary>
         public void StopStream()
         {
-            if (isStarted)
+            var handMgr = TofArHandManager.Instance;
+            if (handMgr && TofArHandManager.Instance.IsStreamActive)
             {
-                isStarted = false;
-                TofArHandManager.Instance.StopStream();
-                OnStreamStartStatusChanged(isStarted);
+                if (TofArHandManager.Instance.IsPlaying)
+                {
+                    TofArHandManager.Instance.StopPlayback();
+                }
+                else
+                {
+                    TofArHandManager.Instance.StopStream();
+                }
+                OnStreamStartStatusChanged?.Invoke(false);
             }
         }
 
@@ -82,18 +73,8 @@ namespace TofArSettings.Hand
         IEnumerator StartStreamCoroutine()
         {
             // Wait 1 frame when executing OnStreamStarted directly because it does not execute for only the first time
-            yield return new WaitForEndOfFrame();
-
+            yield return null;
             StartStream();
-        }
-
-        private IEnumerator StartPlaybackStreamCoroutine()
-        {
-            yield return new WaitForEndOfFrame();
-
-            TofArHandManager.Instance.StartPlayback();
-            OnStreamStartStatusChanged?.Invoke(true);
-            isPlaying = true;
         }
 
         /// <summary>
@@ -124,46 +105,6 @@ namespace TofArSettings.Hand
         public void OnStreamStopped(object sender)
         {
             StopStream();
-        }
-
-        /// <summary>
-        /// Event that is called when Tof playback stream is started
-        /// </summary>
-        /// <param name="sender">TofArTofManager</param>
-        private void OnTofPlaybackStreamStarted(object sender, Texture2D depth, Texture2D conf, PointCloudData pc)
-        {
-            if (TofArTofManager.Instance.IsPlaying)
-            {
-                if (isStarted)
-                {
-                    restartStream = true;
-                }
-
-                context.Post((s) =>
-                {
-                    StartCoroutine(StartPlaybackStreamCoroutine());
-                }, null);
-            }
-        }
-
-        /// <summary>
-        /// Event that is called when Tof stream is stopped
-        /// </summary>
-        /// <param name="sender">TofArTofManager</param>
-        private void OnTofPlaybackStreamStopped(object sender)
-        {
-            if (isPlaying)
-            {
-                isPlaying = false;
-                OnStreamStopped(sender);
-            }
-
-            // may have to restart mesh stream
-            if (restartStream)
-            {
-                restartStream = false;
-                OnStreamStarted(sender, null, null, null);
-            }
         }
     }
 }

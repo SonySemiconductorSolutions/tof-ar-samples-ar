@@ -49,7 +49,7 @@ namespace TofArSettings.Hand
 
         void MakeUIPoseFrame()
         {
-            poseFrame = settings.AddItem("Pose Frame", 0, 10, 1, poseInfoCtrl.PoseFrame, ChangePoseFrame);
+            poseFrame = settings.AddItem("Pose Frame", 1, 10, 1, poseInfoCtrl.PoseFrame, ChangePoseFrame);
             poseFrame.IsNotifyImmediately = true;
         }
 

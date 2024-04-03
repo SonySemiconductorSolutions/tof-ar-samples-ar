@@ -1,10 +1,11 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -24,6 +25,9 @@ namespace TofArSettings.UI
         HorizontalOrVerticalLayoutGroup panelLayout;
         Vector2 headerSize;
         float offset;
+
+        ScrollRect scrollRect;
+        float scrollBarSpace;
 
         List<Item> items = new List<Item>();
 
@@ -51,14 +55,14 @@ namespace TofArSettings.UI
             }
 
             txtTitle = GetComponentInChildren<Text>();
-            foreach (var tr in GetComponentsInChildren<RectTransform>())
-            {
-                if (tr.name.Contains("UI"))
-                {
-                    uiArea = tr;
-                    break;
-                }
-            }
+
+            scrollRect = GetComponentInChildren<ScrollRect>();
+            uiArea = scrollRect.GetComponent<RectTransform>();
+
+            // Get Scrollbar width
+            var scrollbar = scrollRect.verticalScrollbar;
+            var scrollbarRt = scrollbar.GetComponent<RectTransform>();
+            scrollBarSpace = scrollbarRt.sizeDelta.x + scrollRect.verticalScrollbarSpacing;
 
             backTrigger = GetComponentInChildren<ImageButtonTrigger>();
 
@@ -82,14 +86,13 @@ namespace TofArSettings.UI
             canvasScCtrl = FindObjectOfType<CanvasScaleController>();
             canvasScCtrl.OnChangeSafeArea += (safeAreaSize) =>
             {
-                AdjustUIHeight();
+                AdjustUISize();
             };
             toolbar = FindObjectOfType<Toolbar>();
 
             scRotCtrl = canvasScCtrl.GetComponent<ScreenRotateController>();
             scRotCtrl.OnRotateScreen += OnRotateScreen;
             OnRotateScreen(Screen.orientation);
-
         }
 
         void OnDestroy()
@@ -103,6 +106,15 @@ namespace TofArSettings.UI
 
                 items = null;
             }
+        }
+
+        /// <summary>
+        /// Action when open
+        /// </summary>
+        protected override void OnOpenStart()
+        {
+            StartCoroutine(AdjustUIWidth());
+            base.OnOpenStart();
         }
 
         protected override void CloseOther()
@@ -169,11 +181,12 @@ namespace TofArSettings.UI
         /// <param name="onClick">Event that is called when button is pressed</param>
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemNestMenu AddItem(string title, Texture icon, UnityEngine.Color iconColor,
-            UnityAction onClick, int relativeFontSize = 0, float fixedTitleWidth = 0)
+            UnityAction onClick, int relativeFontSize = 0, float fixedTitleWidth = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemNestMenuPrefab) as ItemNestMenu;
+            var item = AddItem(prefabMgr.ItemNestMenuPrefab, lineAlpha) as ItemNestMenu;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, icon, iconColor,
@@ -189,11 +202,12 @@ namespace TofArSettings.UI
         /// <param name="onClick">Event that is called when button is pressed</param>
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemButton AddItem(string title, UnityAction onClick,
-            int relativeFontSize = 0, float fixedTitleWidth = 0)
+            int relativeFontSize = 0, float fixedTitleWidth = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemButtonPrefab) as ItemButton;
+            var item = AddItem(prefabMgr.ItemButtonPrefab, lineAlpha) as ItemButton;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, onClick);
@@ -210,12 +224,13 @@ namespace TofArSettings.UI
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
         /// <param name="width">Dropdown width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemDropdown AddItem(string title, string[] options, int index,
             ItemDropdown.ChangeEvent onChange, int relativeFontSize = 0,
-            float fixedTitleWidth = 0, float width = 0)
+            float fixedTitleWidth = 0, float width = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemDropdownPrefab) as ItemDropdown;
+            var item = AddItem(prefabMgr.ItemDropdownPrefab, lineAlpha) as ItemDropdown;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, options, index,
@@ -233,12 +248,13 @@ namespace TofArSettings.UI
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
         /// <param name="width">Dropdown width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
-        public ItemDropdown AddItem(string title, KeyValuePair<string,EditFlags> [] options, int index,
-            ItemDropdown.ChangeEvent onChange, ItemDropdown.DeleteEvent onDelete, ItemDropdown.RenameEvent onRename, int relativeFontSize = 0,
-            float fixedTitleWidth = 0, float width = 0)
+        public ItemDropdown AddItem(string title, KeyValuePair<string, EditFlags>[] options, int index,
+            ItemDropdown.ChangeEvent onChange, ItemDropdown.DeleteEvent onDelete, ItemDropdown.RenameEvent onRename,
+            int relativeFontSize = 0, float fixedTitleWidth = 0, float width = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemDropdownPrefab) as ItemDropdown;
+            var item = AddItem(prefabMgr.ItemDropdownPrefab, lineAlpha) as ItemDropdown;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, options, index,
@@ -256,12 +272,13 @@ namespace TofArSettings.UI
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
         /// <param name="width">InputField width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemInputField AddItem(string title, string val,
             ItemInputField.ChangeTextEvent onChange, int relativeFontSize = 0,
-            float fixedTitleWidth = 0, float width = 0)
+            float fixedTitleWidth = 0, float width = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemInputFieldPrefab) as ItemInputField;
+            var item = AddItem(prefabMgr.ItemInputFieldPrefab, lineAlpha) as ItemInputField;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, val, onChange, width);
@@ -281,12 +298,13 @@ namespace TofArSettings.UI
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
         /// <param name="width">InputField width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemInputField AddItem(string title, int min, int max, int val,
             ItemInputField.ChangeIntEvent onChange, int relativeFontSize = 0,
-            float fixedTitleWidth = 0, float width = 0)
+            float fixedTitleWidth = 0, float width = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemInputFieldPrefab) as ItemInputField;
+            var item = AddItem(prefabMgr.ItemInputFieldPrefab, lineAlpha) as ItemInputField;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, min, max, val,
@@ -306,12 +324,13 @@ namespace TofArSettings.UI
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
         /// <param name="width">InputField width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemInputField AddItem(string title, float min, float max,
             float val, ItemInputField.ChangeFloatEvent onChange,
-            int relativeFontSize = 0, float fixedTitleWidth = 0, float width = 0)
+            int relativeFontSize = 0, float fixedTitleWidth = 0, float width = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemInputFieldPrefab) as ItemInputField;
+            var item = AddItem(prefabMgr.ItemInputFieldPrefab, lineAlpha) as ItemInputField;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, min, max, val,
@@ -331,12 +350,13 @@ namespace TofArSettings.UI
         /// <param name="onChange">Event that is called when value is changed</param>
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemSlider AddItem(string title, float min, float max,
             float step, float val, ItemSlider.ChangeEvent onChange,
-            int relativeFontSize = 0, float fixedTitleWidth = 0)
+            int relativeFontSize = 0, float fixedTitleWidth = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemSliderPrefab) as ItemSlider;
+            var item = AddItem(prefabMgr.ItemSliderPrefab, lineAlpha) as ItemSlider;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, min, max, step,
@@ -349,15 +369,19 @@ namespace TofArSettings.UI
         /// Add item (Text)
         /// </summary>
         /// <param name="text">Title</param>
+        /// <param name="fontStyle">Font Style</param>
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
-        public Item AddItem(string text, int relativeFontSize = 0, float fixedTitleWidth = 0)
+        public ItemText AddItem(string text, FontStyle fontStyle = FontStyle.Normal,
+            bool useDialog = false, int relativeFontSize = 0,
+            float fixedTitleWidth = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemTextPrefab);
+            var item = AddItem(prefabMgr.ItemTextPrefab, lineAlpha) as ItemText;
             if (item != null)
             {
-                item.Init(text, relativeFontSize, fixedTitleWidth);
+                item.Init(text, fontStyle, useDialog, relativeFontSize, fixedTitleWidth);
             }
 
             return item;
@@ -371,12 +395,13 @@ namespace TofArSettings.UI
         /// <param name="onChange">Event that is called when Toggle status is changed</param>
         /// <param name="relativeFontSize">Title font size (relative)</param>
         /// <param name="fixedTitleWidth">Title fixed width</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemToggle AddItem(string title, bool val,
             ItemToggle.ChangeEvent onChange, int relativeFontSize = 0,
-            float fixedTitleWidth = 0)
+            float fixedTitleWidth = 0, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemTogglePrefab) as ItemToggle;
+            var item = AddItem(prefabMgr.ItemTogglePrefab, lineAlpha) as ItemToggle;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, val, onChange);
@@ -392,12 +417,13 @@ namespace TofArSettings.UI
         /// <param name="onChange">Event that is called when state of each Toggle is changed</param>
         /// <param name="relativeFontSize">Title font size (relative) of each Toggle</param>
         /// <param name="fixedTitleWidth">Title fixed width of each Toggle</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item class</returns>
         public ItemToggleMulti AddItem(string[] title, bool[] val,
             ItemToggleMulti.ChangeEvent onChange, int[] relativeFontSize = null,
-            float[] fixedTitleWidth = null)
+            float[] fixedTitleWidth = null, byte lineAlpha = 255)
         {
-            var item = AddItem(prefabMgr.ItemToggleMultiPrefab) as ItemToggleMulti;
+            var item = AddItem(prefabMgr.ItemToggleMultiPrefab, lineAlpha) as ItemToggleMulti;
             if (item != null)
             {
                 item.Init(title, relativeFontSize, fixedTitleWidth, val, onChange);
@@ -406,19 +432,35 @@ namespace TofArSettings.UI
         }
 
         /// <summary>
+        /// Adjust UI width with scroll bar
+        /// </summary>
+        IEnumerator AdjustUIWidth()
+        {
+            yield return null;
+
+            float w = (scrollRect.verticalScrollbar.gameObject.activeSelf) ? scrollBarSpace : 0;
+            for (int i = 0; i < items.Count; i++)
+            {
+                items[i].AdjustUIWidth(w);
+            }
+        }
+
+        /// <summary>
         /// Adjust overall height so the UI does not exceed the placement area
         /// </summary>
-        public void AdjustUIHeight()
+        public void AdjustUISize()
         {
             float contentHeight = contentArea.sizeDelta.y + headerSize.y + (offset * 4);
             Vector2 safeArea = canvasScCtrl.SafeAreaSize;
-            float heightOffset = (scRotCtrl.IsPortrait) ?
+            float heightOffset = (scRotCtrl.IsPortraitScreen) ?
                 HeightOffsetPortrait : HeightOffsetLandscape;
             float height = (contentHeight > safeArea.y - heightOffset) ?
                 safeArea.y - heightOffset - headerSize.y : contentArea.sizeDelta.y;
 
             uiArea.sizeDelta = new Vector2(uiArea.sizeDelta.x, height);
             Size = new Vector2(Size.x, height + headerSize.y);
+
+            StartCoroutine(AdjustUIWidth());
         }
 
         /// <summary>
@@ -429,7 +471,7 @@ namespace TofArSettings.UI
         {
             float pos = toolbar.BarWidth + offset;
 
-            if (scRotCtrl.IsPortrait)
+            if (scRotCtrl.IsPortraitScreen)
             {
                 // Move panel based on lower center
                 rt.anchorMin = new Vector2(0.5f, 0);
@@ -446,15 +488,16 @@ namespace TofArSettings.UI
                 rt.anchoredPosition = new Vector2(-pos, 0);
             }
 
-            AdjustUIHeight();
+            AdjustUISize();
         }
 
         /// <summary>
         /// Add item
         /// </summary>
         /// <param name="itemPrefab">Item prefab</param>
+        /// <param name="lineAlpha">Alpha of line color</param>
         /// <returns>Item</returns>
-        Item AddItem(GameObject itemPrefab)
+        Item AddItem(GameObject itemPrefab, byte lineAlpha)
         {
             if (!itemPrefab)
             {
@@ -470,6 +513,10 @@ namespace TofArSettings.UI
                 lineObj.name = "-";
                 var lineRt = lineObj.GetComponent<RectTransform>();
                 itemHeight = lineRt.sizeDelta.y;
+                var lineImg = lineObj.GetComponent<Image>();
+                Color32 lineColor = lineImg.color;
+                lineColor.a = lineAlpha;
+                lineImg.color = lineColor;
             }
 
             // Create parts

@@ -27,6 +27,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -57,8 +58,12 @@ MonoBehaviour:
   offset: 20
   color: 1
   tof: 1
+  hand: 0
   body: 0
   face: 0
+  plane: 0
   matchTofAndColor: 0
+  matchTofAndHand: 0
   matchTofAndBody: 0
+  matchTofAndPlane: 0
   matchColorAndFace: 0

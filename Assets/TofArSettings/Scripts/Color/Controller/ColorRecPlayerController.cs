@@ -1,15 +1,14 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
-using System.Linq;
+using System.IO;
 using TofAr.V0;
 using TofAr.V0.Color;
 using TofArSettings.UI;
-using UnityEngine;
 
 namespace TofArSettings.Color
 {
@@ -28,35 +27,54 @@ namespace TofArSettings.Color
 
         protected override void PlayPrep_internal()
         {
-            TofArColorManager.Instance.PauseStream();
+            TofArColorManager.Instance?.PauseStream();
         }
 
         protected override bool Play_internal(string fileName)
         {
-            var directoryListProp = TofArManager.Instance.GetProperty<DirectoryListProperty>();
-            string fileRoot = directoryListProp.path;
-
-            if (fileRoot == null)
+            var directoryListProp = TofArManager.Instance?.GetProperty<DirectoryListProperty>();
+            if (directoryListProp == null)
             {
                 return false;
             }
-            var file = $"{fileRoot}/{fileName}";
 
-                TofArColorManager.Instance.PauseStream();
-            TofArColorManager.Instance.StartPlayback(file);
+            string fileRoot = directoryListProp.path;
+            if (fileRoot.Length <= 0)
+            {
+                return false;
+            }
+
+            var colorMgr = TofArColorManager.Instance;
+            if (!colorMgr)
+            {
+                return false;
+            }
+
+            var file = $"{fileRoot}{Path.AltDirectorySeparatorChar}{fileName}";
+            colorMgr.PauseStream();
+            colorMgr.StartPlayback(file);
+
             return true;
         }
 
         protected override void Pause_internal()
         {
-            Debug.Log("Color Pause");
-            TofArColorManager.Instance.PauseStream();
+            TofArColorManager.Instance?.PauseStream();
         }
 
         protected override void UnPause_internal()
         {
-            TofArColorManager.Instance.UnpauseStream();
-            Debug.Log("Color UnPause");
+            TofArColorManager.Instance?.UnpauseStream();
+        }
+
+        protected override void Stop_internal()
+        {
+            TofArColorManager.Instance?.StopPlayback();
+        }
+
+        protected override void StopCleanup_internal()
+        {
+            TofArColorManager.Instance?.UnpauseStream();
         }
 
         protected override void OnEndRecord(bool result, string filePath)
@@ -69,16 +87,6 @@ namespace TofArSettings.Color
             var options = GetFileNames(dirPath, TofArColorManager.StreamKey);
 
             return options;
-        }
-
-        protected override void Stop_internal()
-        {
-            TofArColorManager.Instance.StopPlayback();
-        }
-
-        protected override void StopCleanup_internal()
-        {
-            TofArColorManager.Instance.UnpauseStream();
         }
     }
 }

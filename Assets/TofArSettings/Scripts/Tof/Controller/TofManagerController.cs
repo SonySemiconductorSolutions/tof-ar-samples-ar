@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using TofAr.V0;
 using TofAr.V0.Tof;
 using TofArSettings.Color;
 using UnityEngine;
@@ -15,10 +16,10 @@ namespace TofArSettings.Tof
 {
     public class TofManagerController : CameraManagerController
     {
-
         private ColorManagerController colorManagerController;
 
         public CameraConfigurationProperty[] Configs { get; private set; }
+
         public CameraConfigurationProperty CurrentConfig
         {
             get
@@ -55,6 +56,8 @@ namespace TofArSettings.Tof
             TofArTofManager.OnAvailableConfigurationsChanged += MakeConfigOptions;
             TofArTofManager.OnStreamStarted += OnTofStreamStarted;
             TofArTofManager.OnStreamStopped += OnTofStreamStopped;
+
+            TofArManager.Instance?.postInternalSessionStart.AddListener(OnInternalSessionStarted);
         }
 
         protected override void OnDisable()
@@ -64,14 +67,17 @@ namespace TofArSettings.Tof
             TofArTofManager.OnAvailableConfigurationsChanged -= MakeConfigOptions;
             TofArTofManager.OnStreamStarted -= OnTofStreamStarted;
             TofArTofManager.OnStreamStopped -= OnTofStreamStopped;
+
+            TofArManager.Instance?.postInternalSessionStart.RemoveListener(OnInternalSessionStarted);
         }
 
         protected override void Start()
         {
-            isProcessTexture = TofArTofManager.Instance.ProcessTexture;
+            var mgr = TofArTofManager.Instance;
+            isProcessTexture = (mgr && mgr.ProcessTexture);
 
             // Get CameraConfig list
-            var props = TofArTofManager.Instance.GetProperty<CameraConfigurationsProperty>();
+            var props = mgr?.GetProperty<CameraConfigurationsProperty>();
             MakeConfigOptions(props);
 
             base.Start();
@@ -84,7 +90,8 @@ namespace TofArSettings.Tof
 
         public override bool IsStreamActive()
         {
-            return TofArTofManager.Instance.IsStreamActive;
+            var mgr = TofArTofManager.Instance;
+            return (mgr && mgr.IsStreamActive);
         }
 
         protected override void StartStream()
@@ -97,7 +104,8 @@ namespace TofArSettings.Tof
                 colorManagerController.Index = 0;
                 var conf = Configs[index];
                 var currentColor = colorManagerController.Resolutions[colorIndex];
-                if (TofAr.V0.TofArManager.Instance.UsingIos)
+                var mgr = TofArManager.Instance;
+                if (mgr && mgr.UsingIos)
                 {
                     float ratioTof = (float)conf.width / (float)conf.height;
                     float ratioColor = (float)currentColor.width / (float)currentColor.height;
@@ -115,11 +123,12 @@ namespace TofArSettings.Tof
                         }
                     }
                 }
-                TofArTofManager.Instance.StartStreamWithColor(Configs[index], colorManagerController.Resolutions[colorIndex], isProcessTexture, colorManagerController.IsProcessTexture);
+
+                TofArTofManager.Instance?.StartStreamWithColor(Configs[index], colorManagerController.Resolutions[colorIndex], isProcessTexture, colorManagerController.IsProcessTexture);
             }
             else
             {
-                TofArTofManager.Instance.StartStream(Configs[Index],
+                TofArTofManager.Instance?.StartStream(Configs[Index],
                     isProcessTexture);
             }
         }
@@ -128,12 +137,13 @@ namespace TofArSettings.Tof
         {
             base.StopStream();
 
-            TofArTofManager.Instance.StopStream();
+            TofArTofManager.Instance?.StopStream();
         }
 
         protected override string GetApplyText()
         {
-            return $"ToF mode {Configs[Index].name} has been selected.";
+            return (Configs == null) ? string.Empty :
+                $"ToF mode {Configs[Index].name} has been selected.";
         }
 
         /// <summary>
@@ -173,7 +183,11 @@ namespace TofArSettings.Tof
         /// <param name="properties">CameraConfig list</param>
         void MakeConfigOptions(CameraConfigurationsProperty properties)
         {
-            defaultConf = TofArTofManager.Instance.GetProperty<Camera2DefaultConfigurationProperty>();
+            defaultConf = TofArTofManager.Instance?.GetProperty<Camera2DefaultConfigurationProperty>();
+            if (defaultConf != null)
+            {
+                TofArManager.Logger.WriteLog(LogLevel.Debug, $"Defaulut ToF Configuration - uid:{defaultConf.uid} cameraId:{defaultConf.cameraId} width:{defaultConf.width} height:{defaultConf.height} frameRate:{defaultConf.frameRate}");
+            }
 
             var props = (properties == null) ? new List<CameraConfigurationProperty>() :
                 properties.configurations.ToList();
@@ -181,18 +195,35 @@ namespace TofArSettings.Tof
             // Make options
             var propTexts = new List<string>();
             int defaultIndex = 0;
-            for (int i = 0; i < props.Count; i++)
+            if (defaultConf != null)
             {
-                var prop = props[i];
-                string text = MakeText(prop);
-
-                // Use recommended values as initial values
-                if (prop.uid == defaultConf.uid)
+                var mgr = TofArManager.Instance;
+                for (int i = 0; i < props.Count; i++)
                 {
-                    defaultIndex = i;
-                }
+                    var prop = props[i];
+                    string text = MakeText(prop);
 
-                propTexts.Add(text);
+                    // Use recommended values as initial values
+                    if (prop.cameraId == defaultConf.cameraId &&
+                        prop.width == defaultConf.width &&
+                        prop.height == defaultConf.height &&
+                        prop.lensFacing == defaultConf.lensFacing)
+                    {
+                        if (mgr && mgr.UsingIos)
+                        {
+                            if (prop.frameRate == defaultConf.frameRate)
+                            {
+                                defaultIndex = i;
+                            }
+                        }
+                        else
+                        {
+                            defaultIndex = i;
+                        }
+                    }
+
+                    propTexts.Add(text);
+                }
             }
 
             if (propTexts.Count > 0)
@@ -218,9 +249,10 @@ namespace TofArSettings.Tof
             Options = propTexts.ToArray();
 
             // If stream is already running, set to current config
-            if (TofArTofManager.Instance.IsStreamActive && props.Count > 1)
+            var tofMgr = TofArTofManager.Instance;
+            if (tofMgr && tofMgr.IsStreamActive && props.Count > 1)
             {
-                var prop = TofArTofManager.Instance.GetProperty<CameraConfigurationProperty>();
+                var prop = tofMgr.GetProperty<CameraConfigurationProperty>();
                 index = FindIndex(prop);
             }
 
@@ -239,13 +271,33 @@ namespace TofArSettings.Tof
                 return 0;
             }
 
+            var mgr = TofArManager.Instance;
+            if (!mgr)
+            {
+                return 0;
+            }
+
             int pIndex = 0;
             for (int i = 0; i < Configs.Length; i++)
             {
-                if (prop.uid == Configs[i].uid)
+                if (prop.cameraId == Configs[i].cameraId &&
+                    prop.width == Configs[i].width &&
+                    prop.height == Configs[i].height &&
+                    prop.lensFacing == Configs[i].lensFacing)
                 {
-                    pIndex = i;
-                    break;
+                    if (mgr.UsingIos)
+                    {
+                        if (prop.frameRate == Configs[i].frameRate)
+                        {
+                            pIndex = i;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        pIndex = i;
+                        break;
+                    }
                 }
             }
 
@@ -259,16 +311,23 @@ namespace TofArSettings.Tof
         /// <returns>Text</returns>
         string MakeText(CameraConfigurationProperty prop)
         {
-            if (TofAr.V0.TofArManager.Instance.UsingIos)
+            var mgr = TofArManager.Instance;
+            if (mgr && mgr.UsingIos)
             {
-                var platformConfigProperty = TofAr.V0.TofArManager.Instance.GetProperty<TofAr.V0.PlatformConfigurationProperty>();
-                if (platformConfigProperty?.platformConfigurationIos?.cameraApi == TofAr.V0.IosCameraApi.AvFoundation)
+                var platformConfigProperty = mgr.GetProperty<PlatformConfigurationProperty>();
+                if (platformConfigProperty?.platformConfigurationIos?.cameraApi == IosCameraApi.AvFoundation)
                 {
                     return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.width}x{prop.height} ({(int)prop.frameRate}FPS)";
                 }
             }
 
             return $"{prop.cameraId} {(LensFacing)prop.lensFacing} {prop.name} {prop.width}x{prop.height}";
+        }
+
+        private void OnInternalSessionStarted()
+        {
+            var props = TofArTofManager.Instance?.GetProperty<CameraConfigurationsProperty>();
+            MakeConfigOptions(props);
         }
     }
 }

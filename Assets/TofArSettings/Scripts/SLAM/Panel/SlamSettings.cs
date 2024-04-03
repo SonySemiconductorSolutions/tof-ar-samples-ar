@@ -5,11 +5,8 @@
  *
  */
 
-using System.Collections;
 using TofAr.V0.Slam;
-using UnityEngine;
 using UnityEngine.Events;
-
 
 namespace TofArSettings.Slam
 {
@@ -20,7 +17,7 @@ namespace TofArSettings.Slam
 
         UI.ItemToggle itemStartStream;
         UI.ItemDropdown itemPoseSource;
-        
+
         /// <summary>
         /// アプリ起動後(Awake後)の動作(Unity標準関数)
         /// </summary>
@@ -42,6 +39,8 @@ namespace TofArSettings.Slam
             };
 
             base.Start();
+
+            settings.OnChangeStart += OnChangePanel;
         }
 
         void MakeUIStartStream()
@@ -55,7 +54,9 @@ namespace TofArSettings.Slam
 
         void MakeUIPoseSource()
         {
-            itemPoseSource = settings.AddItem("Camera Pose Source", managerController.PoseSourceNames, managerController.Index, ChangePoseSource);
+            itemPoseSource = settings.AddItem("Camera Pose\nSource",
+                managerController.PoseSourceNames, managerController.Index, ChangePoseSource,
+                0, 0, 340);
             managerController.OnChangeIndex += (index) =>
             {
                 itemPoseSource.Index = index;
@@ -75,7 +76,6 @@ namespace TofArSettings.Slam
                 itemPoseSource.Interactable = interactable;
             }
         }
-
 
         /// <summary>
         /// If Slam stream occured or not
@@ -111,5 +111,16 @@ namespace TofArSettings.Slam
 
         }
 
+        /// <summary>
+        /// Event called when the state of the panel changes
+        /// </summary>
+        /// <param name="onOff">open/close</param>
+        void OnChangePanel(bool onOff)
+        {
+            if (onOff)
+            {
+                itemStartStream.OnOff = TofArSlamManager.Instance.IsStreamActive;
+            }
+        }
     }
 }

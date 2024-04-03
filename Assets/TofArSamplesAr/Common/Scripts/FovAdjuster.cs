@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -45,23 +45,12 @@ namespace TofArSamples
             }
         }
 
-        
-        public bool UniformFill = false;
-
-        public float FillScale
-        {
-            get
-            {
-                return fillScale;
-            }
-        }
-
         /// <summary>
         /// Event that is called when the FoV is changed
         /// </summary>
         /// <param name="fov">Camera FoV</param>
         /// <param name="aspect">Camera Aspect</param>
-        public delegate void ChangeEvent(float fov, float aspect, float fillScale = 1f);
+        public delegate void ChangeEvent(float fov, float aspect);
 
         /// <summary>
         /// Event that is called when the FoV is changed
@@ -71,18 +60,19 @@ namespace TofArSamples
         ScreenRotateController scRotCtrl;
         protected float fy;
         protected int height;
-        protected int width;
-        protected float fillScale = 1f;
 
         void Awake()
         {
             scRotCtrl = FindObjectOfType<ScreenRotateController>();
-            scRotCtrl.OnRotateScreen += OnRotateScreen;
+            scRotCtrl.OnRotateDevice += OnRotateDevice;
         }
 
         private void OnDestroy()
         {
-            scRotCtrl.OnRotateScreen -= OnRotateScreen;
+            if (scRotCtrl)
+            {
+                scRotCtrl.OnRotateDevice -= OnRotateDevice;
+            }
         }
 
         void OnEnable()
@@ -104,10 +94,10 @@ namespace TofArSamples
         protected abstract void OnLoadCalib(CalibrationSettingsProperty calibration);
 
         /// <summary>
-        /// Event that is called when the screen is rotated
+        /// Event that is called when the device is rotated
         /// </summary>
         /// <param name="ori">Screen orientation</param>
-        void OnRotateScreen(ScreenOrientation ori)
+        void OnRotateDevice(ScreenOrientation ori)
         {
             Adjust();
         }
@@ -122,32 +112,18 @@ namespace TofArSamples
                 return;
             }
 
-            float screenAspect = Screen.height > Screen.width ? (float)Screen.height / (float)Screen.width : (float)Screen.width / (float)Screen.height;
+            Fov = 2 * Mathf.Atan2(0.5f * height, fy) * Mathf.Rad2Deg;
 
-            float fillHeight = height * screenAspect;
-
-            if (UniformFill)
-            {
-                fillScale = width / fillHeight;
-            }
-            else
-            {
-                fillScale = 1f;
-            }
-            Fov = 2 * Mathf.Atan2(0.5f * height, fy) * Mathf.Rad2Deg * fillScale;
-
-             // When the screen is oriented vertically, the previously calculated horizontal FoV will be converted to vertical
-            if (scRotCtrl.IsPortrait)
+            // When the screen is oriented vertically, the previously calculated horizontal FoV will be converted to vertical
+            if (scRotCtrl.IsPortraitDevice)
             {
                 Fov = Camera.HorizontalToVerticalFieldOfView(Fov, Aspect);
             }
-
             if (Cam != null)
             {
                 Cam.fieldOfView = Fov;
             }
-                
-            OnChangeFov?.Invoke(Fov, Aspect, fillScale);
+            OnChangeFov?.Invoke(Fov, Aspect);
         }
     }
 }

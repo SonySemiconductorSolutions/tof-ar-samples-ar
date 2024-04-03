@@ -6,15 +6,19 @@
  */
 
 using System.Collections.Generic;
-using TofAr.V0;
 using UnityEngine;
 
 namespace TofArSettings.UI
 {
     public class GeneralSettings : SettingsBase
     {
-        [Header("Use Component")]
+        /// <summary>
+        /// Use/do not use General settings
+        /// </summary>
+        [SerializeField]
+        bool useGeneralSettings = true;
 
+        [Header("Use Component")]
         /// <summary>
         /// Use/do not use Color component
         /// </summary>
@@ -69,6 +73,12 @@ namespace TofArSettings.UI
         [SerializeField]
         bool face = false;
 
+        /// <summary>
+        /// Use/do not use Plane component
+        /// </summary>
+        [SerializeField]
+        bool plane = false;
+
         List<SettingsBase> menus = new List<SettingsBase>();
 
         /// <summary>
@@ -86,7 +96,7 @@ namespace TofArSettings.UI
                     continue;
                 }
 
-                if (menu is General.GeneralSettingsChild ||
+                if ((menu is General.GeneralSettingsChild && useGeneralSettings) ||
                     IsCompoTypeAvailable(menu))
                 {
                     menus.Add(menu);
@@ -98,7 +108,7 @@ namespace TofArSettings.UI
             }
         }
 
-        private bool IsCompoTypeAvailable(SettingsBase menu)
+        bool IsCompoTypeAvailable(SettingsBase menu)
         {
             return menu.CompoType == ComponentType.Color && color ||
                     menu.CompoType == ComponentType.Tof && tof ||
@@ -108,7 +118,8 @@ namespace TofArSettings.UI
                     menu.CompoType == ComponentType.Mesh && mesh ||
                     menu.CompoType == ComponentType.FingerTouch && fingerTouch ||
                     menu.CompoType == ComponentType.Slam && slam ||
-                    menu.CompoType == ComponentType.Face && face;
+                    menu.CompoType == ComponentType.Face && face ||
+                    menu.CompoType == ComponentType.Plane && plane;
         }
 
         /// <summary>
@@ -137,6 +148,60 @@ namespace TofArSettings.UI
             }
 
             base.MakeUI();
+        }
+
+        public void ChangeMenu(ComponentType compoType, bool onOff)
+        {
+            SettingsBase menu = null;
+            for (int i = 0; i < menus.Count; i++)
+            {
+                var m = menus[i];
+                if (m.CompoType == compoType)
+                {
+                    menu = m;
+                    break;
+                }
+            }
+
+            if (menu != null && menu.gameObject != null && menu.gameObject.activeSelf != onOff)
+            {
+                menu.gameObject.SetActive(onOff);
+                menus.Remove(menu);
+            }
+
+            switch (compoType)
+            {
+                case ComponentType.Color:
+                    color = onOff;
+                    break;
+                case ComponentType.Tof:
+                    tof = onOff;
+                    break;
+                case ComponentType.Hand:
+                    hand = onOff;
+                    break;
+                case ComponentType.Segmentation:
+                    segmentation = onOff;
+                    break;
+                case ComponentType.Body:
+                    body = onOff;
+                    break;
+                case ComponentType.Mesh:
+                    mesh = onOff;
+                    break;
+                case ComponentType.FingerTouch:
+                    fingerTouch = onOff;
+                    break;
+                case ComponentType.Slam:
+                    slam = onOff;
+                    break;
+                case ComponentType.Face:
+                    face = onOff;
+                    break;
+                case ComponentType.Plane:
+                    plane = onOff;
+                    break;
+            }
         }
     }
 }

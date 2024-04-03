@@ -115,7 +115,7 @@ namespace TofArARSamples.SimpleARFoundation
             };
 
             itemPlaneDistance = settings.AddItem("Occlusion Plane\nDistance", 0.5f, 3.0f, 0.1f, occlusionObjectController.PlaneDistance,
-                ChangePlaneDistance, -1);
+                ChangePlaneDistance, -2);
             occlusionObjectController.OnChangePlaneDistance += (val) =>
             {
                 itemPlaneDistance.Value = val;
@@ -123,7 +123,7 @@ namespace TofArARSamples.SimpleARFoundation
 
             itemPlaneDistance.Interactable = occlusionObjectController.IsPlane;
 
-            itemBlur = settings.AddItem("Blur Strength", BlurSettings.Min, BlurSettings.Max, BlurSettings.Step, BlurSettings.BlurStrength, ChangeBlurStrength, 0);
+            itemBlur = settings.AddItem("Blur\nStrength", BlurSettings.Min, BlurSettings.Max, BlurSettings.Step, BlurSettings.BlurStrength, ChangeBlurStrength, 0);
         }
 
         /// <summary>

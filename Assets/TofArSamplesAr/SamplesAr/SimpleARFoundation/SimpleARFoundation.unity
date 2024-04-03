@@ -2146,7 +2146,15 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6403403811662098764, guid: 6afeeb4a6e67eb044894a23c5d7c53e1, type: 3}
+      propertyPath: general
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6403403811662098764, guid: 6afeeb4a6e67eb044894a23c5d7c53e1, type: 3}
       propertyPath: segmentation
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6403403811662098764, guid: 6afeeb4a6e67eb044894a23c5d7c53e1, type: 3}
+      propertyPath: useGeneralSettings
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6416421384611105578, guid: 6afeeb4a6e67eb044894a23c5d7c53e1, type: 3}
@@ -2300,6 +2308,10 @@ PrefabInstance:
     - target: {fileID: 8578112097456658168, guid: 6afeeb4a6e67eb044894a23c5d7c53e1, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8580007780289534677, guid: 6afeeb4a6e67eb044894a23c5d7c53e1, type: 3}
+      propertyPath: m_RootOrder
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 8971221843489781657, guid: 6afeeb4a6e67eb044894a23c5d7c53e1, type: 3}
       propertyPath: m_AnchorMax.y

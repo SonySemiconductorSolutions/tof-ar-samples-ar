@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -76,12 +76,18 @@ namespace TofArSettings.Face
 
         protected override void Start()
         {
+            SetDetectorType();
+            base.Start();
+        }
+
+        private void SetDetectorType()
+        {
             // Get NNL list
-            var types = ((FaceDetectorType[])Enum.GetValues(typeof(FaceDetectorType))).ToList();
+            var types = ((FaceDetectorType[])Enum.GetValues(typeof(FaceDetectorType))).ToList();           
             if (!TofAr.V0.TofArManager.Instance.UsingIos)
             {
                 types.Remove(FaceDetectorType.Internal_ARKit);
-            } 
+            }
             if (faceEstimator == null || !faceEstimator.IsAvailable)
             {
                 types.Remove(FaceDetectorType.External);
@@ -121,7 +127,7 @@ namespace TofArSettings.Face
                 types.Insert(0, defaultFaceDetector);
                 propTexts.Insert(0, defaultText);
             }
-            
+
             DetectorTypeList = types.ToArray();
             DetectorTypeNames = propTexts.ToArray();
 
@@ -133,8 +139,6 @@ namespace TofArSettings.Face
             {
                 detectorTypeIndex = -1;
             }
-            
-            base.Start();
         }
 
         /// <summary>

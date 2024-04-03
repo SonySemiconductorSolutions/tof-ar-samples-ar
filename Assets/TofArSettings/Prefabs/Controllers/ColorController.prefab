@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 5606174954140553951}
   - component: {fileID: 777667656361144476}
   - component: {fileID: 3039899792805579047}
+  - component: {fileID: 1242805627938390903}
   m_Layer: 0
   m_Name: ColorController
   m_TagString: Untagged
@@ -36,6 +37,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -159,5 +161,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 486d677c0beee456ba9e2ef6d66a43cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1242805627938390903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1801682220427761331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51ac1281fde7c400498a5e2fdec655fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

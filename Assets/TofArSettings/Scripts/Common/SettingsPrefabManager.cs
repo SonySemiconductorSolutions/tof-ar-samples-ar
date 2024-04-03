@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -71,5 +71,10 @@ namespace TofArSettings.UI
         /// Dropdown Option Prefab
         /// </summary>
         public GameObject DropdownOptionPrefab;
+
+        /// <summary>
+        /// Text Dialog Prefab
+        /// </summary>
+        public GameObject TextDialogPrefab;
     }
 }
