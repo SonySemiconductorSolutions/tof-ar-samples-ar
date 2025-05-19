@@ -88,3 +88,5 @@ Assets/TofAr.ThirdParty/ARFoundationConnector.meta
 
 *.apk
 *.tgz
+/.vscode
+/.utmp
