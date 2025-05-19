@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -28,11 +28,11 @@ namespace TofArSettings.Hand
 
         void Awake()
         {
-            initPosX = GetComponent<RectTransform>().anchoredPosition.x;
-            initPosY = GetComponent<RectTransform>().anchoredPosition.y;
-            toolbar = FindObjectOfType<Toolbar>();
-            scRotCtrl = FindObjectOfType<ScreenRotateController>();
             rt = GetComponent<RectTransform>();
+            initPosX = rt.anchoredPosition.x;
+            initPosY = rt.anchoredPosition.y;
+            toolbar = FindAnyObjectByType<Toolbar>();
+            scRotCtrl = FindAnyObjectByType<ScreenRotateController>();
         }
 
         void OnEnable()

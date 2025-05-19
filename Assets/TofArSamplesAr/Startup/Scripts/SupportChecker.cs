@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -28,13 +28,16 @@ namespace TofArSamples.Startup
             "11",
             "12",
             "13",
-            "14"
+            "14",
+            "15",
+            "16"
         };
 
         string[] supportedDevicesIpadPro=
         {
             "11-inch",
             "12.9-inch (3rd Gen or later)",
+            "13-inch",
         };
 
 

@@ -1,18 +1,18 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
-using System.Collections;
-using TofAr.V0.Body;
-using TofAr.V0.Tof;
-using UnityEngine;
-using TofAr.V0.Body.SV2;
-using System.Linq;
 using System;
-using TofAr.V0;
+using System.Collections;
+using System.Collections.Generic;
+
+using TofAr.V0.Body;
+using TofAr.V0.Body.SV2;
+
+using UnityEngine;
 
 namespace TofArSettings.Body
 {
@@ -38,7 +38,7 @@ namespace TofArSettings.Body
             get
             {
                 var currentProperty = TofArBodyManager.Instance.GetProperty<RecognizeConfigProperty>();
-                return currentProperty != null ? currentProperty.runtimeMode : RuntimeMode.Cpu;   
+                return currentProperty != null ? currentProperty.runtimeMode : RuntimeMode.Cpu;
             }
 
             set
@@ -153,6 +153,7 @@ namespace TofArSettings.Body
                 Debug.Log("nThread : " + conf.nThreads);
 
                 int runtimeModeIndex = Utils.Find(conf.runtimeMode, RuntimeModeList);
+                modeIndex = runtimeModeIndex;
                 OnChangeRuntimeMode?.Invoke(runtimeModeIndex);
                 OnChangeModeThreads?.Invoke(conf.nThreads);
                 int noiseReductionLevelIndex = Utils.Find(conf.noiseReductionLevel, NoiseReductionLevelList);
@@ -197,6 +198,52 @@ namespace TofArSettings.Body
         public const int ThreadMax = 4;
         public const int ThreadStep = 1;
 
+        public int FramesForDetectNoBody
+        {
+            get
+            {
+                var currentProperty = TofArBodyManager.Instance.GetProperty<RecognizeConfigProperty>();
+                return currentProperty != null ? currentProperty.framesForDetectNoBody : 3;
+            }
+
+            set
+            {
+                if (FramesForDetectNoBody != value &&
+                    FramesForDetectNoBodyMin <= value && value <= FramesForDetectNoBodyMax)
+                {
+                    TofArBodyManager.Instance.FramesForDetectNoBody = value;
+                    OnChangeFramesForDetectNoBody?.Invoke(value);
+                }
+            }
+        }
+
+        public const int FramesForDetectNoBodyMin = 0;
+        public const int FramesForDetectNoBodyMax = 15;
+        public const int FramesForDetectNoBodyStep = 1;
+
+        public int IntervalFrameNotRecognized
+        {
+            get
+            {
+                var currentProperty = TofArBodyManager.Instance.GetProperty<RecognizeConfigProperty>();
+                return currentProperty != null ? currentProperty.intervalFramesNotRecognized : 10;
+            }
+
+            set
+            {
+                if (IntervalFrameNotRecognized != value &&
+                    IntervalFrameNotRecognizedMin <= value && value <= IntervalFrameNotRecognizedMax)
+                {
+                    TofArBodyManager.Instance.IntervalFramesNotRecognized = value;
+                    OnChangeIntervalFrameNotRecognized?.Invoke(value);
+                }
+            }
+        }
+
+        public const int IntervalFrameNotRecognizedMin = 0;
+        public const int IntervalFrameNotRecognizedMax = 15;
+        public const int IntervalFrameNotRecognizedStep = 1;
+
         /// <summary>
         /// Event that is called when RuntimeMode list is updated
         /// </summary>
@@ -228,6 +275,9 @@ namespace TofArSettings.Body
         public delegate void ChangeRecogEvent(int index, RecognizeConfigProperty conf);
 
         public event ChangeRecogEvent OnChangeRecogMode;
+
+        public event ChangeIndexEvent OnChangeFramesForDetectNoBody;
+        public event ChangeIndexEvent OnChangeIntervalFrameNotRecognized;
 
         /// <summary>
         /// Update RuntimeMode list
@@ -343,8 +393,21 @@ namespace TofArSettings.Body
             var mgr = TofArBodyManager.Instance;
 
             // Get Process Level list
-            NoiseReductionLevelList = (NoiseReductionLevel[])Enum.GetValues(typeof(NoiseReductionLevel));
-            levelNames = Enum.GetNames(typeof(NoiseReductionLevel));
+            var list = new List<NoiseReductionLevel>();
+            var levels = (NoiseReductionLevel[])Enum.GetValues(typeof(NoiseReductionLevel));
+            list.AddRange(levels);
+            list.Remove(NoiseReductionLevel.Off);
+            list.Insert(0, NoiseReductionLevel.Off);
+            NoiseReductionLevelList = list.ToArray();
+            if (levelNames.Length != NoiseReductionLevelList.Length)
+            {
+                Array.Resize(ref levelNames, NoiseReductionLevelList.Length);
+            }
+
+            for (int i = 0; i < levelNames.Length; i++)
+            {
+                levelNames[i] = NoiseReductionLevelList[i].ToString();
+            }
 
             // Get initial values
             var recognizeConfig = mgr.GetProperty<RecognizeConfigProperty>();

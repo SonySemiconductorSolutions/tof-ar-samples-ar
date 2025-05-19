@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -30,6 +30,8 @@ namespace TofArSettings.Hand
         UI.ItemToggle itemStartStream;
 
         UI.ItemSlider itemNotRecogInterval, itemFrameNoHand;
+
+        UI.ItemText itemRecognizerVersion;
 
         StatusHistory statusHistory;
         UI.Panel panelHistory;
@@ -69,10 +71,11 @@ namespace TofArSettings.Hand
                 MakeUINoiseReductionLevel,
                 MakeUIDetectionThreshold,
                 MakeUIIntervalFrameNotRecog,
-                MakeUIFramesForDetectNoHands
+                MakeUIFramesForDetectNoHands,
+                MakeUIRecognizerVersion
             };
 
-            recogModeCtrl = FindObjectOfType<RecogModeController>();
+            recogModeCtrl = FindAnyObjectByType<RecogModeController>();
             controllers.Add(recogModeCtrl);
             runtimeCtrl = recogModeCtrl.GetComponent<RuntimeController>();
             controllers.Add(runtimeCtrl);
@@ -81,12 +84,12 @@ namespace TofArSettings.Hand
             trackingModeCtrl = recogModeCtrl.GetComponent<TrackingModeController>();
             controllers.Add(trackingModeCtrl);
             noiseReductionCtrl = recogModeCtrl.GetComponent<NoiseReductionLevelController>();
-            detectionThresholdController = FindObjectOfType<DetectionThresholdController>();
-            managerController = FindObjectOfType<HandManagerController>();
+            detectionThresholdController = recogModeCtrl.GetComponent<DetectionThresholdController>();
+            managerController = recogModeCtrl.GetComponent<HandManagerController>();
             controllers.Add(managerController);
-            noHandsCtrl = FindObjectOfType<FramesForDetectNoHandsController>();
+            noHandsCtrl = recogModeCtrl.GetComponent<FramesForDetectNoHandsController>();
             controllers.Add(noHandsCtrl);
-            intervalNotRecogCtrl = FindObjectOfType<IntervalFrameNotRecogController>();
+            intervalNotRecogCtrl = recogModeCtrl.GetComponent<IntervalFrameNotRecogController>();
             controllers.Add(intervalNotRecogCtrl);
 
             base.Start();
@@ -417,6 +420,22 @@ namespace TofArSettings.Hand
             {
                 itemFrameNoHand.Value = val;
             };
+        }
+
+        /// <summary>
+        /// Make RecognizerVersion Text UI
+        /// </summary>
+        void MakeUIRecognizerVersion()
+        {
+            string version = string.Empty;
+
+            if (TofArHandManager.Instance != null)
+            {
+                var recognizerVersion = TofArHandManager.Instance.GetProperty<RecognizerVersionProperty>();
+                version = recognizerVersion.versionString;
+            }
+
+            itemRecognizerVersion = settings.AddItem("Recognizer Version : " + version, FontStyle.Normal,false,-6);
         }
 
         /// <summary>

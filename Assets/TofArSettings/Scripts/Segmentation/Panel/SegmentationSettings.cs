@@ -1,14 +1,13 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using TofAr.V0.Segmentation;
 using TofAr.V0.Segmentation.Human;
 using TofAr.V0.Segmentation.Sky;
-using UnityEngine;
 using UnityEngine.Events;
 
 
@@ -37,15 +36,15 @@ namespace TofArSettings.Segmentation
                 MakeUISky
             };
 
-            skySegCtrl = FindObjectOfType<SkySegmentationController>();
-            controllers.Add(skySegCtrl);
-            humanSegCtrl = FindObjectOfType<HumanSegmentationController>();
-            controllers.Add(humanSegCtrl);
-            managerController = FindObjectOfType<SegmentationManagerController>();
+            managerController = FindAnyObjectByType<SegmentationManagerController>();
             controllers.Add(managerController);
+            skySegCtrl = managerController.GetComponent<SkySegmentationController>();
+            controllers.Add(skySegCtrl);
+            humanSegCtrl = managerController.GetComponent<HumanSegmentationController>();
+            controllers.Add(humanSegCtrl);
 
-            humanDetector = FindObjectOfType<HumanSegmentationDetector>();
-            skyDetector = FindObjectOfType<SkySegmentationDetector>();
+            humanDetector = FindAnyObjectByType<HumanSegmentationDetector>();
+            skyDetector = FindAnyObjectByType<SkySegmentationDetector>();
 
             base.Start();
 

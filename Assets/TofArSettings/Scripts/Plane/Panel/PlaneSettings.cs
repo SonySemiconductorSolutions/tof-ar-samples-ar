@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
  
@@ -24,10 +24,10 @@ namespace TofArSettings.Plane
 
         protected override void Start()
         {
-            managerController = FindObjectOfType<PlaneManagerController>();
+            managerController = FindAnyObjectByType<PlaneManagerController>();
             controllers.Add(managerController);
 
-            detectIntervalController = FindObjectOfType<DetectIntervalController>();
+            detectIntervalController = managerController.GetComponent<DetectIntervalController>();
             controllers.Add(detectIntervalController);
 
             // Set UI order

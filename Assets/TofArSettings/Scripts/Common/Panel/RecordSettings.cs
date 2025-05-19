@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -100,31 +100,31 @@ namespace TofArSettings.UI
 
             if (color)
             {
-                var colorRecCtrl = FindObjectOfType<ColorRecordController>();
+                var colorRecCtrl = FindAnyObjectByType<ColorRecordController>();
                 controllers.Add(colorRecCtrl);
             }
 
             if (tof)
             {
-                var tofRecCtrl = FindObjectOfType<TofRecordController>();
+                var tofRecCtrl = FindAnyObjectByType<TofRecordController>();
                 controllers.Add(tofRecCtrl);
             }
 
             if (body)
             {
-                var bodyRecCtrl = FindObjectOfType<BodyRecordController>();
+                var bodyRecCtrl = FindAnyObjectByType<BodyRecordController>();
                 controllers.Add(bodyRecCtrl);
             }
 
             if (face)
             {
-                var faceRecCtrl = FindObjectOfType<FaceRecordController>();
+                var faceRecCtrl = FindAnyObjectByType<FaceRecordController>();
                 controllers.Add(faceRecCtrl);
             }
 
             if (plane)
             {
-                var planeRecCtrl = FindObjectOfType<PlaneRecordController>();
+                var planeRecCtrl = FindAnyObjectByType<PlaneRecordController>();
                 controllers.Add(planeRecCtrl);
             }
 
@@ -322,7 +322,7 @@ namespace TofArSettings.UI
         /// <param name="state">On/Off</param>
         private void ToolbarNotSelect(bool state)
         {
-            Toolbar toolbar = FindObjectOfType<Toolbar>();
+            Toolbar toolbar = FindAnyObjectByType<Toolbar>();
             if (toolbar)
             {
                 toolbar.SetNotSelect(state);

@@ -1,11 +1,12 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using TofAr.V0.Hand;
+using UnityEngine;
 
 namespace TofArSettings.Hand
 {
@@ -59,7 +60,7 @@ namespace TofArSettings.Hand
 
         protected void Awake()
         {
-            detector = FindObjectOfType<FingerTouchDetector>(true);
+            detector = FindAnyObjectByType<FingerTouchDetector>(FindObjectsInactive.Include);
         }
 
         void OnEnable()

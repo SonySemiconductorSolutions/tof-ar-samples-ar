@@ -1,11 +1,10 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
-using UnityEngine;
 using UnityEngine.Events;
 
 namespace TofArSettings.Face
@@ -24,7 +23,7 @@ namespace TofArSettings.Face
                 MakeUIRuntime
             };
 
-            facialExpressionController = FindObjectOfType<FacialExpressionController>();
+            facialExpressionController = FindAnyObjectByType<FacialExpressionController>();
             controllers.Add(facialExpressionController);
 
             base.Start();

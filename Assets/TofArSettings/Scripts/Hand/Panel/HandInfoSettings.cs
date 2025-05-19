@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022, 2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022, 2023, 2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -32,6 +32,9 @@ namespace TofArSettings.Hand
         [SerializeField]
         bool displayHandpoints = false;
 
+        [SerializeField]
+        bool confidence = false;
+
         enum InfoType : int
         {
             HandStatus,
@@ -40,7 +43,8 @@ namespace TofArSettings.Hand
             Distance,
             CameraIntrinsics,
             SpanDistance,
-            Handpoints
+            Handpoints,
+            Confidence
         }
 
         UI.Panel panelFps, panelInfo, panelHandPoints, panelHandPose;
@@ -66,13 +70,14 @@ namespace TofArSettings.Hand
             ShowFps(fps);
 
             if (handStatus || distance || cameraIntrinsics ||
-                spanDistance || displayHandpoints)
+                spanDistance || displayHandpoints || confidence)
             {
                 ShowHandStatus(handStatus);
                 ShowDist(distance);
                 ShowCameraIntrinsics(cameraIntrinsics);
                 ShowSpan(spanDistance);
                 ShowHandPoints(displayHandpoints);
+                ShowConfidence(confidence);
             }
             else
             {
@@ -126,6 +131,7 @@ namespace TofArSettings.Hand
 
             settings.AddItem("Distance", distance, ShowDist);
             settings.AddItem("Span Distance", spanDistance, ShowSpan);
+            settings.AddItem("Confidence", confidence, ShowConfidence);
             settings.AddItem("Camera Intrinsics", cameraIntrinsics, ShowCameraIntrinsics);
             settings.AddItem("Display Hand points", displayHandpoints, ShowHandPoints);
         }
@@ -188,6 +194,10 @@ namespace TofArSettings.Hand
                 else if (info is InfoSpanDistance)
                 {
                     informations.Add(InfoType.SpanDistance, info);
+                }
+                else if (info is InfoConfidence)
+                {
+                    informations.Add(InfoType.Confidence, info);
                 }
             }
         }
@@ -258,6 +268,15 @@ namespace TofArSettings.Hand
             {
                 panelHandPoints.ClosePanel();
             }
+        }
+
+        /// <summary>
+        /// Toggle Confidence Distance display
+        /// </summary>
+        /// <param name="onOff">On/Off</param>
+        void ShowConfidence(bool onOff)
+        {
+            ShowInfo(InfoType.Confidence, onOff, true);
         }
 
         /// <summary>

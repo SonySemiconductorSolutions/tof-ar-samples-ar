@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -83,12 +83,12 @@ namespace TofArSettings.UI
             var vlg = uiArea.GetComponentInChildren<VerticalLayoutGroup>();
             contentArea = vlg.GetComponent<RectTransform>();
 
-            canvasScCtrl = FindObjectOfType<CanvasScaleController>();
+            canvasScCtrl = FindAnyObjectByType<CanvasScaleController>();
             canvasScCtrl.OnChangeSafeArea += (safeAreaSize) =>
             {
                 AdjustUISize();
             };
-            toolbar = FindObjectOfType<Toolbar>();
+            toolbar = FindAnyObjectByType<Toolbar>();
 
             scRotCtrl = canvasScCtrl.GetComponent<ScreenRotateController>();
             scRotCtrl.OnRotateScreen += OnRotateScreen;
@@ -119,7 +119,7 @@ namespace TofArSettings.UI
 
         protected override void CloseOther()
         {
-            foreach (var panel in FindObjectsOfType<SettingsPanel>())
+            foreach (var panel in FindObjectsByType<SettingsPanel>(FindObjectsSortMode.None))
             {
                 if (panel == this)
                 {

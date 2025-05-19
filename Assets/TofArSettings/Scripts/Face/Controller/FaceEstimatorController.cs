@@ -1,12 +1,10 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
-using System.Collections;
-using UnityEngine;
 using TofAr.V0.Face;
 using System;
 
@@ -19,8 +17,8 @@ namespace TofArSettings.Face
 
         protected void Awake()
         {
-            faceEstimator = FindObjectOfType<FaceEstimator>();
-            managerController = FindObjectOfType<FaceManagerController>();
+            faceEstimator = FindAnyObjectByType<FaceEstimator>();
+            managerController = FindAnyObjectByType<FaceManagerController>();
         }
 
         int modeIndex;
@@ -105,11 +103,53 @@ namespace TofArSettings.Face
             }
         }
 
+        public BlendshapeEstimator[] BlendshapeEstimatorList { get; private set; }
+
+        string[] blendshapeEstimatorNames = new string[0];
+        public string[] BlendshapeEstimatorNames
+        {
+            get { return blendshapeEstimatorNames; }
+        }
+
+        int blendshapeEstimatorIndex;
+        public int BlendshapeEstimatorIndex
+        {
+            get { return blendshapeEstimatorIndex; }
+            set
+            {
+                if (value != blendshapeEstimatorIndex && 0 <= value &&
+                    value < BlendshapeEstimatorList.Length)
+                {
+                    BlendshapeEstimator = BlendshapeEstimatorList[value];
+                }
+            }
+        }
+
+        public BlendshapeEstimator BlendshapeEstimator
+        {
+            get
+            {
+                return faceEstimator.BlendShapeEstimatorType;
+            }
+
+            set
+            {
+                if (value != faceEstimator.BlendShapeEstimatorType)
+                {
+                    blendshapeEstimatorIndex = Utils.Find(value, BlendshapeEstimatorList);
+                    faceEstimator.BlendShapeEstimatorType = value;
+                    managerController.RestartStream();
+                    OnChangeBlendshapeEstimator?.Invoke(blendshapeEstimatorIndex);
+                }
+            }
+        }
+
         protected override void Start()
         {
             base.Start();
             UpdateRuntimeModeList();
             UpdateProcessModeList();
+            UpdateBlendshapeEstimatorList();
         }
 
         public int ModeThreads
@@ -151,9 +191,9 @@ namespace TofArSettings.Face
         public delegate void UpdateRuntimeModeListEvent(string[] list,
             int mode1Index);
 
-        public event ChangeIndexEvent OnChangeRuntimeMode, OnChangeModelType;
+        public event ChangeIndexEvent OnChangeRuntimeMode, OnChangeModelType, OnChangeBlendshapeEstimator;
 
-        public event UpdateRuntimeModeListEvent OnUpdateRuntimeModeList, OnUpdateProcessModeLandmarkList;
+        public event UpdateRuntimeModeListEvent OnUpdateRuntimeModeList, OnUpdateProcessModeLandmarkList, OnUpdateBlendshapeEstimatorList;
 
         public event ChangeIndexEvent OnChangeModeThreads;
 
@@ -216,6 +256,36 @@ namespace TofArSettings.Face
             }
 
             OnUpdateProcessModeLandmarkList?.Invoke(ProcessModeNames, ProcessModeLandmarkIndex);
+        }
+
+        /// <summary>
+        /// Update BlendshapeEstimator list
+        /// </summary>
+        void UpdateBlendshapeEstimatorList()
+        {
+            // Get RuntimeMode list
+            BlendshapeEstimatorList = (BlendshapeEstimator[])Enum.GetValues(typeof(BlendshapeEstimator));
+            if (BlendshapeEstimatorList.Length != blendshapeEstimatorNames.Length)
+            {
+                Array.Resize(ref blendshapeEstimatorNames, BlendshapeEstimatorList.Length);
+            }
+
+            for (int i = 0; i < BlendshapeEstimatorList.Length; i++)
+            {
+                blendshapeEstimatorNames[i] = BlendshapeEstimatorList[i].ToString();
+            }
+
+            // Get intial values of RuntimeMode1
+            if (faceEstimator != null)
+            {
+                blendshapeEstimatorIndex = Utils.Find(faceEstimator.BlendShapeEstimatorType, BlendshapeEstimatorList);
+                if (blendshapeEstimatorIndex < 0)
+                {
+                    blendshapeEstimatorIndex = 0;
+                }
+            }
+
+            OnUpdateBlendshapeEstimatorList?.Invoke(BlendshapeEstimatorNames, BlendshapeEstimatorIndex);
         }
 
     }

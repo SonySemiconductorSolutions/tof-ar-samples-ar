@@ -1265,7 +1265,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8304874164462706763, guid: 43cdb78d117864d7e8a225ace67fecb7, type: 3}
       propertyPath: m_Value
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8538455474519142429, guid: 43cdb78d117864d7e8a225ace67fecb7, type: 3}
       propertyPath: m_AnchorMax.y
@@ -1887,6 +1887,30 @@ PrefabInstance:
       propertyPath: toolBtn
       value: 
       objectReference: {fileID: 4425141300301680730}
+    - target: {fileID: 6140413337816716157, guid: 64735ecd259e44a8ebb1800e51604aa4, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6140413337816716157, guid: 64735ecd259e44a8ebb1800e51604aa4, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6140413337816716157, guid: 64735ecd259e44a8ebb1800e51604aa4, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6140413337816716157, guid: 64735ecd259e44a8ebb1800e51604aa4, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6140413337816716157, guid: 64735ecd259e44a8ebb1800e51604aa4, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6140413337816716157, guid: 64735ecd259e44a8ebb1800e51604aa4, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6416918236177612686, guid: 64735ecd259e44a8ebb1800e51604aa4, type: 3}
       propertyPath: m_Name
       value: CameraSettings

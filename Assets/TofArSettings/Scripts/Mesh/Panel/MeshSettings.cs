@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -27,10 +27,11 @@ namespace TofArSettings.Mesh
                 MakeUIStartStream,
                 MakeUIReductionLevel
             };
-            reductionLevelController = FindObjectOfType<ReductionLevelController>();
-            controllers.Add(reductionLevelController);
-            managerController = FindObjectOfType<MeshManagerController>();
+
+            managerController = FindAnyObjectByType<MeshManagerController>();
             controllers.Add(managerController);
+            reductionLevelController = managerController.GetComponent<ReductionLevelController>();
+            controllers.Add(reductionLevelController);
 
             base.Start();
 

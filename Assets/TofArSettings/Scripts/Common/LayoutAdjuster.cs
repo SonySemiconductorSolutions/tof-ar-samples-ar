@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -23,9 +23,9 @@ namespace TofArSettings.UI
             layout = GetComponent<HorizontalOrVerticalLayoutGroup>();
             bottom = layout.padding.bottom;
 
-            scRotCtrl = FindObjectOfType<ScreenRotateController>();
+            scRotCtrl = FindAnyObjectByType<ScreenRotateController>();
             scRotCtrl.OnRotateScreen += OnRotateScreen;
-            toolbar = FindObjectOfType<Toolbar>();
+            toolbar = FindAnyObjectByType<Toolbar>();
         }
 
         /// <summary>

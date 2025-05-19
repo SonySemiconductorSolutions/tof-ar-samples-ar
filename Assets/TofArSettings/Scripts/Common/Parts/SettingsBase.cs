@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -75,6 +75,9 @@ namespace TofArSettings.UI
         /// </summary>
         public UnityAction OnBack;
 
+        public UnityAction OnOpened;
+        public UnityAction OnClosed;
+
         protected SettingsPanel settings;
         protected List<ControllerBase> controllers = new List<ControllerBase>();
 
@@ -127,6 +130,7 @@ namespace TofArSettings.UI
         public void OpenPanel()
         {
             settings.OpenPanel();
+            OnOpened?.Invoke();
         }
 
         /// <summary>
@@ -137,6 +141,7 @@ namespace TofArSettings.UI
             if (settings)
             {
                 settings.ClosePanel();
+                OnClosed?.Invoke();
             }
         }
 

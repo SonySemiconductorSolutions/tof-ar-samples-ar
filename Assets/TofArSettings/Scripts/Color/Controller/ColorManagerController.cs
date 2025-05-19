@@ -1,17 +1,18 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using TofAr.V0;
 using TofAr.V0.Color;
 using TofAr.V0.Tof;
 using TofArSettings.Tof;
+using UnityEngine;
 using LensFacing = TofAr.V0.Color.LensFacing;
 
 namespace TofArSettings.Color
@@ -46,9 +47,11 @@ namespace TofArSettings.Color
 
         ResolutionProperty defaultReso;
 
+        public event StreamErrorEvent OnStreamError;
+
         protected void Awake()
         {
-            tofManagerController = FindObjectOfType<TofManagerController>();
+            tofManagerController = FindAnyObjectByType<TofManagerController>();
         }
         protected override void OnEnable()
         {
@@ -57,6 +60,7 @@ namespace TofArSettings.Color
             TofArColorManager.OnAvailableResolutionsChanged += MakeResoOptions;
             TofArColorManager.OnStreamStarted += OnColorStreamStarted;
             TofArColorManager.OnStreamStopped += OnColorStreamStopped;
+            TofArColorManager.OnStreamStartError += OnColorStreamStartError;
 
             TofArManager.Instance?.postInternalSessionStart.AddListener(OnInternalSessionStarted);
         }
@@ -68,6 +72,7 @@ namespace TofArSettings.Color
             TofArColorManager.OnAvailableResolutionsChanged -= MakeResoOptions;
             TofArColorManager.OnStreamStarted -= OnColorStreamStarted;
             TofArColorManager.OnStreamStopped -= OnColorStreamStopped;
+            TofArColorManager.OnStreamStartError -= OnColorStreamStartError;
 
             TofArManager.Instance?.postInternalSessionStart.RemoveListener(OnInternalSessionStarted);
         }
@@ -96,6 +101,7 @@ namespace TofArSettings.Color
         {
             base.StartStream();
 
+
             if (tofManagerController?.IsStreamActive() == true)
             {
                 int tofIndex = tofManagerController.Index;
@@ -109,22 +115,40 @@ namespace TofArSettings.Color
                 {
                     float ratioTof = (float)conf.width / (float)conf.height;
                     float ratioColor = (float)currentColor.width / (float)currentColor.height;
-                    if (ratioTof != ratioColor || conf.cameraId != currentColor.cameraId)
+                    var platformConfig = TofArManager.Instance.GetProperty<PlatformConfigurationProperty>();
+                    if (!(mgr.IsUsingAVFoundation() && platformConfig.platformConfigurationIos.multiCamSupported))
                     {
-                        tofMgr?.StopStream();
-                        var resolutionsFiltered = tofManagerController.Configs.Where(x =>
+                        if (ratioTof != ratioColor || conf.cameraId != currentColor.cameraId)
                         {
-                            ratioTof = (float)x.width / (float)x.height;
-                            return ratioColor == ratioTof && x.cameraId == currentColor.cameraId;
-                        });
-                        if (resolutionsFiltered.Count() > 0)
+                            tofMgr?.StopStream();
+                            var resolutionsFiltered = tofManagerController.Configs.Where(x =>
+                            {
+                                ratioTof = (float)x.width / (float)x.height;
+                                return ratioColor == ratioTof && x.cameraId == currentColor.cameraId;
+                            });
+                            if (resolutionsFiltered.Count() > 0)
+                            {
+                                conf = resolutionsFiltered.First();
+                                tofIndex = tofManagerController.FindIndex(conf);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var checkResult = new ConCurrentStreamCheckProperty()
                         {
-                            conf = resolutionsFiltered.First();
-                            tofIndex = tofManagerController.FindIndex(conf);
+                            tofConfiguration = tofManagerController.Configs[tofIndex],
+                            colorResolution = Resolutions[index],
+                        };
+                        checkResult = TofArTofManager.Instance?.GetProperty(checkResult);
+                        if (checkResult.checkResult != ConCurrentStreamCheckResult.Ok)
+                        {
+                            Index = 0;
+                            OnStreamError(checkResult.message);
+                            return;
                         }
                     }
                 }
-
                 tofMgr?.StartStreamWithColor(
                     tofManagerController.Configs[tofIndex], Resolutions[index], tofManagerController.IsProcessTexture, IsProcessTexture);
             }
@@ -171,6 +195,17 @@ namespace TofArSettings.Color
             OnStreamStarted();
         }
 
+        void OnColorStreamStartError(object sender, Exception exception)
+        {
+            TofArManager.Logger.WriteLog(LogLevel.Debug, $"Color stream starting error\n{TofAr.V0.Utils.FormatException(exception)}");
+            Index = 0;
+            if (tofManagerController != null)
+            {
+                tofManagerController.Index = 0;
+            }
+            OnStreamError("Cannot start stream(s)");
+        }
+
         /// <summary>
         /// Event that is called when Color stream is stopped
         /// </summary>
@@ -186,14 +221,30 @@ namespace TofArSettings.Color
         /// <param name="properties">CameraResolution list</param>
         void MakeResoOptions(AvailableResolutionsProperty properties)
         {
-            defaultReso = TofArColorManager.Instance?.GetProperty<ResolutionProperty>();
+            defaultReso = TofArColorManager.Instance?.GetProperty<DefaultResolutionProperty>();
             if (defaultReso == null)
             {
                 return;
             }
 
-            TofArManager.Logger.WriteLog(LogLevel.Debug, $"Defaulut Color Resolution - cameraId:{defaultReso.cameraId} width:{defaultReso.width} height:{defaultReso.height} frameRate:{defaultReso.frameRate}");
+            TofArManager.Logger.WriteLog(LogLevel.Debug,
+                $"Defaulut Color Resolution - cameraId:{defaultReso.cameraId} width:{defaultReso.width} height:{defaultReso.height} frameRate:{defaultReso.frameRate} depthSupported:{defaultReso.avfDepthSupported}");
 
+            SetResolutionAndOptions(properties);
+
+            // If stream is already running, set to current config
+            var colorMgr = TofArColorManager.Instance;
+            if (colorMgr && colorMgr.IsStreamActive && Resolutions.Length > 1)
+            {
+                var prop = colorMgr.GetProperty<ResolutionProperty>();
+                index = FindIndex(prop);
+            }
+
+            OnMadeOptions?.Invoke();
+        }
+
+        private void SetResolutionAndOptions(AvailableResolutionsProperty properties)
+        {
             var props = (properties == null) ? new List<ResolutionProperty>() :
                 properties.resolutions.ToList();
 
@@ -231,11 +282,22 @@ namespace TofArSettings.Color
             if (propTexts.Count > 0)
             {
                 // Highlight recommended values in color and move to the top of the list
-                string defaultText = $"<color=red>{propTexts[defaultIndex]}</color>";
+                var color = props[defaultIndex].avfDepthSupported ? "purple" : "red";
+                var mcsStart = props[defaultIndex].avfMultiCamSupported ? @"<b>" : "";
+                var mcsEnd = props[defaultIndex].avfMultiCamSupported ? @"</b>" : "";
+                string defaultText = $"<color={color}>{mcsStart}{propTexts[defaultIndex]}{mcsEnd}</color>";
                 props.RemoveAt(defaultIndex);
                 propTexts.RemoveAt(defaultIndex);
                 props.Insert(0, defaultReso);
                 propTexts.Insert(0, defaultText);
+
+                for (var i = 1; i < propTexts.Count; i++)
+                {
+                    color = props[i].avfDepthSupported ? "blue" : "black";
+                    mcsStart = props[i].avfMultiCamSupported ? @"<b>" : "";
+                    mcsEnd = props[i].avfMultiCamSupported ? @"</b>" : "";
+                    propTexts[i] = $"<color={color}>{mcsStart}{propTexts[i]}{mcsEnd}</color>";
+                }
             }
 
             // Add an empty option at the top (for StopStream)
@@ -245,16 +307,6 @@ namespace TofArSettings.Color
 
             Resolutions = props.ToArray();
             Options = propTexts.ToArray();
-
-            // If stream is already running, set to current config
-            var colorMgr = TofArColorManager.Instance;
-            if (colorMgr && colorMgr.IsStreamActive && props.Count > 1)
-            {
-                var prop = colorMgr.GetProperty<ResolutionProperty>();
-                index = FindIndex(prop);
-            }
-
-            OnMadeOptions?.Invoke();
         }
 
         /// <summary>
@@ -301,6 +353,30 @@ namespace TofArSettings.Color
             }
 
             return pIndex;
+        }
+
+        /// <summary>
+        /// Get ResolutionProperty Index List (MultiCam)
+        /// </summary>
+        /// <param name="depth">support depth state</param>
+        /// <param name="multiCam">support multicam state</param>
+        /// <returns></returns>
+        public int[] GetAvfSupportedResolutionPropertyIndices(bool depth, bool multiCam)
+        {
+            List<int> indices = new List<int>(); ;
+            for (int i = 1; i < Resolutions.Length; i++)
+            {
+                if (depth && Resolutions[i].avfDepthSupported)
+                {
+                    indices.Add(i);
+                }
+                else if (multiCam && Resolutions[i].avfMultiCamSupported)
+                {
+                    indices.Add(i);
+                }
+            }
+
+            return indices.ToArray();
         }
 
         /// <summary>

@@ -1,12 +1,13 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using System;
 using System.Collections;
+using TofAr.V0;
 using TofAr.V0.Hand;
 using UnityEngine;
 
@@ -56,7 +57,7 @@ namespace TofArSettings.Hand
 
         bool isRunning = false;
 
-		const float timeOut = 5;
+        const float timeOut = 5;
 
         /// <summary>
         /// Event that is called when Hand dictionary is changed
@@ -68,6 +69,9 @@ namespace TofArSettings.Hand
         public event ChangeRecogEvent OnChangeRecog;
 
         public event UpdateArrayEvent OnUpdateList;
+
+        [SerializeField]
+        private bool initializeByRecommendedValue = true;
 
         protected override void Start()
         {
@@ -102,6 +106,18 @@ namespace TofArSettings.Hand
 
             // Set intial values
             int idx = Utils.Find(Mode, ModeList, 0);
+            if (initializeByRecommendedValue)
+            {
+                var runtimeSettings = TofArManager.Instance.RuntimeSettings;
+                var platformConfig = TofArManager.Instance.GetProperty<PlatformConfigurationProperty>();
+                if ((runtimeSettings.distribution == Distribution.Pro)
+                    && (TofArManager.Instance.UsingIos
+                    || (platformConfig?.platformConfigurationPC?.customData?.Contains("k4a") == true)
+                    || (platformConfig?.platformConfigurationPC?.customData?.Contains("int") == true)))
+                {
+                    idx = Array.IndexOf(this.ModeList, RecogMode.HeadMount + 2);
+                }
+            }
             if (idx < 0)
             {
                 idx = 0;
@@ -117,10 +133,10 @@ namespace TofArSettings.Hand
         /// <param name="mode">Hand dictionary</param>
         IEnumerator ApplyMode(RecogMode mode)
         {
-            // Prevent multiple executions
-            if (isRunning)
+            // Wait until the previous process is completed
+            while (isRunning)
             {
-                yield break;
+                yield return null;
             }
 
             isRunning = true;
@@ -134,11 +150,12 @@ namespace TofArSettings.Hand
             // Wait until changes have been reflected
             var mgr = TofArHandManager.Instance;
             RecognizeConfigProperty conf;
-			float time = 0;
+            float time = 0;
             while (true)
             {
                 conf = mgr.GetProperty<RecognizeConfigProperty>();
-                if ((conf != null && mgr.RecogMode == conf.recogMode) || time >= timeOut)
+                if ((conf != null && mgr.RecogMode == conf.recogMode) || time >= timeOut ||
+                    HandModel.RecogMode != mode)
                 {
                     break;
                 }

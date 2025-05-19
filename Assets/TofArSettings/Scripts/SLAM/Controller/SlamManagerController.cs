@@ -1,12 +1,13 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using System;
 using System.Linq;
+using TofAr.V0;
 using TofAr.V0.Slam;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace TofArSettings.Slam
     {
         private void Awake()
         {
-            var ctrl = FindObjectOfType<General.CameraApiController>();
+            var ctrl = FindAnyObjectByType<General.CameraApiController>();
             ctrl.OnChangeApi += (idx) =>
             {
                 if (ctrl.CameraApi == TofAr.V0.IosCameraApi.AvFoundation)
@@ -37,6 +38,7 @@ namespace TofArSettings.Slam
             }
 
             SetupPoseSourceLists();
+            SetupRotationCalculateTypeLists();
         }
 
         protected override void Start()
@@ -163,7 +165,7 @@ namespace TofArSettings.Slam
 
         public CameraPoseSource[] PoseSources { get; private set; }
 
-        public event ChangeIndexEvent OnChangeIndex;
+        public event ChangeIndexEvent OnChangeIndex, OnChangeRotationCalculateType;
 
         private void SetupPoseSourceLists()
         {
@@ -190,6 +192,12 @@ namespace TofArSettings.Slam
                     poseSources = poseSources.Where(x => x != CameraPoseSource.InternalEngine02).ToArray();
                 }
 
+                var platformConfig = TofArManager.Instance.GetProperty<PlatformConfigurationProperty>();
+                if (platformConfig?.platformConfigurationPC?.customData?.Contains("k4a") == true)
+                {
+                    poseSources = poseSources.Where(x => x != CameraPoseSource.ARKitOrARFoundation).ToArray();
+                }
+
                 PoseSources = poseSources.ToArray();
             }
             else
@@ -198,6 +206,70 @@ namespace TofArSettings.Slam
             }
 
             PoseSourceNames = PoseSources.Select((s) => s.ToString()).ToArray();
+        }
+
+        private int rotationCalculateTypeIndex = 0;
+        public int RotationCalculateTypeIndex
+        {
+            get { return rotationCalculateTypeIndex; }
+            set
+            {
+                if (value != rotationCalculateTypeIndex && 0 <= value &&
+                    value < RotationCalculateTypeList.Length)
+                {
+                    RotationCalculateType = RotationCalculateTypeList[value];
+                }
+            }
+        }
+
+        public RotationCalculateType RotationCalculateType
+        {
+            get
+            {
+                return TofArSlamManager.Instance.RotationCalculateType;
+            }
+            set
+            {
+                if (value != TofArSlamManager.Instance.RotationCalculateType)
+                {
+                    rotationCalculateTypeIndex = Utils.Find(value, RotationCalculateTypeList);
+                    TofArSlamManager.Instance.RotationCalculateType = value;
+                    OnChangeRotationCalculateType?.Invoke(RotationCalculateTypeIndex);
+                }
+            }
+        }
+
+        public RotationCalculateType[] RotationCalculateTypeList { get; private set; }
+
+        string[] rotationCalculateTypeListNames = new string[0];
+        public string[] RotationCalculateTypeNames
+        {
+            get { return rotationCalculateTypeListNames; }
+        }
+
+        void SetupRotationCalculateTypeLists()
+        {
+            // Get RotationCalculateType list
+            RotationCalculateTypeList = (RotationCalculateType[])Enum.GetValues(typeof(RotationCalculateType));
+            if (RotationCalculateTypeList.Length != rotationCalculateTypeListNames.Length)
+            {
+                Array.Resize(ref rotationCalculateTypeListNames, RotationCalculateTypeList.Length);
+            }
+
+            for (int i = 0; i < RotationCalculateTypeList.Length; i++)
+            {
+                rotationCalculateTypeListNames[i] = RotationCalculateTypeList[i].ToString();
+            }
+
+            // Get intial values of RotationCalculateType
+            if (TofArSlamManager.Instantiated)
+            {
+                rotationCalculateTypeIndex = Utils.Find(TofArSlamManager.Instance.RotationCalculateType, RotationCalculateTypeList);
+                if (rotationCalculateTypeIndex < 0)
+                {
+                    rotationCalculateTypeIndex = 0;
+                }
+            }
         }
     }
 }

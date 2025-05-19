@@ -1,10 +1,11 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 using TofAr.V0.Body;
+
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -19,6 +20,9 @@ namespace TofArSettings.Body
         UI.ItemDropdown itemMode, itemRuntimeModeSV2, itemRecogModeSV2, itemNoiseReduction, itemHumanTrackingMode;
         UI.ItemSlider itemSV2Thread;
         UI.ItemToggle itemStartStream;
+        UI.ItemSlider itemNotRecogInterval, itemFrameNoBody;
+
+        UI.ItemText itemRecognizerVersion;
 
         protected override void Start()
         {
@@ -27,15 +31,18 @@ namespace TofArSettings.Body
             {
                 MakeUIStartStream,
                 MakeUIDetectorType,
-                MakeUIRuntime
+                MakeUIRuntime,
+                MakeUIIntervalFrameNotRecog,
+                MakeUIFramesForDetectNoBody,
+                MakeUIRecognizerVersion
             };
 
-            runtimeController = FindObjectOfType<BodyRuntimeController>();
-            controllers.Add(runtimeController);
-            sv2Controller = FindObjectOfType<SV2Controller>();
-            controllers.Add(sv2Controller);
-            managerController = FindObjectOfType<BodyManagerController>();
+            managerController = FindAnyObjectByType<BodyManagerController>();
             controllers.Add(managerController);
+            runtimeController = managerController.GetComponent<BodyRuntimeController>();
+            controllers.Add(runtimeController);
+            sv2Controller = managerController.GetComponent<SV2Controller>();
+            controllers.Add(sv2Controller);
 
             base.Start();
 
@@ -228,6 +235,76 @@ namespace TofArSettings.Body
             {
                 itemStartStream.OnOff = TofArBodyManager.Instance.IsStreamActive;
             }
+        }
+
+        /// <summary>
+        /// Make IntervalFrameNotRecognized UI
+        /// </summary>
+        void MakeUIIntervalFrameNotRecog()
+        {
+            itemNotRecogInterval = settings.AddItem("IntervalFrame\nNotRecognized",
+                SV2Controller.IntervalFrameNotRecognizedMin,
+                SV2Controller.IntervalFrameNotRecognizedMax,
+                SV2Controller.IntervalFrameNotRecognizedStep,
+                sv2Controller.IntervalFrameNotRecognized,
+                ChangeIntervalFrameNotRecog, -4);
+
+            sv2Controller.OnChangeIntervalFrameNotRecognized += (val) =>
+            {
+                itemNotRecogInterval.Value = val;
+            };
+        }
+
+        /// <summary>
+        /// Change IntervalFrameNotRecognized
+        /// </summary>
+        /// <param name="val">IntervalFrameNotRecognized</param>
+        void ChangeIntervalFrameNotRecog(float val)
+        {
+            sv2Controller.IntervalFrameNotRecognized = Mathf.RoundToInt(val);
+        }
+
+        /// <summary>
+        /// Make FramesForDetectNoBody UI
+        /// </summary>
+        void MakeUIFramesForDetectNoBody()
+        {
+            itemFrameNoBody = settings.AddItem("FramesFor\nDetectNoBody",
+                SV2Controller.FramesForDetectNoBodyMin,
+                SV2Controller.FramesForDetectNoBodyMax,
+                SV2Controller.FramesForDetectNoBodyStep,
+                sv2Controller.FramesForDetectNoBody,
+                ChangeFramesForDetectNoBody, -4);
+
+            sv2Controller.OnChangeFramesForDetectNoBody += (val) =>
+            {
+                itemFrameNoBody.Value = val;
+            };
+        }
+
+        /// <summary>
+        /// Change FramesForDetectNoBody
+        /// </summary>
+        /// <param name="val">FramesForDetectNoBody</param>
+        void ChangeFramesForDetectNoBody(float val)
+        {
+            sv2Controller.FramesForDetectNoBody = Mathf.RoundToInt(val);
+        }
+
+        /// <summary>
+        /// Make RecognizerVersion Text UI
+        /// </summary>
+        void MakeUIRecognizerVersion()
+        {
+            string version = string.Empty;
+
+            if (TofArBodyManager.Instance != null)
+            {
+                var recognizerVersion = TofArBodyManager.Instance.GetProperty<TofAr.V0.Body.RecognizerVersionProperty>();
+                version = recognizerVersion.versionString;
+            }
+
+            itemRecognizerVersion = settings.AddItem("Recognizer Version : " + version, FontStyle.Normal, false, -6);
         }
     }
 }

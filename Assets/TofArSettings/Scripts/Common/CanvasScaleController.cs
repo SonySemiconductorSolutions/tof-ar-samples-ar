@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -63,7 +63,7 @@ namespace TofArSettings.UI
             // Get UI
             if (!canvasScaler)
             {
-                canvasScaler = FindObjectOfType<CanvasScaler>();
+                canvasScaler = FindAnyObjectByType<CanvasScaler>();
             }
 
             foreach (var rt in canvasScaler.GetComponentsInChildren<RectTransform>())
@@ -86,7 +86,7 @@ namespace TofArSettings.UI
 
         protected virtual void Start()
         {
-            toolbar = FindObjectOfType<Toolbar>();
+            toolbar = FindAnyObjectByType<Toolbar>();
             AdjustSafeArea(Screen.safeArea);
         }
 

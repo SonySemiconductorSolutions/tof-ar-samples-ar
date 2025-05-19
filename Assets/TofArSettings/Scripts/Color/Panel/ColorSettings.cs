@@ -1,12 +1,13 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024,2025 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using TofAr.V0;
 using TofAr.V0.Color;
+
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -20,10 +21,11 @@ namespace TofArSettings.Color
         StabilizationController stabCtrl;
         ColorWhiteBalanceController whiteBalanceCtrl;
         ColorCapturePhotoController capturePhotoController;
+        ColorDirectFrameCaptureController directFrameCaptureEnabledController;
 
         UI.ItemSlider itemFrDu, itemSens, itemFocusDist;
         UI.ItemDropdown itemFlash, itemFormat, itemWhiteBalance, itemPhotoFormat;
-        UI.ItemToggle itemAutoFocus, itemStab, itemAutoWhiteBalance;
+        UI.ItemToggle itemAutoFocus, itemStab, itemAutoWhiteBalance, itemDirectFrameCaptureEnabled;
         UI.ItemButton itemCapturePhoto;
 
         UI.Panel panelMsg;
@@ -70,10 +72,11 @@ namespace TofArSettings.Color
                 MakeUIFocus,
                 MakeUIExposure,
                 MakeUIWhiteBalance,
-                MakeUICapturePhoto
+                MakeUICapturePhoto,
+                MakeUIDirectFrameCaptureEnabled,
             };
 
-            mgrCtrl = FindObjectOfType<ColorManagerController>();
+            mgrCtrl = FindAnyObjectByType<ColorManagerController>();
 
             formatCtrl = mgrCtrl.GetComponent<ColorFormatController>();
             controllers.Add(formatCtrl);
@@ -88,6 +91,9 @@ namespace TofArSettings.Color
 
             // Do not add as it is the same as exposureCtrl and is already added
             colorExposureCtrl = mgrCtrl.GetComponent<ColorExposureController>();
+
+            directFrameCaptureEnabledController = mgrCtrl.GetComponent<ColorDirectFrameCaptureController>();
+            controllers.Add(directFrameCaptureEnabledController);
 
             base.Start();
         }
@@ -127,6 +133,7 @@ namespace TofArSettings.Color
             if (mgrCtrl.IsStreamActive())
             {
                 itemFormat.Interactable = false;
+                itemDirectFrameCaptureEnabled.Interactable = false;
             }
         }
 
@@ -491,17 +498,68 @@ namespace TofArSettings.Color
 
         private void OnColorStreamStarted(object sender, Texture2D colorTex)
         {
-             if(TofArManager.Instance.UsingIos && mgrCtrl != null && mgrCtrl is ColorManagerController)
-             {
+            if (TofArManager.Instance.UsingIos && mgrCtrl != null && mgrCtrl is ColorManagerController)
+            {
                 SetInteractableUICapturePhoto((mgrCtrl as ColorManagerController).CurrentResolution.enablePhoto);
             }
+            SetInteractableUIDirectFrameCaptureEnable(false);
         }
 
         private void OnColorStreamStopped(object sender)
         {
-            if (TofArManager.Instance.UsingIos)
+            if (TofArManager.Instance?.UsingIos == true)
             {
                 SetInteractableUICapturePhoto(false);
+            }
+            SetInteractableUIDirectFrameCaptureEnable(true);
+        }
+
+        /// <summary>
+        /// Make DirectFrameCaptureEnabled UI
+        /// </summary>
+        void MakeUIDirectFrameCaptureEnabled()
+        {
+            var platformConfig = TofArManager.Instance.GetProperty<PlatformConfigurationProperty>();
+            if (platformConfig?.platformConfigurationPC?.customData?.Contains("k4a") == true)
+            {
+                // DirectFrameCaptureEnabled
+                itemDirectFrameCaptureEnabled = settings.AddItem("Direct Frame Capture", directFrameCaptureEnabledController.DirectFrameCaptureEnabled,
+                    ChangeDirectFrameCaptureEnabled);
+
+                directFrameCaptureEnabledController.OnChangeDirectFrameCaptureEnabled += (onOff) =>
+                {
+                    itemDirectFrameCaptureEnabled.OnOff = onOff;
+                };
+
+                directFrameCaptureEnabledController.OnChangeProperty += UpdateDirectFrameCaptureEnabledUI;
+            }
+        }
+
+        /// <summary>
+        /// Toggle DirectFrameCaptureEnabled
+        /// </summary>
+        /// <param name="onOff">On/Off</param>
+        void ChangeDirectFrameCaptureEnabled(bool onOff)
+        {
+            directFrameCaptureEnabledController.DirectFrameCaptureEnabled = onOff;
+        }
+
+        /// <summary>
+        /// Update DirectFrameCaptureEnabled-related UI
+        /// </summary>
+        void UpdateDirectFrameCaptureEnabledUI()
+        {
+            if (itemDirectFrameCaptureEnabled)
+            {
+                itemDirectFrameCaptureEnabled.OnOff = directFrameCaptureEnabledController.DirectFrameCaptureEnabled;
+            }
+        }
+
+        private void SetInteractableUIDirectFrameCaptureEnable(bool state)
+        {
+            if (itemDirectFrameCaptureEnabled != null)
+            {
+                itemDirectFrameCaptureEnabled.Interactable = state;
             }
         }
     }

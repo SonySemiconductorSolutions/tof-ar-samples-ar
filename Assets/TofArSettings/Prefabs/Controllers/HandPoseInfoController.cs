@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -18,7 +18,7 @@ namespace TofArSettings.Hand
         {
             if (handInfo == null)
             {
-                handInfo = FindObjectOfType<HandPoseInfo>();
+                handInfo = FindAnyObjectByType<HandPoseInfo>();
             }
         }
 

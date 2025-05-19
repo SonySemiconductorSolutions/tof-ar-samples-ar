@@ -1,10 +1,11 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
+using TofAr.V0;
 using TofAr.V0.Slam;
 using UnityEngine.Events;
 
@@ -17,6 +18,7 @@ namespace TofArSettings.Slam
 
         UI.ItemToggle itemStartStream;
         UI.ItemDropdown itemPoseSource;
+        UI.ItemDropdown itemRotationCalculationType;
 
         /// <summary>
         /// アプリ起動後(Awake後)の動作(Unity標準関数)
@@ -27,12 +29,13 @@ namespace TofArSettings.Slam
             uiOrder = new UnityAction[]
             {
                 MakeUIStartStream,
-                MakeUIPoseSource
+                MakeUIPoseSource,
+                MakeUIRotationCalculationType,
             };
-            managerController = FindObjectOfType<SlamManagerController>();
+            managerController = FindAnyObjectByType<SlamManagerController>();
             controllers.Add(managerController);
 
-            cameraApiController = FindObjectOfType<General.CameraApiController>();
+            cameraApiController = FindAnyObjectByType<General.CameraApiController>();
             cameraApiController.OnChangeApi += (idx) =>
             {
                 UpdateInteractability();
@@ -66,6 +69,19 @@ namespace TofArSettings.Slam
             {
                 UpdateInteractability();
             }
+        }
+        void MakeUIRotationCalculationType()
+        {
+            itemRotationCalculationType = settings.AddItem("Rotation Calculation",
+                managerController.RotationCalculateTypeNames, managerController.Index, ChangeRotationCalculateType,
+                0, 0, 340);
+            managerController.OnChangeRotationCalculateType += (index) =>
+            {
+                itemRotationCalculationType.Index = index;
+            };
+
+            var platformConfig = TofArManager.Instance.GetProperty<PlatformConfigurationProperty>();
+            itemRotationCalculationType.Interactable = (platformConfig?.platformConfigurationPC?.customData?.Contains("k4a") == true);
         }
 
         private void UpdateInteractability()
@@ -120,6 +136,14 @@ namespace TofArSettings.Slam
             if (onOff)
             {
                 itemStartStream.OnOff = TofArSlamManager.Instance.IsStreamActive;
+            }
+        }
+
+        void ChangeRotationCalculateType(int index)
+        {
+            if (managerController.RotationCalculateTypeIndex != index)
+            {
+                managerController.RotationCalculateTypeIndex = index;
             }
         }
     }

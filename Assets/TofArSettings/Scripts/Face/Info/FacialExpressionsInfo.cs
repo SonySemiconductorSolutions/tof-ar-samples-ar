@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -63,7 +63,10 @@ namespace TofArSettings.Face
                 sb.AppendLine($"EyeOpen: {string.Format("{0:0.000}", result[(int)FacialExpression.EyeOpen])}");
                 sb.Append($"BrowUp: {string.Format("{0:0.000}", result[(int)FacialExpression.BrowUp])}");
 
-                txtExpression.text = sb.ToString();
+                if (txtExpression != null)
+                {
+                    txtExpression.text = sb.ToString();
+                }
             }, null);
         }
 

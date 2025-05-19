@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -143,7 +143,7 @@ namespace TofArSettings.UI
 
             if (color)
             {
-                var colorCtrl = FindObjectOfType<ColorRecPlayerController>();
+                var colorCtrl = FindAnyObjectByType<ColorRecPlayerController>();
                 controllers.Add(colorCtrl);
                 playerSets.Add(ComponentType.Color, new PlayerSet(
                     colorCtrl, null, ChangeColorIndex, (idx) => DeleteEntry(idx, ComponentType.Color), (idx, newName) => RenameEntry(idx, newName, ComponentType.Color)));
@@ -151,7 +151,7 @@ namespace TofArSettings.UI
 
             if (tof)
             {
-                var tofCtrl = FindObjectOfType<TofRecPlayerController>();
+                var tofCtrl = FindAnyObjectByType<TofRecPlayerController>();
                 controllers.Add(tofCtrl);
                 playerSets.Add(ComponentType.Tof, new PlayerSet(
                     tofCtrl, null, ChangeTofIndex, (idx) => DeleteEntry(idx, ComponentType.Tof), (idx, newName) => RenameEntry(idx, newName, ComponentType.Tof)));
@@ -164,7 +164,7 @@ namespace TofArSettings.UI
 
             if (segmentation)
             {
-                var segmentationCtrl = FindObjectOfType<SegmentationRecPlayerController>();
+                var segmentationCtrl = FindAnyObjectByType<SegmentationRecPlayerController>();
                 controllers.Add(segmentationCtrl);
                 playerSets.Add(ComponentType.Segmentation, new PlayerSet(
                     segmentationCtrl, null, ChangeSegmentationIndex, (idx) => DeleteEntry(idx, ComponentType.Segmentation), (idx, newName) => RenameEntry(idx, newName, ComponentType.Segmentation)));
@@ -172,7 +172,7 @@ namespace TofArSettings.UI
 
             if (body)
             {
-                var bodyCtrl = FindObjectOfType<BodyRecPlayerController>();
+                var bodyCtrl = FindAnyObjectByType<BodyRecPlayerController>();
                 controllers.Add(bodyCtrl);
                 playerSets.Add(ComponentType.Body, new PlayerSet(
                     bodyCtrl, null, ChangeBodyIndex, (idx) => DeleteEntry(idx, ComponentType.Body), (idx, newName) => RenameEntry(idx, newName, ComponentType.Body)));
@@ -180,7 +180,7 @@ namespace TofArSettings.UI
 
             if (face)
             {
-                var faceCtrl = FindObjectOfType<FaceRecPlayerController>();
+                var faceCtrl = FindAnyObjectByType<FaceRecPlayerController>();
                 controllers.Add(faceCtrl);
                 playerSets.Add(ComponentType.Face, new PlayerSet(
                     faceCtrl, null, ChangeFaceIndex, (idx) => DeleteEntry(idx, ComponentType.Face), (idx, newName) => RenameEntry(idx, newName, ComponentType.Face)));
@@ -188,7 +188,7 @@ namespace TofArSettings.UI
 
             if (plane)
             {
-                var planeCtrl = FindObjectOfType<PlaneRecPlayerController>();
+                var planeCtrl = FindAnyObjectByType<PlaneRecPlayerController>();
                 controllers.Add(planeCtrl);
                 playerSets.Add(ComponentType.Plane, new PlayerSet(
                     planeCtrl, null, ChangePlaneIndex, (idx) => DeleteEntry(idx, ComponentType.Plane), (idx, newName) => RenameEntry(idx, newName, ComponentType.Plane)));
@@ -521,7 +521,7 @@ namespace TofArSettings.UI
 
         private void ToolbarNotSelect(bool state)
         {
-            Toolbar toolbar = FindObjectOfType<Toolbar>();
+            Toolbar toolbar = FindAnyObjectByType<Toolbar>();
             if (toolbar)
             {
                 toolbar.SetNotSelect(state);

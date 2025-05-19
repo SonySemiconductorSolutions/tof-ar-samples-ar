@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -28,7 +28,7 @@ namespace TofArSettings.Hand
         /// </summary>
         public void SetControllerAndPlayerSet()
         {
-            var handCtrl = FindObjectOfType<HandRecPlayerController>();
+            var handCtrl = FindAnyObjectByType<HandRecPlayerController>();
             recPlayerSettings.SetController(handCtrl);
             recPlayerSettings.SetPlayerSets(SettingsBase.ComponentType.Hand, handCtrl);
         }

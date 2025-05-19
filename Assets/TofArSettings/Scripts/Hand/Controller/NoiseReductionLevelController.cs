@@ -1,11 +1,12 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
  *
  */
 
 using System;
+using System.Collections.Generic;
 using TofAr.V0.Hand;
 
 namespace TofArSettings.Hand
@@ -91,8 +92,22 @@ namespace TofArSettings.Hand
             var mgr = TofArHandManager.Instance;
 
             // Get Process Level list
-            NoiseReductionLevelList = (NoiseReductionLevel[])Enum.GetValues(typeof(NoiseReductionLevel));
+            var list = new List<NoiseReductionLevel>();
+            var levels = (NoiseReductionLevel[])Enum.GetValues(typeof(NoiseReductionLevel));
+            list.AddRange(levels);
+            list.Remove(NoiseReductionLevel.Off);
+            list.Insert(0, NoiseReductionLevel.Off);
+            NoiseReductionLevelList = list.ToArray();
             levelNames = Enum.GetNames(typeof(NoiseReductionLevel));
+            if (levelNames.Length != NoiseReductionLevelList.Length)
+            {
+                Array.Resize(ref levelNames, NoiseReductionLevelList.Length);
+            }
+
+            for (int i = 0; i < levelNames.Length; i++)
+            {
+                levelNames[i] = NoiseReductionLevelList[i].ToString();
+            }
 
             // Get initial values
             index = Utils.Find(mgr.NoiseReductionLevel, NoiseReductionLevelList);

@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -23,7 +23,7 @@ namespace TofArSettings
                 MakeUIMaxDepthDistance
             };
 
-            maxDepthDistanceController = FindObjectOfType<MaxDepthDistanceController>();
+            maxDepthDistanceController = FindAnyObjectByType<MaxDepthDistanceController>();
             controllers.Add(maxDepthDistanceController);
 
             base.Start();
@@ -42,7 +42,7 @@ namespace TofArSettings
             {
                 if (onOff)
                 {
-                    foreach (var panel in FindObjectsOfType<UI.Panel>())
+                    foreach (var panel in FindObjectsByType<UI.Panel>(FindObjectsSortMode.None))
                     {
                         if (panel == settings)
                         {

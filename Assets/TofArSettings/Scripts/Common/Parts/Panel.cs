@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -157,6 +157,11 @@ namespace TofArSettings.UI
             coClose = StartCoroutine(Hide());
         }
 
+        public void AutoClosePanel(float sec)
+        {
+            StartCoroutine(AutoHide(sec));
+        }
+
         /// <summary>
         /// Register child panel
         /// </summary>
@@ -245,7 +250,7 @@ namespace TofArSettings.UI
         /// </summary>
         protected virtual void CloseOther()
         {
-            foreach (var panel in FindObjectsOfType<UI.Panel>())
+            foreach (var panel in FindObjectsByType<UI.Panel>(FindObjectsSortMode.None))
             {
                 if (panel == this)
                 {

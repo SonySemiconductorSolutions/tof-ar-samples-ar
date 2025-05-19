@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -33,14 +33,14 @@ namespace TofArSettings
             exposureCtrl = mgrCtrl.GetComponent<ImageExposureController>();
             controllers.Add(exposureCtrl);
 
-            var ctrls = FindObjectsOfType<DependendStreamUIHandler>();
+            var ctrls = FindObjectsByType<DependendStreamUIHandler>(FindObjectsSortMode.None);
             foreach (var controller in ctrls)
             {
                 if (controller.GetType() == typeof(DependendStreamUIHandler))
                 {
                     componentCtrl = controller;
                     break;
-                }    
+                }
             }
 
             base.Start();

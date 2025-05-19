@@ -1,7 +1,7 @@
-﻿/*
+/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -42,7 +42,7 @@ namespace TofArSettings
 
         private void Awake()
         {
-            subHandlers = FindObjectsOfType<IDependendStreamUIHandler>();
+            subHandlers = FindObjectsByType<IDependendStreamUIHandler>(FindObjectsSortMode.None);
 
             colorMgr = TofArColorManager.Instance;
             tofMgr = TofArTofManager.Instance;
@@ -183,7 +183,7 @@ namespace TofArSettings
                 type == SettingsBase.ComponentType.Tof ? tofMgr != null && !tofMgr.IsStreamActive :
                 false;
 
-            
+
             if (isDependedStreamInactive)
             {
                 foreach (var mgr in mgrs)
@@ -229,7 +229,7 @@ namespace TofArSettings
             {
                 listDropdowns.Add(type, new List<ItemDropdown>());
             }
-          
+
             listDropdowns[type].Add(dropdown);
 
             UpdateDropdownInteractibility();

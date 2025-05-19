@@ -1,10 +1,11 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -50,6 +51,7 @@ namespace TofArSettings.UI
 
         private DeleteConfirmPanel deletePanel;
         private RenamePanel renamePanel;
+        private MultiCamSupportToggles multiCamSupportToggles;
 
         RectTransform dialogRt, contentRt;
         VerticalLayoutGroup contentLayout;
@@ -79,6 +81,10 @@ namespace TofArSettings.UI
                 else if (tr.name.Contains("Dialog"))
                 {
                     dialogTr = tr;
+                }
+                else if (tr.name.Contains("Toggles"))
+                {
+                    //supportToggles = tr;
                 }
             }
             if (dialogTr == null)
@@ -126,7 +132,8 @@ namespace TofArSettings.UI
 
             deletePanel = this.transform.GetComponentInChildren<DeleteConfirmPanel>();
             renamePanel = this.transform.GetComponentInChildren<RenamePanel>();
-
+            multiCamSupportToggles = this.transform.GetComponentInChildren<MultiCamSupportToggles>();
+            SetActiveMultiCamSupportToggles(false);
 
             finishedSetup = true;
         }
@@ -188,6 +195,56 @@ namespace TofArSettings.UI
 
             // Reset size of option list
             contentRt.sizeDelta = defaultContentSize;
+        }
+
+        /// <summary>
+        /// Select Active DropdownOption
+        /// </summary>
+        /// <param name="indices">index list</param>
+        public void SelectActiveOptions(int[] indices)
+        {
+            var optRt = options[0].GetComponent<RectTransform>();
+            float optHeight = optRt.sizeDelta.y;
+
+            for (int i = 1; i < options.Count; i++)
+            {
+                if (0 <= Array.IndexOf(indices, i))
+                {
+                    options[i].gameObject.SetActive(true);
+
+                    optRt = options[i].GetComponent<RectTransform>();
+                    optHeight += optRt.sizeDelta.y;
+                    optHeight += contentLayout.spacing;
+                }
+                else
+                {
+                    options[i].gameObject.SetActive(false);
+                }
+            }
+
+            contentRt.sizeDelta = defaultContentSize;
+            contentRt.sizeDelta += new Vector2(0, optHeight);
+        }
+
+        /// <summary>
+        /// Select Reset Active DropdownOption 
+        /// </summary>
+        public void ClearSelectActiveOptions()
+        {
+            var optRt = options[0].GetComponent<RectTransform>();
+            float optHeight = optRt.sizeDelta.y;
+
+            for (int i = 1; i < options.Count; i++)
+            {
+                options[i].gameObject.SetActive(true);
+
+                optRt = options[i].GetComponent<RectTransform>();
+                optHeight += optRt.sizeDelta.y;
+                optHeight += contentLayout.spacing;
+            }
+
+            contentRt.sizeDelta = defaultContentSize;
+            contentRt.sizeDelta += new Vector2(0, optHeight);
         }
 
         /// <summary>
@@ -321,6 +378,20 @@ namespace TofArSettings.UI
             // open confirmation dialog
             renamePanel.OpenPanel(false);
 
+        }
+
+        /// <summary>
+        /// SetActive MultiCamSupportToggles GameObject
+        /// </summary>
+        /// <param name="state"></param>
+        public void SetActiveMultiCamSupportToggles(bool state)
+        {
+            if (!state)
+            {
+                multiCamSupportToggles.ResetIsOn();
+            }
+
+            multiCamSupportToggles.gameObject.SetActive(state);
         }
 
     }

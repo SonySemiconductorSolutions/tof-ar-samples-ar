@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -49,6 +49,12 @@ namespace TofArSettings
         /// </summary>
         /// <param name="vector">Vector</param>
         public delegate void ChangeVectorEvent(Vector3 vector);
+
+        /// <summary>
+        /// Event that is called stream error
+        /// </summary>
+        /// <param name="msg">Message string</param>
+        public delegate void StreamErrorEvent(string msg);
 
         protected virtual void Start()
         {

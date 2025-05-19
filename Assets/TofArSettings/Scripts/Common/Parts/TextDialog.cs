@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2023,2024,2025 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -45,7 +45,7 @@ namespace TofArSettings.UI
                 return;
             }
 
-            dialogRt = dialogTr.GetComponent<RectTransform>();
+            dialogRt = dialogTr?.GetComponent<RectTransform>();
             if (!dialogRt)
             {
                 return;
@@ -71,7 +71,7 @@ namespace TofArSettings.UI
             // Close dialog after tapping outside of screen
             if (bgTr)
             {
-                imgTrigger = bgTr.GetComponent<ImageButtonTrigger>();
+                imgTrigger = bgTr?.GetComponent<ImageButtonTrigger>();
             }
 
             if (imgTrigger)

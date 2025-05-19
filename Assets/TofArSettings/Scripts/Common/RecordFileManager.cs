@@ -1,7 +1,7 @@
 ﻿/*
  * SPDX-License-Identifier: (Apache-2.0 OR GPL-2.0-only)
  *
- * Copyright 2022,2023 Sony Semiconductor Solutions Corporation.
+ * Copyright 2022,2023,2024 Sony Semiconductor Solutions Corporation.
  *
  */
 
@@ -99,46 +99,22 @@ namespace TofArSettings
         /// <returns></returns>
         public static IEnumerator CopyToDevice(string src, string dst)
         {
-            if (!System.IO.Path.IsPathRooted(src))
+            if (!CheckIsPathRooted(src, dst))
             {
-                TofArManager.Logger.WriteLog(LogLevel.Debug, $"src must be absolute path");
-                yield break;
-            }
-            if (!System.IO.Path.IsPathRooted(dst))
-            {
-                TofArManager.Logger.WriteLog(LogLevel.Debug, $"dst must be absolute path");
                 yield break;
             }
 
             string[] arguments = { $"\"{src}\"", dst };
-
-
-#if UNITY_EDITOR
-            var adbPath = EditorUtils.GetAdbPath();
-#else
-            var adbPath = TofArManager.Instance.ServerConnectionSettingsForStandalone.fullPathToAdb;
-#endif
+            var adbPath = GetAdbPath();
 
             if (!string.IsNullOrEmpty(adbPath) && System.IO.Path.IsPathRooted(adbPath))
             {
                 sbOutput = new System.Text.StringBuilder();
-
                 sbError = new System.Text.StringBuilder();
 
                 var psi = new System.Diagnostics.ProcessStartInfo();
 
-#if UNITY_EDITOR_WIN
-                if (!adbPath.EndsWith("adb.exe"))
-#elif UNITY_STANDALONE_WIN
-                if (!System.IO.Path.HasExtension(adbPath))
-                {
-                    adbPath += ".exe";
-                }
-                if (!adbPath.EndsWith("adb.exe"))
-#else
-                var fileInfo = new System.IO.FileInfo(adbPath);
-                if (!adbPath.EndsWith("adb") || fileInfo.Attributes != System.IO.FileAttributes.Normal)
-#endif
+                if (!CheckAdbExtension(adbPath))
                 {
                     throw new System.InvalidOperationException("Invalid adb file");
                 }
@@ -265,6 +241,56 @@ namespace TofArSettings
         {
             sbOutput.Append(e.Data);
         }
+
+        private static bool CheckIsPathRooted(string src, string dst)
+        {
+            if (!System.IO.Path.IsPathRooted(src))
+            {
+                TofArManager.Logger.WriteLog(LogLevel.Debug, $"src must be absolute path");
+                return false;
+            }
+
+            if (!System.IO.Path.IsPathRooted(dst))
+            {
+                TofArManager.Logger.WriteLog(LogLevel.Debug, $"dst must be absolute path");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static string GetAdbPath()
+        {
+#if UNITY_EDITOR
+            return EditorUtils.GetAdbPath();
+#else
+            return TofArManager.Instance.RuntimeSettingsForStandalone.fullPathToAdb;
+#endif
+        }
+
+        private static bool CheckAdbExtension(string adbPath)
+        {
+#if UNITY_EDITOR_WIN
+            if (!adbPath.EndsWith("adb.exe"))
+#elif UNITY_STANDALONE_WIN
+                if (!System.IO.Path.HasExtension(adbPath))
+                {
+                    adbPath += ".exe";
+                }
+                if (!adbPath.EndsWith("adb.exe"))
+#else
+                var fileInfo = new System.IO.FileInfo(adbPath);
+                if (!adbPath.EndsWith("adb") || fileInfo.Attributes != System.IO.FileAttributes.Normal)
+#endif
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
 #endif
     }
 }
